@@ -1,0 +1,137 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Parking;
+use App\Models\ParkingProduct;
+use App\Models\ParkingListing;
+use App\Models\Platform;
+use App\Models\Reservation;
+use App\Services\AvailabilityService;
+use App\Services\ReservationService;
+use App\Services\ParkingAssignmentService;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use App\Enums\ReservationStatus;
+
+class PublicBookingController extends Controller
+{
+    public function showForm(Request $request)
+    {
+        // Raccogliamo i codici prodotto univoci da tutti i parcheggi attivi
+        // Così mostriamo solo le tipologie logiche (es. 'standard', 'premium')
+        $products = ParkingProduct::whereHas('parking', function ($q) {
+            $q->active();
+        })->active()
+          ->get()
+          ->unique('code');
+
+        if ($products->isEmpty()) {
+            abort(404, 'Nessun prodotto disponibile per la prenotazione.');
+        }
+
+        return view('booking.form', compact('products'));
+    }
+
+    public function checkAvailability(Request $request, ParkingAssignmentService $assignmentService)
+    {
+        $validated = $request->validate([
+            'product_code' => 'required|string|exists:parking_products,code',
+            'starts_at' => 'required|date|after_or_equal:today',
+            'ends_at' => 'required|date|after:starts_at',
+            'spots' => 'integer|min:1|max:10',
+        ]);
+
+        $startsAt = Carbon::parse($validated['starts_at']);
+        $endsAt = Carbon::parse($validated['ends_at']);
+        $spots = $validated['spots'] ?? 1;
+
+        try {
+            $result = $assignmentService->findFirstAvailable(
+                $validated['product_code'],
+                $startsAt,
+                $endsAt,
+                $spots
+            );
+
+            return response()->json([
+                'available' => true,
+                'total_price' => $result['price'],
+                'price_formatted' => number_format($result['price'], 2, ',', '.') . ' €'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'available' => false,
+                'reason' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function store(Request $request, ReservationService $reservationService, ParkingAssignmentService $assignmentService)
+    {
+        $validated = $request->validate([
+            'product_code' => 'required|string|exists:parking_products,code',
+            'starts_at' => 'required|date|after_or_equal:today',
+            'ends_at' => 'required|date|after:starts_at',
+            'spots' => 'required|integer|min:1|max:10',
+            'customer_name' => 'required|string|max:255',
+            'customer_email' => 'required|email|max:255',
+            'customer_phone' => 'required|string|max:50',
+            'license_plate' => 'required|string|max:20',
+        ]);
+
+        // Website Platform (deve già esistere, configurata via seeder, altrimenti fallisce esplicitamente 404)
+        $platform = Platform::where('slug', 'website')->firstOrFail();
+
+        $startsAt = Carbon::parse($validated['starts_at']);
+        $endsAt = Carbon::parse($validated['ends_at']);
+
+        try {
+            // Rifà l'assegnazione autoritativa
+            $assignment = $assignmentService->findFirstAvailable(
+                $validated['product_code'],
+                $startsAt,
+                $endsAt,
+                $validated['spots']
+            );
+        } catch (\Exception $e) {
+            return back()->withInput()->with('error', $e->getMessage());
+        }
+
+        // Recupera il listing per questa piattaforma e il parcheggio assegnato (fail fast se non esiste)
+        $listing = ParkingListing::where('parking_id', $assignment['parking']->id)
+            ->where('platform_id', $platform->id)
+            ->active()
+            ->firstOrFail();
+
+        $data = [
+            'parking_product_id' => $assignment['product']->id,
+            'external_id' => 'WEB-' . strtoupper(\Illuminate\Support\Str::random(8)),
+            'customer_name' => $validated['customer_name'],
+            'customer_email' => $validated['customer_email'],
+            'customer_phone' => $validated['customer_phone'],
+            'license_plate' => $validated['license_plate'],
+            'starts_at' => $startsAt->toDateTimeString(),
+            'ends_at' => $endsAt->toDateTimeString(),
+            'spots' => $validated['spots'],
+            'price' => $assignment['price'],
+            'status' => ReservationStatus::Pending->value, // Stato iniziale
+            'raw_data' => ['source' => 'website']
+        ];
+
+        $result = $reservationService->create($listing, $data);
+
+        if (!$result->success) {
+            return back()->withInput()->with('error', $result->error);
+        }
+
+        return redirect()->route('public.booking.success', $result->reservation->external_id);
+    }
+
+    public function success($code)
+    {
+        $reservation = Reservation::where('external_id', $code)->firstOrFail();
+        return view('booking.success', compact('reservation'));
+    }
+}

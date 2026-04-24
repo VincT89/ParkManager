@@ -1,0 +1,64 @@
+# Laravel
+/vendor
+/node_modules
+/public/storage
+/storage/*.key
+/bootstrap/cache/*.php
+/bootstrap/cache/*.json
+
+# Environment
+.env
+.env.backup
+.env.*.backup
+
+# Logs
+/storage/logs/*
+*.log
+
+# Debug / IDE
+/.idea
+/.vscode
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Composer
+composer.lock
+
+# NPM
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build files
+/public/build
+/public/hot
+/public/mix-manifest.json
+
+# PHPUnit
+.phpunit.result.cache
+
+# Cache
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+
+# Testing / Coverage
+/coverage
+/.phpunit.cache
+
+# Docker (se usato)
+/docker-data
+
+# Backup / temp
+*.sql
+*.sqlite
+*.bak
+*.tmp
+
+# Misc
+*.swp
+*.swo

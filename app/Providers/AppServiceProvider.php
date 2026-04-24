@@ -1,0 +1,49 @@
+<?php
+
+namespace App\Providers;
+
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    public function register(): void
+    {
+        $this->app->singleton(\App\Integrations\AdapterRegistry::class, function ($app) {
+            $registry = new \App\Integrations\AdapterRegistry();
+            
+            $registry->register(new \App\Integrations\Adapters\ParkosAdapter());
+            $registry->register(new \App\Integrations\Adapters\MyParkingAdapter());
+            $registry->register(new \App\Integrations\Adapters\VologioAdapter());
+            $registry->register(new \App\Integrations\Adapters\ParkingMyCarAdapter());
+            
+            return $registry;
+        });
+    }
+
+    public function boot(): void
+    {
+        \Carbon\Carbon::setLocale('it');
+
+        \Illuminate\Support\Facades\Gate::define('manage-platforms', function (\App\Models\User $user) {
+            return $user->isAdmin();
+        });
+
+        \Illuminate\Support\Facades\Gate::define('manage-parkings', function (\App\Models\User $user) {
+            return $user->isAdmin();
+        });
+
+        \Illuminate\Support\Facades\View::composer('*', function ($view) {
+            if (auth()->check()) {
+                $alertCount = cache()->remember('alert_count_' . auth()->id(), 5, function () {
+                    $parkings = \App\Models\Parking::active()->get();
+                    if ($parkings->isEmpty())
+                        return 0;
+                    return count((new \App\Services\AlertService())->getAlertsForParkings($parkings));
+                });
+                $view->with('alertCount', $alertCount);
+            }
+        });
+    }
+}

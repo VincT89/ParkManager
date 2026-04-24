@@ -1,0 +1,98 @@
+<?php
+
+namespace App\Actions;
+
+use App\Integrations\AdapterRegistry;
+use App\Integrations\ReservationImportPayloadFactory;
+use App\Models\ParkingListing;
+use App\Services\ReservationService;
+use App\Services\Results\ImportAction;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+
+class SyncListingAction
+{
+    public function __construct(
+        private AdapterRegistry $registry,
+        private ReservationService $reservationService,
+        private ReservationImportPayloadFactory $payloadFactory
+    ) {}
+
+    /**
+     * Executes the synchronization for a single ParkingListing.
+     * Returns an array of statistics.
+     */
+    public function execute(ParkingListing $listing, Carbon $from, Carbon $to, bool $dryRun = false): array
+    {
+        $stats = [
+            'created' => 0,
+            'updated' => 0,
+            'failed'  => 0,
+            'skipped' => 0,
+            'errors'  => [],
+        ];
+
+        try {
+            // 1. Get the adapter
+            $adapter = $this->registry->forPlatform($listing->platform);
+
+            // 2. Fetch reservations
+            $normalizedReservations = $adapter->fetchReservations($listing, $from, $to);
+
+            // 3. Process each reservation
+            foreach ($normalizedReservations as $normalized) {
+                try {
+                    // Resolve internal product
+                    $product = $adapter->resolveProduct($listing, $normalized->external_product_ref);
+                    
+                    // Build payload
+                    $payload = $this->payloadFactory->makePayload($normalized, $product);
+
+                    if ($dryRun) {
+                        $exists = \App\Models\Reservation::where('parking_listing_id', $listing->id)
+                            ->where('external_id', $payload['external_id'])
+                            ->exists();
+                            
+                        if ($exists) {
+                            $stats['updated']++;
+                        } else {
+                            $stats['created']++;
+                        }
+                        continue;
+                    }
+
+                    // Import via ReservationService
+                    $result = $this->reservationService->importFromExternal($listing, $payload);
+
+                    if ($result->isSuccess()) {
+                        if ($result->action === ImportAction::Created) {
+                            $stats['created']++;
+                        } elseif ($result->action === ImportAction::Updated) {
+                            $stats['updated']++;
+                        } else {
+                            $stats['skipped']++;
+                        }
+                    } else {
+                        $stats['failed']++;
+                        $stats['errors'][] = "External ID {$normalized->external_id}: " . $result->error;
+                    }
+
+                } catch (\Exception $e) {
+                    $stats['failed']++;
+                    $stats['errors'][] = "External ID {$normalized->external_id}: " . $e->getMessage();
+                }
+            }
+
+        } catch (\Exception $e) {
+            // Fatal error fetching or adapter missing
+            $stats['failed']++;
+            $stats['errors'][] = "Fatal Error: " . $e->getMessage();
+        }
+
+        if (count($stats['errors']) > 0) {
+            Log::error("SyncListingAction errors for listing {$listing->id}", $stats['errors']);
+        }
+
+        return $stats;
+    }
+}

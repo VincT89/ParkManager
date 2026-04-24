@@ -1,0 +1,86 @@
+<?php
+
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\PlatformController;
+use App\Http\Controllers\AvailabilityBlockController;
+use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\AlertController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', function () {
+    return redirect()->route('dashboard');
+});
+
+// Public Booking Form (Laravel)
+Route::get('/booking', [\App\Http\Controllers\PublicBookingController::class, 'showForm'])->name('public.booking.form');
+Route::post('/booking/check-availability', [\App\Http\Controllers\PublicBookingController::class, 'checkAvailability'])->name('public.booking.check');
+Route::post('/booking/store', [\App\Http\Controllers\PublicBookingController::class, 'store'])->name('public.booking.store');
+Route::get('/booking/success/{uuid}', [\App\Http\Controllers\PublicBookingController::class, 'success'])->name('public.booking.success');
+
+Route::middleware(['auth', 'verified'])->group(function () {
+
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('dashboard');
+
+    // Report
+    Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
+
+    // Analytics 
+    Route::get('/alerts', [AlertController::class, 'index'])->name('alerts');
+    Route::post('/alerts/{id}/dismiss', [AlertController::class, 'dismiss'])->name('alerts.dismiss');
+
+    // Esportazione prenotazioni
+    Route::get('/reservations/export', [ReservationController::class, 'export'])
+    ->name('reservations.export');  
+
+    // Prenotazioni
+    Route::resource('reservations', ReservationController::class)
+        ->except(['show']);
+
+    // Blocchi disponibilità
+    Route::resource('availability-blocks', AvailabilityBlockController::class)
+        ->only(['index', 'create', 'store', 'destroy']);
+
+    // Piattaforme — solo admin
+    Route::middleware('can:manage-platforms')->group(function () {
+        Route::resource('platforms', PlatformController::class)
+            ->except(['show']);
+        Route::post('platforms/{platform}/attach', [PlatformController::class, 'attachToParking'])
+            ->name('platforms.attach');
+        
+        Route::post('platforms/{platform}/mappings', [PlatformController::class, 'storeMapping'])
+            ->name('platforms.mappings.store');
+        Route::delete('platforms/mappings/{mapping}', [PlatformController::class, 'destroyMapping'])
+            ->name('platforms.mappings.destroy');
+
+        Route::get('/sync-logs', [\App\Http\Controllers\SyncLogController::class, 'index'])->name('sync-logs.index');
+    });
+
+    // Parcheggio & Inventario — solo admin
+    Route::middleware('can:manage-parkings')->group(function () {
+        Route::resource('admin/parkings', \App\Http\Controllers\ParkingController::class)
+            ->except(['show'])
+            ->names([
+                'index'   => 'parkings.index',
+                'create'  => 'parkings.create',
+                'store'   => 'parkings.store',
+                'edit'    => 'parkings.edit',
+                'update'  => 'parkings.update',
+                'destroy' => 'parkings.destroy',
+            ]);
+            
+        Route::put('admin/parkings/{parking}/products', [\App\Http\Controllers\ParkingProductController::class, 'upsertForParking'])
+            ->name('parkings.products.upsert');
+
+        Route::resource('admin/parkings.allocations', \App\Http\Controllers\ParkingCapacityAllocationController::class)
+            ->except(['index', 'show', 'edit']);
+    });
+
+    // Calendario
+    Route::get('/calendar', [DashboardController::class, 'calendar'])->name('calendar');
+    Route::get('/calendar/data', [DashboardController::class, 'calendarData'])->name('calendar.data');
+});
+
+require __DIR__ . '/auth.php';

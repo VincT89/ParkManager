@@ -1,0 +1,184 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Reservation;
+use App\Models\ParkingListing;
+use App\Models\Platform;
+use App\Services\ReservationService;
+use App\Services\AvailabilityService;
+use App\Enums\ReservationStatus;
+use Illuminate\Http\Request;
+use App\Exports\ReservationsExport;
+use Maatwebsite\Excel\Facades\Excel;
+
+class ReservationController extends Controller
+{
+    public function __construct(
+        private ReservationService $reservationService,
+        private AvailabilityService $availabilityService,
+    ) {}
+
+    public function index(Request $request)
+    {
+        $query = Reservation::query()
+            ->with(['parkingListing.platform', 'parkingListing.parking']);
+
+        match ($request->sort_by) {
+            'starts_at_asc'   => $query->orderBy('starts_at', 'asc'),
+            'starts_at_desc'  => $query->orderBy('starts_at', 'desc'),
+            'created_at_asc'  => $query->orderBy('created_at', 'asc'),
+            default           => $query->orderBy('created_at', 'desc'), // Default: dalle più recenti inserite
+        };
+
+        // Filtro per piattaforma
+        if ($request->filled('platform_id')) {
+            $query->whereHas('parkingListing', function ($q) use ($request) {
+                $q->where('platform_id', $request->platform_id);
+            });
+        }
+
+        // Filtro per stato
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filtro per data (Presenza fisica nel periodo)
+        if ($request->filled('date_from') && $request->filled('date_to')) {
+            $query->overlapping($request->date_from, $request->date_to . ' 23:59:59');
+        } elseif ($request->filled('date_from')) {
+            $query->where('ends_at', '>=', $request->date_from);
+        } elseif ($request->filled('date_to')) {
+            $query->where('starts_at', '<=', $request->date_to . ' 23:59:59');
+        }
+
+        // Filtro per nome cliente
+        if ($request->filled('search')) {
+            $query->where('customer_name', 'like', '%' . $request->search . '%');
+        }
+
+        $reservations = $query->paginate(20)->withQueryString();
+        $platforms    = Platform::active()->get();
+        $statuses     = ReservationStatus::cases();
+
+        return view('reservations.index', compact(
+            'reservations',
+            'platforms',
+            'statuses'
+        ));
+    }
+
+    public function create()
+    {
+        $listings  = ParkingListing::with('platform')
+            ->active()
+            ->get();
+        $statuses  = ReservationStatus::cases();
+        $products  = \App\Models\ParkingProduct::active()->get();
+
+        return view('reservations.create', compact('listings', 'statuses', 'products'));
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'parking_listing_id' => ['required', 'exists:parking_listings,id'],
+            'parking_product_id' => ['required', 'exists:parking_products,id'],
+            'customer_name'      => ['required', 'string', 'max:255'],
+            'customer_email'     => ['nullable', 'email', 'max:255'],
+            'customer_phone'     => ['nullable', 'string', 'max:50'],
+            'license_plate'      => ['nullable', 'string', 'max:20'],
+            'starts_at'          => ['required', 'date', 'before:ends_at'],
+            'ends_at'            => ['required', 'date', 'after:starts_at'],
+            'spots'              => ['required', 'integer', 'min:1'],
+            'price'              => ['nullable', 'numeric', 'min:0'],
+            'notes'              => ['nullable', 'string'],
+        ]);
+
+        $listing = ParkingListing::findOrFail($validated['parking_listing_id']);
+        $result  = $this->reservationService->create($listing, $validated);
+
+        if (! $result->success) {
+            return back()
+                ->withInput()
+                ->withErrors(['availability' => $result->error]);
+        }
+
+        return redirect()
+            ->route('reservations.index')
+            ->with('success', 'Prenotazione creata con successo.');
+    }
+
+    public function edit(Reservation $reservation)
+    {
+        $listings = ParkingListing::with('platform')
+            ->active()
+            ->get();
+        $statuses = ReservationStatus::cases();
+        $products = \App\Models\ParkingProduct::active()->get();
+
+        return view('reservations.edit', compact(
+            'reservation',
+            'listings',
+            'statuses',
+            'products'
+        ));
+    }
+
+    public function update(Request $request, Reservation $reservation)
+    {
+        $validated = $request->validate([
+            'parking_product_id' => ['required', 'exists:parking_products,id'],
+            'customer_name'  => ['required', 'string', 'max:255'],
+            'customer_email' => ['nullable', 'email', 'max:255'],
+            'customer_phone' => ['nullable', 'string', 'max:50'],
+            'license_plate'  => ['nullable', 'string', 'max:20'],
+            'starts_at'      => ['required', 'date', 'before:ends_at'],
+            'ends_at'        => ['required', 'date', 'after:starts_at'],
+            'spots'          => ['required', 'integer', 'min:1'],
+            'status'         => ['required', 'string'],
+            'price'          => ['nullable', 'numeric', 'min:0'],
+            'notes'          => ['nullable', 'string'],
+        ]);
+
+        $result = $this->reservationService->update($reservation, $validated);
+
+        if (! $result->success) {
+            return back()
+                ->withInput()
+                ->withErrors(['availability' => $result->error]);
+        }
+
+        return redirect()
+            ->route('reservations.index')
+            ->with('success', 'Prenotazione aggiornata con successo.');
+    }
+
+    public function destroy(Reservation $reservation)
+    {
+        $result = $this->reservationService->cancel($reservation);
+
+        if (! $result->success) {
+            return back()->withErrors(['error' => $result->error]);
+        }
+
+        return redirect()
+            ->route('reservations.index')
+            ->with('success', 'Prenotazione cancellata con successo.');
+    }
+
+    public function export(Request $request)
+{
+    $filename = 'prenotazioni_' . now()->format('Y-m-d_His') . '.xlsx';
+
+    return Excel::download(
+        new ReservationsExport(
+            platformId: $request->input('platform_id'),
+            status:     $request->input('status'),
+            dateFrom:   $request->input('date_from'),
+            dateTo:     $request->input('date_to'),
+        ),
+        $filename
+    );
+}
+}
