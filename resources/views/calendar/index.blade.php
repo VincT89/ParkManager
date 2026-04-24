@@ -20,6 +20,18 @@
         </div>
     </x-slot>
 
+    <div style="display:flex;gap:8px;margin-bottom:24px" class="pm-animate">
+        <a href="{{ route('calendar', ['parking_id' => $parking->id ?? '']) }}" class="pm-btn pm-btn-primary">
+            Vista calendario
+        </a>
+        <a href="{{ route('calendar.day', ['type' => 'entries', 'parking_id' => $parking->id ?? '']) }}" class="pm-btn pm-btn-secondary">
+            Entrate
+        </a>
+        <a href="{{ route('calendar.day', ['type' => 'exits', 'parking_id' => $parking->id ?? '']) }}" class="pm-btn pm-btn-secondary">
+            Uscite
+        </a>
+    </div>
+
     <div style="display:flex;gap:4px;margin-bottom:16px" class="pm-animate">
         <button onclick="switchTab('daily')" id="tab-daily"
             class="pm-btn pm-btn-secondary pm-btn-sm">Giornaliera</button>

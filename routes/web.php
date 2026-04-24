@@ -79,8 +79,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Calendario
-    Route::get('/calendar', [DashboardController::class, 'calendar'])->name('calendar');
-    Route::get('/calendar/data', [DashboardController::class, 'calendarData'])->name('calendar.data');
+    Route::get('/calendar', [\App\Http\Controllers\CalendarController::class, 'index'])->name('calendar');
+    Route::get('/calendar/data', [\App\Http\Controllers\CalendarController::class, 'data'])->name('calendar.data');
+    Route::get('/calendar/day', [\App\Http\Controllers\CalendarController::class, 'day'])->name('calendar.day');
+    Route::get('/calendar/day/export', [\App\Http\Controllers\CalendarController::class, 'exportDay'])->name('calendar.day.export');
 });
 
 require __DIR__ . '/auth.php';

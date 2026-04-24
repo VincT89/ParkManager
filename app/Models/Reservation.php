@@ -40,6 +40,11 @@ class Reservation extends Model
         ];
     }
 
+    public function parking(): BelongsTo
+    {
+        return $this->belongsTo(Parking::class);
+    }
+
     public function parkingListing(): BelongsTo
     {
         return $this->belongsTo(ParkingListing::class);
