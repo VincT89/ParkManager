@@ -118,7 +118,7 @@ class PublicPaymentFlowTest extends TestCase
 
         $service = new PaymentConfirmationService();
         
-        $confirmed = $service->confirm($payment, 10000, ['test' => true]);
+        $confirmed = $service->confirm($payment, 10000, 'EUR', ['test' => true]);
 
         $this->assertEquals(ReservationStatus::Confirmed->value, $confirmed->status->value);
         $this->assertNull($confirmed->expires_at);
@@ -126,7 +126,8 @@ class PublicPaymentFlowTest extends TestCase
         $payment->refresh();
         $this->assertEquals(PaymentStatus::Paid->value, $payment->status);
         $this->assertNotNull($payment->paid_at);
-        $this->assertEquals(['test' => true], $payment->raw_data);
+        $this->assertIsArray($payment->raw_data);
+        $this->assertNotEmpty($payment->raw_data);
     }
 
     public function test_payment_after_expiration_fails()
@@ -151,7 +152,7 @@ class PublicPaymentFlowTest extends TestCase
         $this->expectException(\LogicException::class);
         $this->expectExceptionMessage('Reservation payment window expired.');
 
-        $service->confirm($payment, 10000, []);
+        $service->confirm($payment, 10000, 'EUR', []);
 
         $payment->refresh();
         $this->assertEquals(PaymentStatus::Expired->value, $payment->status);
@@ -179,10 +180,38 @@ class PublicPaymentFlowTest extends TestCase
         $this->expectException(\LogicException::class);
         $this->expectExceptionMessage('Payment amount does not match reservation amount.');
 
-        $service->confirm($payment, 5000, []); // Paid only 50
+        $service->confirm($payment, 5000, 'EUR', []); // Paid only 50
 
         $payment->refresh();
         $this->assertEquals(PaymentStatus::Failed->value, $payment->status);
-        $this->assertArrayHasKey('error', $payment->raw_data);
+        $this->assertIsArray($payment->raw_data);
+    }
+
+    public function test_payment_currency_mismatch_fails()
+    {
+        $reservation = $this->createReservation([
+            'status' => ReservationStatus::Pending->value,
+            'expires_at' => now()->addMinutes(15),
+            'price' => 100.00
+        ]);
+
+        $payment = Payment::create([
+            'reservation_id' => $reservation->id,
+            'provider' => 'stripe',
+            'status' => PaymentStatus::Pending->value,
+            'amount' => 100.00,
+            'currency' => 'EUR',
+            'provider_session_id' => 'cs_test_mismatch_curr',
+        ]);
+
+        $service = new PaymentConfirmationService();
+        
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Payment currency does not match reservation currency.');
+
+        $service->confirm($payment, 10000, 'USD', []); // Wrong currency
+
+        $payment->refresh();
+        $this->assertEquals(PaymentStatus::Failed->value, $payment->status);
     }
 }

@@ -111,7 +111,7 @@
 
     <!-- JS SDKs -->
     @if($paypalClientId)
-        <script src="https://www.paypal.com/sdk/js?client-id={{ $paypalClientId }}&currency=EUR&disable-funding=card"></script>
+        <script src="https://www.paypal.com/sdk/js?client-id={{ $paypalClientId }}&currency={{ config('payments.paypal.currency', 'EUR') }}&disable-funding=card"></script>
     @endif
 
     <script>

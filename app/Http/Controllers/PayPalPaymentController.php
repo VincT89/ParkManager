@@ -40,9 +40,12 @@ class PayPalPaymentController extends Controller
     {
         $orderId = $request->string('order_id');
 
-        $payment = Payment::where('provider', 'paypal')
+        $payment = Payment::with('reservation')
+            ->where('provider', 'paypal')
             ->where('provider_order_id', $orderId)
             ->firstOrFail();
+
+        abort_if($payment->reservation->external_id !== $externalId, 404);
 
         $capture = $paypal->captureOrder($orderId);
 

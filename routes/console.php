@@ -19,3 +19,5 @@ Artisan::command('inspire', function () {
         \App\Jobs\SyncListingJob::dispatch($listing);
     }
 })->everyFifteenMinutes()->name('sync_all_active_listings');
+
+\Illuminate\Support\Facades\Schedule::command('reservations:cancel-expired')->everyMinute();

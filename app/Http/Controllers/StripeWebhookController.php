@@ -57,6 +57,12 @@ class StripeWebhookController extends Controller
                 ->where('provider_payment_id', $intent->id)
                 ->first();
 
+            if (!$payment && isset($intent->metadata->payment_id)) {
+                $payment = Payment::where('provider', 'stripe')
+                    ->where('id', $intent->metadata->payment_id)
+                    ->first();
+            }
+
             if ($payment) {
                 $actualPaidAmountInCents = (int) ($intent->amount_received ?? 0);
                 $currency = $intent->currency ?? 'EUR';

@@ -37,6 +37,12 @@ class StripePaymentController extends Controller
                 'reservation_id' => $reservation->id,
                 'payment_id' => $payment->id,
             ],
+            'payment_intent_data' => [
+                'metadata' => [
+                    'reservation_id' => $reservation->id,
+                    'payment_id' => $payment->id,
+                ],
+            ],
             'line_items' => [[
                 'quantity' => 1,
                 'price_data' => [
