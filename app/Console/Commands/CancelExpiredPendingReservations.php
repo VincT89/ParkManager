@@ -42,6 +42,13 @@ class CancelExpiredPendingReservations extends Command
             $count++;
         }
 
-        $this->info("Annullate {$count} prenotazioni pending scadute.");
+        \App\Models\Payment::whereHas('reservation', function ($query) {
+            $query->where('status', \App\Enums\ReservationStatus::Cancelled->value)
+                ->where('expires_at', '<', now()); // They were pending and expired
+        })
+        ->where('status', \App\Enums\PaymentStatus::Pending->value)
+        ->update(['status' => \App\Enums\PaymentStatus::Expired->value]);
+
+        $this->info("Annullate {$count} prenotazioni pending scadute (e relativi pagamenti).");
     }
 }

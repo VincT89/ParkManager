@@ -123,6 +123,20 @@
                 const data = await response.json();
                 
                 resultBox.style.display = 'block';
+
+                if (!response.ok) {
+                    let errMsg = data.message || 'Si è verificato un errore.';
+                    if (response.status === 422 && data.errors) {
+                        errMsg = Object.values(data.errors).flat().join('<br>');
+                    }
+                    resultBox.className = 'pm-avail-no';
+                    resultBox.innerHTML = `
+                        <div style="font-weight: 600; margin-bottom: 4px; color: #991b1b;">✗ Attenzione</div>
+                        <div style="font-size: 14px; color: #991b1b;">${errMsg}</div>
+                    `;
+                    customerForm.style.display = 'none';
+                    return;
+                }
                 
                 if (data.available) {
                     resultBox.className = 'pm-avail-ok';

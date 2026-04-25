@@ -18,6 +18,14 @@ Route::post('/booking/check-availability', [\App\Http\Controllers\PublicBookingC
 Route::post('/booking/store', [\App\Http\Controllers\PublicBookingController::class, 'store'])->name('public.booking.store');
 Route::get('/booking/success/{uuid}', [\App\Http\Controllers\PublicBookingController::class, 'success'])->name('public.booking.success');
 
+Route::get('/booking/{externalId}/payment', [\App\Http\Controllers\PublicPaymentController::class, 'show'])->name('public.booking.payment');
+Route::post('/booking/{externalId}/stripe/checkout', [\App\Http\Controllers\StripePaymentController::class, 'checkout'])->name('public.booking.stripe.checkout');
+Route::post('/booking/{externalId}/paypal/order', [\App\Http\Controllers\PayPalPaymentController::class, 'createOrder'])->name('public.booking.paypal.order');
+Route::post('/booking/{externalId}/paypal/capture', [\App\Http\Controllers\PayPalPaymentController::class, 'capture'])->name('public.booking.paypal.capture');
+
+Route::post('/webhooks/stripe', [\App\Http\Controllers\StripeWebhookController::class, 'handle'])->name('webhooks.stripe');
+Route::post('/webhooks/paypal', [\App\Http\Controllers\PayPalWebhookController::class, 'handle'])->name('webhooks.paypal');
+
 Route::middleware(['auth', 'verified'])->group(function () {
 
     // Dashboard

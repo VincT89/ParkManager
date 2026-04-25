@@ -117,6 +117,7 @@ class PublicBookingController extends Controller
             'spots' => $validated['spots'],
             'price' => $assignment['price'],
             'status' => ReservationStatus::Pending->value, // Stato iniziale
+            'expires_at' => now()->addMinutes(15),
             'raw_data' => ['source' => 'website']
         ];
 
@@ -126,12 +127,14 @@ class PublicBookingController extends Controller
             return back()->withInput()->with('error', $result->error);
         }
 
-        return redirect()->route('public.booking.success', $result->reservation->external_id);
+        return redirect()->route('public.booking.payment', $result->reservation->external_id);
     }
 
     public function success($code)
     {
         $reservation = Reservation::where('external_id', $code)->firstOrFail();
+        abort_if($reservation->status !== ReservationStatus::Confirmed, 404);
+        
         return view('booking.success', compact('reservation'));
     }
 }

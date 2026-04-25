@@ -73,4 +73,14 @@ class Reservation extends Model
         return $query->where('starts_at', '<', $endsAt)
                      ->where('ends_at', '>', $startsAt);
     }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function latestPayment()
+    {
+        return $this->hasOne(Payment::class)->latestOfMany();
+    }
 }

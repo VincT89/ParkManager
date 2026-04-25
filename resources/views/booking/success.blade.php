@@ -1,48 +1,113 @@
 @extends('layouts.public')
 
 @section('content')
-    <div class="pm-card" style="text-align: center; padding: 48px 24px;">
-        <div style="width: 64px; height: 64px; background: #ecfdf5; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 24px;">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-        </div>
-        
-        <h1 style="font-size: 24px; font-weight: 600; margin-bottom: 12px; color: var(--pm-text);">Prenotazione Ricevuta!</h1>
-        <p style="color: var(--pm-text-muted); font-size: 16px; margin-bottom: 32px; max-width: 400px; margin-left: auto; margin-right: auto;">
-            Grazie <strong>{{ $reservation->customer_name }}</strong>. La tua prenotazione è stata registrata con successo ed è in attesa di conferma.
-        </p>
+    <style>
+        .pm-card-success {
+            max-width: 640px;
+            margin: 0 auto;
+        }
+        @media print {
+            body { background: white !important; }
+            .pm-card { box-shadow: none !important; border: 1px solid #e2e8f0 !important; }
+            .no-print { display: none !important; }
+        }
+    </style>
 
-        <div style="background: var(--pm-bg); border: 1px solid var(--pm-border); border-radius: 8px; padding: 24px; max-width: 400px; margin: 0 auto; text-align: left;">
-            <div style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--pm-text-muted); margin-bottom: 16px; border-bottom: 1px solid var(--pm-border-light); padding-bottom: 8px;">Riepilogo Dettagli</div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 12px; margin-bottom: 12px; font-size: 14px;">
-                <div style="color: var(--pm-text-muted);">Codice:</div>
-                <div style="font-weight: 500;">{{ $reservation->external_id }}</div>
-                
-                <div style="color: var(--pm-text-muted);">Parcheggio:</div>
-                <div style="font-weight: 500;">{{ $reservation->parkingListing->parking->name }}</div>
-                
-                <div style="color: var(--pm-text-muted);">Arrivo:</div>
-                <div style="font-weight: 500;">{{ $reservation->starts_at->format('d/m/Y H:i') }}</div>
-                
-                <div style="color: var(--pm-text-muted);">Partenza:</div>
-                <div style="font-weight: 500;">{{ $reservation->ends_at->format('d/m/Y H:i') }}</div>
-                
-                <div style="color: var(--pm-text-muted);">Veicolo:</div>
-                <div style="font-weight: 500;">{{ $reservation->product?->name ?? 'Standard' }} ({{ $reservation->spots }} posti)</div>
-                
-                <div style="color: var(--pm-text-muted);">Targa:</div>
-                <div style="font-weight: 500; text-transform: uppercase;">{{ $reservation->license_plate }}</div>
-                
-                <div style="color: var(--pm-text-muted);">Prezzo Totale:</div>
-                <div style="font-weight: 600; color: #10b981;">{{ number_format($reservation->price, 2, ',', '.') }} €</div>
+    <div class="pm-card pm-card-success">
+        
+        <!-- Header Success -->
+        <div class="pm-card-header" style="text-align: center; border-bottom: 1px solid var(--pm-border); padding: 32px 20px 24px; background: #f8fafc;">
+            <div style="display: inline-flex; align-items: center; justify-content: center; width: 64px; height: 64px; border-radius: 50%; background: #dcfce7; color: #16a34a; margin-bottom: 16px;">
+                <svg style="width: 32px; height: 32px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h2 class="pm-card-title" style="font-size: 24px; color: #0f172a; margin-bottom: 8px;">Prenotazione Confermata!</h2>
+            <div style="font-size: 15px; color: var(--pm-text-muted);">
+                Grazie per aver scelto il nostro servizio. Il pagamento è andato a buon fine.
             </div>
         </div>
 
-        <div style="margin-top: 32px;">
-            <a href="{{ route('public.booking.form') }}" class="pm-btn pm-btn-secondary">Torna alla Home</a>
+        <div style="padding: 32px;">
+            
+            <!-- Reservation Code -->
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 32px; padding: 20px; background: #f0fdf4; border: 1px dashed #bbf7d0; border-radius: 12px;">
+                <span style="font-size: 13px; font-weight: 600; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Codice Prenotazione</span>
+                <span style="font-family: monospace; font-size: 28px; font-weight: 700; color: #14532d; letter-spacing: 2px;">{{ $reservation->external_id }}</span>
+            </div>
+
+            <!-- Summary Details -->
+            <div style="display: grid; grid-template-columns: 1fr; gap: 24px; margin-bottom: 32px;">
+                
+                <!-- Itinerary -->
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 600; color: #1e293b; margin-bottom: 16px; border-bottom: 1px solid var(--pm-border); padding-bottom: 8px;">Dettagli Sosta</h3>
+                    <div style="display: flex; align-items: flex-start; margin-bottom: 12px;">
+                        <svg style="width: 20px; height: 20px; color: var(--pm-text-muted); margin-right: 12px; margin-top: 2px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                        <div>
+                            <div style="font-weight: 500; color: #334155;">{{ $reservation->parking->name ?? 'Parcheggio Principale' }}</div>
+                            <div style="font-size: 14px; color: var(--pm-text-muted);">{{ $reservation->parkingProduct->name ?? 'Servizio Parcheggio' }} ({{ $reservation->spots }} {{ $reservation->spots > 1 ? 'veicoli' : 'veicolo' }})</div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: flex-start; margin-bottom: 12px;">
+                        <svg style="width: 20px; height: 20px; color: var(--pm-text-muted); margin-right: 12px; margin-top: 2px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%;">
+                            <div>
+                                <div style="font-size: 12px; color: var(--pm-text-muted); text-transform: uppercase;">Arrivo</div>
+                                <div style="font-weight: 500; color: #334155;">{{ $reservation->starts_at->format('d/m/Y H:i') }}</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 12px; color: var(--pm-text-muted); text-transform: uppercase;">Partenza</div>
+                                <div style="font-weight: 500; color: #334155;">{{ $reservation->ends_at->format('d/m/Y H:i') }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer Data -->
+                <div>
+                    <h3 style="font-size: 16px; font-weight: 600; color: #1e293b; margin-bottom: 16px; border-bottom: 1px solid var(--pm-border); padding-bottom: 8px;">Dati Cliente</h3>
+                    <div style="display: flex; align-items: flex-start; margin-bottom: 12px;">
+                        <svg style="width: 20px; height: 20px; color: var(--pm-text-muted); margin-right: 12px; margin-top: 2px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        <div>
+                            <div style="font-weight: 500; color: #334155;">{{ $reservation->customer_name }}</div>
+                            <div style="font-size: 14px; color: var(--pm-text-muted);">{{ $reservation->customer_email }}</div>
+                            <div style="font-size: 14px; color: var(--pm-text-muted);">{{ $reservation->customer_phone }}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; align-items: center;">
+                        <div style="width: 20px; margin-right: 12px; flex-shrink: 0; text-align: center; color: var(--pm-text-muted); font-weight: bold; font-size: 12px; border: 1px solid var(--pm-border); border-radius: 4px; padding: 1px 0;">AUTO</div>
+                        <div style="font-family: monospace; font-weight: 600; font-size: 16px; background: #e2e8f0; padding: 2px 8px; border-radius: 4px; color: #0f172a;">{{ $reservation->license_plate }}</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Total Paid -->
+            <div style="background: var(--pm-bg-soft); border: 1px solid var(--pm-border); border-radius: 8px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+                <div>
+                    <div style="color: var(--pm-text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase;">Importo Pagato</div>
+                    <div style="display: flex; align-items: center; margin-top: 4px;">
+                        <svg style="width: 16px; height: 16px; color: #16a34a; margin-right: 6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span style="color: #16a34a; font-size: 14px; font-weight: 500;">Transazione Completata</span>
+                    </div>
+                </div>
+                <div style="font-size: 28px; font-weight: 700; color: #0f172a;">
+                    € {{ number_format($reservation->price, 2, ',', '.') }}
+                </div>
+            </div>
+
+            <!-- CTAs -->
+            <div class="no-print" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <button onclick="window.print()" class="pm-btn pm-btn-secondary" style="display: flex; justify-content: center; align-items: center; width: 100%;">
+                    <svg style="width: 20px; height: 20px; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                    Stampa Ricevuta
+                </button>
+                <a href="https://modautobari.it/" class="pm-btn pm-btn-primary" style="display: flex; justify-content: center; align-items: center; width: 100%; text-decoration: none;">
+                    <svg style="width: 20px; height: 20px; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    Torna alla Home
+                </a>
+            </div>
+
         </div>
     </div>
 @endsection
