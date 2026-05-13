@@ -8,6 +8,7 @@ use App\Models\ParkingListing;
 use App\Models\ParkingProduct;
 use App\Models\Reservation;
 use Carbon\Carbon;
+use Faker\Factory as FakerFactory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 
@@ -15,10 +16,7 @@ class ReservationsDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        // if (! app()->environment(['local', 'testing'])) {
-        //     $this->command?->warn('Seeder demo bloccato fuori da local/testing.');
-        //     return;
-        // }
+        $faker = FakerFactory::create('it_IT');
 
         $parkings = Parking::where('is_active', true)->get();
 
@@ -51,10 +49,11 @@ class ReservationsDemoSeeder extends Seeder
                 continue;
             }
 
-            $targetCount = 600; // 600 per parking (spalmati su 6 mesi)
+            $targetCount = 600;
             $weightedProducts = $this->buildWeightedProducts($products);
 
             for ($i = 0; $i < $targetCount; $i++) {
+
                 /** @var ParkingProduct $product */
                 $product = $weightedProducts->random();
 
@@ -70,33 +69,51 @@ class ReservationsDemoSeeder extends Seeder
                 $finalPrice = $this->priceWithSmallVariance($basePrice, $status);
 
                 $expiresAt = null;
+
                 if ($status === ReservationStatus::Pending) {
-                    $expiresAt = now()->addMinutes(rand(-10, 60)); // Mix di scadute e non scadute
+                    $expiresAt = now()->addMinutes(rand(-10, 60));
                 }
 
                 Reservation::create([
                     'parking_id' => $parking->id,
                     'parking_listing_id' => $listing->id,
                     'parking_product_id' => $product->id,
-                    'external_id' => 'demo_' . $parking->id . '_' . str_pad((string) ($i + 1), 5, '0', STR_PAD_LEFT),
-                    'customer_name' => \fake('it_IT')->name(),
-                    'customer_email' => \fake('it_IT')->safeEmail(),
-                    'customer_phone' => \fake('it_IT')->numerify('3#########'),
-                    'license_plate' => strtoupper(\fake('it_IT')->bothify('??###??')),
+
+                    'external_id' => 'demo_' .
+                        $parking->id .
+                        '_' .
+                        str_pad((string) ($i + 1), 5, '0', STR_PAD_LEFT),
+
+                    'customer_name' => $faker->name(),
+                    'customer_email' => $faker->safeEmail(),
+                    'customer_phone' => $faker->numerify('3#########'),
+                    'license_plate' => strtoupper($faker->bothify('??###??')),
+
                     'starts_at' => $startsAt,
                     'ends_at' => $endsAt,
+
                     'spots' => $spots,
                     'status' => $status->value,
                     'expires_at' => $expiresAt,
+
                     'price' => $finalPrice,
-                    'notes' => $this->buildNotes($product, $listing->platform->name),
+
+                    'notes' => $this->buildNotes(
+                        $product,
+                        $listing->platform->name
+                    ),
+
                     'raw_data' => [
                         'source' => 'demo_seeder',
                         'platform' => $listing->platform->slug,
                         'product_code' => $product->code,
                         'product_name' => $product->name,
                     ],
-                    'created_at' => $startsAt->copy()->subDays(rand(1, 20)),
+
+                    'created_at' => $startsAt
+                        ->copy()
+                        ->subDays(rand(1, 20)),
+
                     'updated_at' => now(),
                 ]);
 
@@ -104,7 +121,11 @@ class ReservationsDemoSeeder extends Seeder
             }
         }
 
-        $this->command?->info("Creati {$created} record demo coerenti con il nuovo dominio per " . $parkings->count() . " parcheggi.");
+        $this->command?->info(
+            "Creati {$created} record demo coerenti con il nuovo dominio per "
+            . $parkings->count()
+            . " parcheggi."
+        );
     }
 
     /**
@@ -122,6 +143,7 @@ class ReservationsDemoSeeder extends Seeder
         $weighted = collect();
 
         foreach ($products as $code => $product) {
+
             $repeat = $weights[$code] ?? 10;
 
             for ($i = 0; $i < $repeat; $i++) {
@@ -129,12 +151,13 @@ class ReservationsDemoSeeder extends Seeder
             }
         }
 
-        return $weighted->isNotEmpty() ? $weighted : $products->values();
+        return $weighted->isNotEmpty()
+            ? $weighted
+            : $products->values();
     }
 
     /**
      * Seleziona un listing attivo qualsiasi.
-     * In futuro potrai specializzare la compatibilità per piattaforma.
      */
     private function pickCompatibleListing(Collection $listings): ParkingListing
     {
@@ -143,11 +166,21 @@ class ReservationsDemoSeeder extends Seeder
 
     private function generateDateRange(): array
     {
-        // Distribuiamo su 6 mesi passati + 1 mese futuro per avere uno storico veritiero
         $startBase = Carbon::now()->subDays(rand(-30, 180));
-        $startsAt = $startBase->copy()->setTime(rand(0, 20), [0, 15, 30, 45][rand(0, 3)]);
+
+        $startsAt = $startBase->copy()->setTime(
+            rand(0, 20),
+            [0, 15, 30, 45][rand(0, 3)]
+        );
+
         $durationDays = rand(1, 7);
-        $endsAt = $startsAt->copy()->addDays($durationDays)->setTime(rand(6, 23), [0, 15, 30, 45][rand(0, 3)]);
+
+        $endsAt = $startsAt->copy()
+            ->addDays($durationDays)
+            ->setTime(
+                rand(6, 23),
+                [0, 15, 30, 45][rand(0, 3)]
+            );
 
         if ($endsAt->lessThanOrEqualTo($startsAt)) {
             $endsAt = $startsAt->copy()->addDay();
@@ -175,19 +208,27 @@ class ReservationsDemoSeeder extends Seeder
     }
 
     /**
-     * Piccola variazione per simulare arrotondamenti o promo.
-     * I cancellati possono tenere comunque il prezzo storico.
+     * Piccola variazione per simulare promo/arrotondamenti.
      */
-    private function priceWithSmallVariance(float $basePrice, ReservationStatus $status): float
-    {
+    private function priceWithSmallVariance(
+        float $basePrice,
+        ReservationStatus $status
+    ): float {
         $variance = [0, 0, 0, 0.50, -0.50, 1.00, -1.00];
-        $price = max(0, $basePrice + $variance[array_rand($variance)]);
+
+        $price = max(
+            0,
+            $basePrice + $variance[array_rand($variance)]
+        );
 
         return round($price, 2);
     }
 
-    private function buildNotes(ParkingProduct $product, string $platformName): string
-    {
+    private function buildNotes(
+        ParkingProduct $product,
+        string $platformName
+    ): string {
+
         $notes = [
             "Prenotazione demo {$product->name}",
             "Origine canale: {$platformName}",
