@@ -1,8 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <div class="pm-page-title">{{ $parkings->count() > 1 ? 'Dashboard Globale' : ($parkings->first()?->name ?? 'Parcheggio') }}</div>
-            <div class="pm-page-subtitle">{{ now()->isoFormat('dddd D MMMM YYYY') }}</div>
+            <div class="pm-page-title">{{ $parkings->count() > 1 ? 'Dashboard' : ($parkings->first()?->name ?? 'Parcheggio') }}</div>
+            <div class="pm-page-subtitle">{{ now()->isoFormat('dddd D MMMM') }}</div>
         </div>
         <a href="{{ route('reservations.create') }}" class="pm-btn pm-btn-primary">
             Nuova prenotazione
@@ -75,9 +75,9 @@
 
     <div class="pm-grid-2">
 
-        <div class="pm-gap" style="height: 100%;">
+        <div class="pm-gap">
             {{-- Prenotazioni oggi --}}
-            <div class="pm-card pm-animate-3" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
+            <div class="pm-card pm-animate-3" style="display: flex; flex-direction: column; justify-content: space-between;">
                 <div class="pm-card-header">
                     <div class="pm-card-title">Ultime prenotazioni</div>
                     <div class="pm-card-badge">ultime 5</div>
@@ -152,6 +152,194 @@
                 @endif
             </div>
 
+
+            {{-- Movimenti di oggi --}}
+            <div class="pm-card pm-animate-4" style="margin-bottom: 24px;" x-data="{ mode: 'incoming' }">
+                <div class="pm-card-header">
+                    <div class="pm-card-title">Movimenti di oggi</div>
+                    <div class="pm-segmented-control">
+                        <button
+                            type="button"
+                            class="pm-segmented-btn"
+                            :class="{ 'active': mode === 'incoming' }"
+                            @click="mode = 'incoming'"
+                        >
+                            Entrata
+                        </button>
+        
+                        <button
+                            type="button"
+                            class="pm-segmented-btn"
+                            :class="{ 'active amber': mode === 'outgoing' }"
+                            @click="mode = 'outgoing'"
+                        >
+                            Uscita
+                        </button>
+                    </div>
+                </div>
+        
+                <style>
+                    .pm-table-scrollable-movements th {
+                        position: sticky;
+                        top: 0;
+                        background-color: white;
+                        z-index: 10;
+                        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                    }
+                </style>
+        
+                {{-- Entrate --}}
+                <div x-show="mode === 'incoming'">
+                    @if($dashboardIncomingReservationsToday->isEmpty())
+                        <div style="padding: 32px; text-align: center; color: var(--pm-text-muted); font-size: 13px;">
+                            Nessuna macchina in entrata oggi.
+                        </div>
+                    @else
+                        <div class="pm-table-wrapper pm-table-scrollable-movements" style="max-height: 400px; overflow-y: auto;">
+                            <table class="pm-table" style="margin-bottom: 0;">
+                                <thead>
+                                    <tr>
+                                        <th>Ora</th>
+                                        <th>Targa</th>
+                                        <th>Volo</th>
+                                        <th>Cliente</th>
+                                        <th>Telefono</th>
+                                        <th>Prodotto</th>
+                                        <th>Posti</th>
+                                        <th>Stato</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($dashboardIncomingReservationsToday as $reservation)
+                                        <tr>
+                                            <td class="pm-mono">{{ $reservation->starts_at->format('H:i') }}</td>
+                                            <td>
+                                                @if($reservation->license_plate)
+                                                    <span style="font-family: var(--pm-mono); font-weight: 600; color: var(--pm-accent); background: rgba(249, 96, 32, 0.1); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(249, 96, 32, 0.2);">
+                                                        {{ $reservation->license_plate }}
+                                                    </span>
+                                                @else
+                                                    <span class="pm-text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($reservation->flight_reference)
+                                                    <a href="https://www.flightradar24.com/data/flights/{{ strtolower($reservation->flight_reference) }}" target="_blank" style="font-family: var(--pm-mono); font-weight: 600; color: var(--pm-accent); text-decoration: none; background: rgba(249, 96, 32, 0.1); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(249, 96, 32, 0.2);">
+                                                        {{ $reservation->flight_reference }}
+                                                    </a>
+                                                @else
+                                                    <span class="pm-text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <div class="pm-td-main">{{ $reservation->customer_name }}</div>
+                                            </td>
+                                            <td>
+                                                @if($reservation->customer_phone)
+                                                    <a href="tel:{{ $reservation->customer_phone }}" style="color: var(--pm-accent); text-decoration: none; font-weight: 500;">
+                                                        {{ $reservation->customer_phone }}
+                                                    </a>
+                                                @else
+                                                    <span class="pm-text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <div class="pm-td-main">{{ $reservation->parkingProduct->name ?? 'N/D' }}</div>
+                                                <div class="pm-td-sub">{{ $reservation->parking->name ?? 'N/D' }}</div>
+                                            </td>
+                                            <td class="pm-mono">{{ $reservation->spots }}</td>
+                                            <td>
+                                                <div style="display: flex; align-items: center; gap: 8px;">
+                                                    <input type="checkbox" id="check_in_{{ $reservation->id }}" style="width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--pm-border); cursor: pointer;">
+                                                    <label for="check_in_{{ $reservation->id }}" style="font-size: 13px; color: var(--pm-text-muted); cursor: pointer; user-select: none; margin: 0;">
+                                                        {{ $reservation->parkingProduct->name ?? 'Veicolo' }} entrato
+                                                    </label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+                </div>
+        
+                {{-- Uscite --}}
+                <div x-show="mode === 'outgoing'" x-cloak>
+                    @if($dashboardOutgoingReservationsToday->isEmpty())
+                        <div style="padding: 32px; text-align: center; color: var(--pm-text-muted); font-size: 13px;">
+                            Nessuna macchina in uscita oggi.
+                        </div>
+                    @else
+                        <div class="pm-table-wrapper pm-table-scrollable-movements" style="max-height: 400px; overflow-y: auto;">
+                            <table class="pm-table" style="margin-bottom: 0;">
+                                <thead>
+                                    <tr>
+                                        <th>Ora</th>
+                                        <th>Targa</th>
+                                        <th>Volo</th>
+                                        <th>Cliente</th>
+                                        <th>Telefono</th>
+                                        <th>Prodotto</th>
+                                        <th>Posti</th>
+                                        <th>Stato</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($dashboardOutgoingReservationsToday as $reservation)
+                                        <tr>
+                                            <td class="pm-mono">{{ $reservation->ends_at->format('H:i') }}</td>
+                                            <td>
+                                                @if($reservation->license_plate)
+                                                    <span style="font-family: var(--pm-mono); font-weight: 600; color: var(--pm-accent); background: rgba(249, 96, 32, 0.1); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(249, 96, 32, 0.2);">
+                                                        {{ $reservation->license_plate }}
+                                                    </span>
+                                                @else
+                                                    <span class="pm-text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($reservation->flight_reference)
+                                                    <a href="https://www.flightradar24.com/data/flights/{{ strtolower($reservation->flight_reference) }}" target="_blank" style="font-family: var(--pm-mono); font-weight: 600; color: var(--pm-accent); text-decoration: none; background: rgba(249, 96, 32, 0.1); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(249, 96, 32, 0.2);">
+                                                        {{ $reservation->flight_reference }}
+                                                    </a>
+                                                @else
+                                                    <span class="pm-text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <div class="pm-td-main">{{ $reservation->customer_name }}</div>
+                                            </td>
+                                            <td>
+                                                @if($reservation->customer_phone)
+                                                    <a href="tel:{{ $reservation->customer_phone }}" style="color: var(--pm-accent); text-decoration: none; font-weight: 500;">
+                                                        {{ $reservation->customer_phone }}
+                                                    </a>
+                                                @else
+                                                    <span class="pm-text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                <div class="pm-td-main">{{ $reservation->parkingProduct->name ?? 'N/D' }}</div>
+                                                <div class="pm-td-sub">{{ $reservation->parking->name ?? 'N/D' }}</div>
+                                            </td>
+                                            <td class="pm-mono">{{ $reservation->spots }}</td>
+                                            <td>
+                                                <div style="display: flex; align-items: center; gap: 8px;">
+                                                    <input type="checkbox" id="check_out_{{ $reservation->id }}" style="width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--pm-border); cursor: pointer;">
+                                                    <label for="check_out_{{ $reservation->id }}" style="font-size: 13px; color: var(--pm-text-muted); cursor: pointer; user-select: none; margin: 0;">
+                                                        {{ $reservation->parkingProduct->name ?? 'Veicolo' }} uscito
+                                                    </label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+                </div>
+            </div>
         </div>
 
         {{-- Sidebar --}}

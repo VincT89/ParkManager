@@ -88,6 +88,23 @@ class DashboardController extends Controller
             ->whereDate('ends_at', $today)
             ->count();
 
+        $dashboardIncomingReservationsToday = Reservation::query()
+            ->whereIn('parking_id', $parkingIds)
+            ->active()
+            ->whereDate('starts_at', $today)
+            ->with(['parking', 'parkingProduct'])
+            ->orderBy('starts_at', 'asc')
+            ->get();
+
+        $dashboardOutgoingReservationsToday = Reservation::query()
+            ->whereIn('parking_id', $parkingIds)
+            ->active()
+            ->whereDate('ends_at', $today)
+            ->with(['parking', 'parkingProduct'])
+            ->orderBy('ends_at', 'asc')
+            ->get();
+
+
         // Contatori generali
         $stats = [
             'today_count' => Reservation::whereIn('parking_id', $parkingIds)->active()->overlapping($today, $tomorrow)->count(),
@@ -112,6 +129,8 @@ class DashboardController extends Controller
             'latestReservations',
             'incomingReservationsToday',
             'outgoingReservationsToday',
+            'dashboardIncomingReservationsToday',
+            'dashboardOutgoingReservationsToday',
             'stats',
             'alerts'
         ));

@@ -13,6 +13,7 @@
 <body>
 
     <div class="pm-layout" id="pm-layout">
+        <div class="pm-sidebar-overlay" id="pm-sidebar-overlay" onclick="toggleSidebarMobile()"></div>
 
         {{-- SIDEBAR --}}
         <aside class="pm-sidebar" id="pm-sidebar">
@@ -179,6 +180,13 @@
 
             @if (isset($header))
                 <div class="pm-topbar">
+                    <button class="pm-mobile-menu-btn" onclick="toggleSidebarMobile()" title="Menu">
+                        <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <line x1="2" y1="4" x2="13" y2="4"/>
+                            <line x1="2" y1="7.5" x2="13" y2="7.5"/>
+                            <line x1="2" y1="11" x2="13" y2="11"/>
+                        </svg>
+                    </button>
                     {{ $header }}
                 </div>
             @endif
@@ -200,10 +208,17 @@
             localStorage.setItem('pm-sidebar-collapsed', sidebar.classList.contains('collapsed'));
         }
 
+        function toggleSidebarMobile() {
+            const sidebar = document.getElementById('pm-sidebar');
+            const overlay = document.getElementById('pm-sidebar-overlay');
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+        }
+
         // Ripristina stato al caricamento
         (function() {
             const collapsed = localStorage.getItem('pm-sidebar-collapsed') === 'true';
-            if (collapsed) {
+            if (collapsed && window.innerWidth > 1024) {
                 document.getElementById('pm-sidebar').classList.add('collapsed');
                 document.getElementById('pm-content').classList.add('collapsed');
             }
