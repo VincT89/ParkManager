@@ -15,10 +15,10 @@ class ReservationsDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        if (! app()->environment(['local', 'testing'])) {
-            $this->command?->warn('Seeder demo bloccato fuori da local/testing.');
-            return;
-        }
+        // if (! app()->environment(['local', 'testing'])) {
+        //     $this->command?->warn('Seeder demo bloccato fuori da local/testing.');
+        //     return;
+        // }
 
         $parkings = Parking::where('is_active', true)->get();
 
@@ -79,10 +79,10 @@ class ReservationsDemoSeeder extends Seeder
                     'parking_listing_id' => $listing->id,
                     'parking_product_id' => $product->id,
                     'external_id' => 'demo_' . $parking->id . '_' . str_pad((string) ($i + 1), 5, '0', STR_PAD_LEFT),
-                    'customer_name' => fake('it_IT')->name(),
-                    'customer_email' => fake('it_IT')->safeEmail(),
-                    'customer_phone' => fake('it_IT')->numerify('3#########'),
-                    'license_plate' => strtoupper(fake('it_IT')->bothify('??###??')),
+                    'customer_name' => \fake('it_IT')->name(),
+                    'customer_email' => \fake('it_IT')->safeEmail(),
+                    'customer_phone' => \fake('it_IT')->numerify('3#########'),
+                    'license_plate' => strtoupper(\fake('it_IT')->bothify('??###??')),
                     'starts_at' => $startsAt,
                     'ends_at' => $endsAt,
                     'spots' => $spots,
