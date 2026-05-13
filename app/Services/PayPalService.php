@@ -35,6 +35,8 @@ class PayPalService
         $token = $this->accessToken();
 
         $response = Http::withToken($token)
+            ->acceptJson()
+            ->asJson()
             ->post($this->baseUrl() . '/v2/checkout/orders', [
                 'intent' => 'CAPTURE',
                 'purchase_units' => [[
@@ -56,7 +58,18 @@ class PayPalService
         $token = $this->accessToken();
 
         $response = Http::withToken($token)
+            ->acceptJson()
+            ->withBody('{}', 'application/json')
             ->post($this->baseUrl() . "/v2/checkout/orders/{$orderId}/capture");
+
+        if ($response->failed()) {
+            \Illuminate\Support\Facades\Log::error('PayPal capture failed', [
+                'order_id' => $orderId,
+                'status' => $response->status(),
+                'body' => $response->json(),
+                'raw' => $response->body(),
+            ]);
+        }
 
         $response->throw();
 

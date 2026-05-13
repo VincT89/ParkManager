@@ -47,6 +47,12 @@ class PayPalPaymentController extends Controller
 
         abort_if($payment->reservation->external_id !== $externalId, 404);
 
+        \Illuminate\Support\Facades\Log::info('PayPal capture request received', [
+            'external_id' => $externalId,
+            'order_id' => $request->input('order_id'),
+            'payload' => $request->all(),
+        ]);
+
         $capture = $paypal->captureOrder($orderId);
 
         if (($capture['status'] ?? null) !== 'COMPLETED') {

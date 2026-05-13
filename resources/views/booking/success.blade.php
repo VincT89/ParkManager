@@ -74,9 +74,11 @@
                             <div style="font-size: 14px; color: var(--pm-text-muted);">{{ $reservation->customer_phone }}</div>
                         </div>
                     </div>
-                    <div style="display: flex; align-items: center;">
-                        <div style="width: 20px; margin-right: 12px; flex-shrink: 0; text-align: center; color: var(--pm-text-muted); font-weight: bold; font-size: 12px; border: 1px solid var(--pm-border); border-radius: 4px; padding: 1px 0;">AUTO</div>
-                        <div style="font-family: monospace; font-weight: 600; font-size: 16px; background: #e2e8f0; padding: 2px 8px; border-radius: 4px; color: #0f172a;">{{ $reservation->license_plate }}</div>
+                    <div style="display: flex; align-items: center; margin-top: 8px; margin-left: 32px;">
+                        <span style="font-size: 12px; color: var(--pm-text-muted); text-transform: uppercase; margin-right: 8px; font-weight: 600;">Targa:</span>
+                        <div style="font-family: monospace; font-weight: 700; font-size: 16px; background: #f8fafc; border: 1px solid #cbd5e1; padding: 4px 12px; border-radius: 6px; color: #0f172a; letter-spacing: 1px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                            {{ strtoupper($reservation->license_plate) }}
+                        </div>
                     </div>
                 </div>
 
