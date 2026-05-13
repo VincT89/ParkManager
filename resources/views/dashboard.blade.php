@@ -70,90 +70,11 @@
         </div>
     </div>
 
-    {{-- Nessun alert legacy di canale fisso qui, the AlertService handles dangers based on central capacity directly
-    into the topmost alerts block --}}
-
     <div class="pm-grid-2">
 
         <div class="pm-gap">
-            {{-- Prenotazioni oggi --}}
-            <div class="pm-card pm-animate-3" style="display: flex; flex-direction: column; justify-content: space-between;">
-                <div class="pm-card-header">
-                    <div class="pm-card-title">Ultime prenotazioni</div>
-                    <div class="pm-card-badge">ultime 5</div>
-                </div>
-                @if ($latestReservations->isEmpty())
-                    <p class="pm-text-muted" style="font-size:13px">Nessuna prenotazione trovata.</p>
-                @else
-                    <style>
-                        .pm-table-scrollable th {
-                            position: sticky;
-                            top: 0;
-                            background-color: white;
-                            z-index: 10;
-                            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-                        }
-                    </style>
-                    <div class="pm-table-wrapper pm-table-scrollable" style="flex: 1; overflow-y: auto;">
-                        <table class="pm-table" style="margin-bottom: 0;">
-                            <thead>
-                                <tr>
-                                    <th>Cliente</th>
-                                    <th>Canale</th>
-                                    <th>Arrivo</th>
-                                    <th>Partenza</th>
-                                    <th>Stato</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($latestReservations as $reservation)
-                                    <tr>
-                                        <td>
-                                            <div class="pm-td-main">{{ $reservation->customer_name }}</div>
-                                            @if ($reservation->customer_email)
-                                                <div class="pm-td-sub">{{ $reservation->customer_email }}</div>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <div class="pm-platform">
-                                                <div class="pm-dot blue"></div>
-                                                {{ $reservation->parkingListing?->platform?->name ?? '-' }}
-                                            </div>
-                                        </td>
-                                        <td class="pm-mono">{{ $reservation->starts_at->format('d-m H:i') }}</td>
-                                        <td class="pm-mono">{{ $reservation->ends_at->format('d-m H:i') }}</td>
-                                        <td>
-                                            @php
-                                                $statusColor = match ($reservation->status) {
-                                                    \App\Enums\ReservationStatus::Confirmed => 'green',
-                                                    \App\Enums\ReservationStatus::Cancelled => 'red',
-                                                    \App\Enums\ReservationStatus::Pending => 'amber',
-                                                    default => 'gray',
-                                                };
-                                            @endphp
-                                            <span class="pm-badge {{ $statusColor }}">
-                                                {{ $reservation->status->label() }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="5" style="text-align: center; padding: 4px 0 0 0; border-bottom: none;">
-                                        <a href="{{ route('reservations.index') }}" class="pm-text-primary" style="text-decoration: none; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--pm-text-muted);">
-                                            Vedi tutte le prenotazioni &rarr;
-                                        </a>
-                                    </td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                @endif
-            </div>
 
-
-            {{-- Movimenti di oggi --}}
+             {{-- Movimenti di oggi --}}
             <div class="pm-card pm-animate-4" style="margin-bottom: 24px;" x-data="{ mode: 'incoming' }">
                 <div class="pm-card-header">
                     <div class="pm-card-title">Movimenti di oggi</div>
@@ -340,6 +261,84 @@
                     @endif
                 </div>
             </div>
+            {{-- Prenotazioni oggi --}}
+            <div class="pm-card pm-animate-3" style="display: flex; flex-direction: column; justify-content: space-between;">
+                <div class="pm-card-header">
+                    <div class="pm-card-title">Ultime prenotazioni</div>
+                    <div class="pm-card-badge">ultime 5</div>
+                </div>
+                @if ($latestReservations->isEmpty())
+                    <p class="pm-text-muted" style="font-size:13px">Nessuna prenotazione trovata.</p>
+                @else
+                    <style>
+                        .pm-table-scrollable th {
+                            position: sticky;
+                            top: 0;
+                            background-color: white;
+                            z-index: 10;
+                            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                        }
+                    </style>
+                    <div class="pm-table-wrapper pm-table-scrollable" style="flex: 1; overflow-y: auto;">
+                        <table class="pm-table" style="margin-bottom: 0;">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Canale</th>
+                                    <th>Arrivo</th>
+                                    <th>Partenza</th>
+                                    <th>Stato</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($latestReservations as $reservation)
+                                    <tr>
+                                        <td>
+                                            <div class="pm-td-main">{{ $reservation->customer_name }}</div>
+                                            @if ($reservation->customer_email)
+                                                <div class="pm-td-sub">{{ $reservation->customer_email }}</div>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <div class="pm-platform">
+                                                <div class="pm-dot blue"></div>
+                                                {{ $reservation->parkingListing?->platform?->name ?? '-' }}
+                                            </div>
+                                        </td>
+                                        <td class="pm-mono">{{ $reservation->starts_at->format('d-m H:i') }}</td>
+                                        <td class="pm-mono">{{ $reservation->ends_at->format('d-m H:i') }}</td>
+                                        <td>
+                                            @php
+                                                $statusColor = match ($reservation->status) {
+                                                    \App\Enums\ReservationStatus::Confirmed => 'green',
+                                                    \App\Enums\ReservationStatus::Cancelled => 'red',
+                                                    \App\Enums\ReservationStatus::Pending => 'amber',
+                                                    default => 'gray',
+                                                };
+                                            @endphp
+                                            <span class="pm-badge {{ $statusColor }}">
+                                                {{ $reservation->status->label() }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 4px 0 0 0; border-bottom: none;">
+                                        <a href="{{ route('reservations.index') }}" class="pm-text-primary" style="text-decoration: none; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--pm-text-muted);">
+                                            Vedi tutte le prenotazioni &rarr;
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                @endif
+            </div>
+
+
+           
         </div>
 
         {{-- Sidebar --}}
