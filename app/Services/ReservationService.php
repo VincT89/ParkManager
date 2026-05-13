@@ -73,6 +73,7 @@ class ReservationService
                     'customer_email'     => $data['customer_email'] ?? null,
                     'customer_phone'     => $data['customer_phone'] ?? null,
                     'license_plate'      => $data['license_plate'] ?? null,
+                    'flight_reference'   => $data['flight_reference'] ?? null,
                     'starts_at'          => $startsAt,
                     'ends_at'            => $endsAt,
                     'spots'              => $spots,
@@ -157,17 +158,18 @@ class ReservationService
                     'parking_product_id' => isset($data['parking_product_id']) && $data['parking_product_id'] !== null 
                                         ? $data['parking_product_id'] 
                                         : $reservation->parking_product_id,
-                    'customer_name'  => $data['customer_name'] ?? $reservation->customer_name,
-                    'customer_email' => $data['customer_email'] ?? $reservation->customer_email,
-                    'customer_phone' => $data['customer_phone'] ?? $reservation->customer_phone,
-                    'license_plate'  => $data['license_plate'] ?? $reservation->license_plate,
+                    'customer_name'  => array_key_exists('customer_name', $data) ? $data['customer_name'] : $reservation->customer_name,
+                    'customer_email' => array_key_exists('customer_email', $data) ? $data['customer_email'] : $reservation->customer_email,
+                    'customer_phone' => array_key_exists('customer_phone', $data) ? $data['customer_phone'] : $reservation->customer_phone,
+                    'license_plate'  => array_key_exists('license_plate', $data) ? $data['license_plate'] : $reservation->license_plate,
+                    'flight_reference' => array_key_exists('flight_reference', $data) ? $data['flight_reference'] : $reservation->flight_reference,
                     'starts_at'      => $startsAt,
                     'ends_at'        => $endsAt,
                     'spots'          => $spots,
                     'status'         => $status,
                     'expires_at'     => $expiresAt,
-                    'price'          => $data['price'] ?? $reservation->price,
-                    'notes'          => $data['notes'] ?? $reservation->notes,
+                    'price'          => array_key_exists('price', $data) ? $data['price'] : $reservation->price,
+                    'notes'          => array_key_exists('notes', $data) ? $data['notes'] : $reservation->notes,
                 ]);
             });
 
