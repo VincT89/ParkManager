@@ -81,10 +81,17 @@
                             </div>
                         </div>
 
-                        <div class="pm-form-group">
-                            <label class="pm-label">Targa Veicolo</label>
-                            <input type="text" name="license_plate" class="pm-input" value="{{ old('license_plate') }}" required style="text-transform: uppercase;">
-                            @error('license_plate') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                            <div class="pm-form-group">
+                                <label class="pm-label">Targa Veicolo</label>
+                                <input type="text" name="license_plate" class="pm-input" value="{{ old('license_plate') }}" required style="text-transform: uppercase;">
+                                @error('license_plate') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="pm-form-group">
+                                <label for="flight_reference" class="pm-label">Riferimento Volo</label>
+                                <input type="text" id="flight_reference" name="flight_reference" class="pm-input" value="{{ old('flight_reference') }}" placeholder="Es. AZ1602" maxlength="20" style="text-transform: uppercase;">
+                                @error('flight_reference') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
+                            </div>
                         </div>
 
                         <div style="text-align: right; margin-top: 24px;">

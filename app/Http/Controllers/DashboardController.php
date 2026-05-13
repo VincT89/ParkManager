@@ -68,15 +68,25 @@ class DashboardController extends Controller
             ->sortByDesc('sold_today')
             ->values();
 
-        // 3. Prenotazioni attive OGGI (Dettaglio lista, limitate alle prime 8)
-        $todayReservations = Reservation::query()
+        // 3. Ultime prenotazioni e movimenti operativi di oggi
+        $latestReservations = Reservation::query()
             ->whereIn('parking_id', $parkingIds)
             ->with(['parkingListing.platform'])
-            ->active()
-            ->overlapping($today, $tomorrow)
-            ->orderByDesc('starts_at')
-            ->take(8)
+            ->orderByDesc('created_at')
+            ->take(5)
             ->get();
+
+        $incomingReservationsToday = Reservation::query()
+            ->whereIn('parking_id', $parkingIds)
+            ->active()
+            ->whereDate('starts_at', $today)
+            ->count();
+
+        $outgoingReservationsToday = Reservation::query()
+            ->whereIn('parking_id', $parkingIds)
+            ->active()
+            ->whereDate('ends_at', $today)
+            ->count();
 
         // Contatori generali
         $stats = [
@@ -99,7 +109,9 @@ class DashboardController extends Controller
             'allocatedSpots',
             'physicalPct',
             'commercialPerformance',
-            'todayReservations',
+            'latestReservations',
+            'incomingReservationsToday',
+            'outgoingReservationsToday',
             'stats',
             'alerts'
         ));

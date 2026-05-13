@@ -88,6 +88,13 @@ class ReservationsDemoSeeder extends Seeder
                     'customer_email' => $faker->safeEmail(),
                     'customer_phone' => $faker->numerify('3#########'),
                     'license_plate' => strtoupper($faker->bothify('??###??')),
+                    'flight_reference' => $faker->optional(0.65)->randomElement([
+                        'AZ1602',
+                        'FR1234',
+                        'U24567',
+                        'LH1894',
+                        'W45678',
+                    ]),
 
                     'starts_at' => $startsAt,
                     'ends_at' => $endsAt,
@@ -169,7 +176,7 @@ class ReservationsDemoSeeder extends Seeder
         $startBase = Carbon::now()->subDays(rand(-30, 180));
 
         $startsAt = $startBase->copy()->setTime(
-            rand(0, 20),
+            rand(4, 20),
             [0, 15, 30, 45][rand(0, 3)]
         );
 

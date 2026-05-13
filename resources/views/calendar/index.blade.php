@@ -313,12 +313,18 @@ function renderDaily() {
                 const plateHtml = r.license_plate 
                     ? `<div style="font-family:var(--pm-mono); font-size:13px; font-weight:600; color:var(--pm-accent); background:rgba(59,130,246,0.1); padding:4px 8px; border-radius:4px; flex-shrink:0;">${r.license_plate}</div>`
                     : '';
+                const flightHtml = r.flight_reference 
+                    ? `<a href="https://www.flightradar24.com/data/flights/${r.flight_reference.toLowerCase()}" target="_blank" style="font-family:var(--pm-mono); font-size:13px; font-weight:600; color:var(--pm-accent); background:rgba(59,130,246,0.1); padding:4px 8px; border-radius:4px; flex-shrink:0; margin-left: 4px; text-decoration: none;">${r.flight_reference}</a>`
+                    : '';
 
                 html += `
                     <div style="background:var(--pm-bg); border:1px solid var(--pm-border); padding:16px; border-radius:var(--pm-radius);">
                         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
                             <div style="font-weight:600; font-size:15px; color:var(--pm-text); line-height:1.2;">${r.customer_name}</div>
-                            ${plateHtml}
+                            <div style="display:flex;">
+                                ${plateHtml}
+                                ${flightHtml}
+                            </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:6px; margin-bottom: 12px; font-size:11px; color:var(--pm-text-muted);">
                             Canale: <span style="color:var(--pm-text);">${r.platform}</span>

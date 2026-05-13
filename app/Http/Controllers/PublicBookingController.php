@@ -79,6 +79,7 @@ class PublicBookingController extends Controller
             'customer_email' => 'required|email|max:255',
             'customer_phone' => 'required|string|max:50',
             'license_plate' => 'required|string|max:20',
+            'flight_reference' => ['nullable', 'string', 'max:20'],
         ]);
 
         // Website Platform (deve già esistere, configurata via seeder, altrimenti fallisce esplicitamente 404)
@@ -112,6 +113,9 @@ class PublicBookingController extends Controller
             'customer_email' => $validated['customer_email'],
             'customer_phone' => $validated['customer_phone'],
             'license_plate' => $validated['license_plate'],
+            'flight_reference' => filled($validated['flight_reference'] ?? null)
+                ? strtoupper(trim($validated['flight_reference']))
+                : null,
             'starts_at' => $startsAt->toDateTimeString(),
             'ends_at' => $endsAt->toDateTimeString(),
             'spots' => $validated['spots'],

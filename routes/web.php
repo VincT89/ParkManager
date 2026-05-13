@@ -44,8 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ->name('reservations.export');  
 
     // Prenotazioni
-    Route::resource('reservations', ReservationController::class)
-        ->except(['show']);
+    Route::resource('reservations', ReservationController::class);
 
     // Blocchi disponibilità
     Route::resource('availability-blocks', AvailabilityBlockController::class)

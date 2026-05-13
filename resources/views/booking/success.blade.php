@@ -79,6 +79,15 @@
                         <div style="font-family: monospace; font-weight: 700; font-size: 16px; background: #f8fafc; border: 1px solid #cbd5e1; padding: 4px 12px; border-radius: 6px; color: #0f172a; letter-spacing: 1px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                             {{ strtoupper($reservation->license_plate) }}
                         </div>
+
+                        @if ($reservation->flight_reference)
+                            <span style="font-size: 12px; color: var(--pm-text-muted); text-transform: uppercase; margin-right: 8px; margin-left: 20px; font-weight: 600;">Volo:</span>
+                            <div style="font-family: monospace; font-weight: 700; font-size: 16px; background: #f8fafc; border: 1px solid #cbd5e1; padding: 4px 12px; border-radius: 6px; color: #0f172a; letter-spacing: 1px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                                <a href="https://www.flightradar24.com/data/flights/{{ strtolower($reservation->flight_reference) }}" target="_blank" rel="noopener noreferrer" style="text-decoration: none; color: inherit;">
+                                    {{ $reservation->flight_reference }}
+                                </a>
+                            </div>
+                        @endif
                     </div>
                 </div>
 

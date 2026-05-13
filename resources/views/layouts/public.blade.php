@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'ParkManager') }} - Prenotazione Pubblica</title>
+    <link rel="icon" type="image/png" href="{{ asset('img/logo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="pm-public" style="min-height:100vh;">
@@ -12,9 +13,7 @@
     {{-- Topbar Branding --}}
     <div style="background: #fff; border-bottom: 3px solid var(--pm-public-accent);">
         <div style="max-width: 800px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; gap: 12px; height: 64px;">
-            <div style="background: #1C1F2E; color: var(--pm-public-accent); font-weight: 700; font-size: 15px; letter-spacing: 1px; padding: 6px 13px; border-radius: 5px; flex-shrink: 0;">
-                MODAUTO
-            </div>
+            <img src="{{ asset('img/logo.png') }}" alt="Logo" style="height: 48px; width: auto; flex-shrink: 0; object-fit: contain;" />
             <div style="width: 1px; height: 26px; background: var(--pm-border); flex-shrink: 0;"></div>
             <div style="font-size: 15px; font-weight: 600; color: var(--pm-text);">
                 Prenotazione {{ config('app.name', 'Parcheggio') }}

@@ -88,12 +88,17 @@ class ReservationController extends Controller
             'customer_email'     => ['nullable', 'email', 'max:255'],
             'customer_phone'     => ['nullable', 'string', 'max:50'],
             'license_plate'      => ['nullable', 'string', 'max:20'],
+            'flight_reference'   => ['nullable', 'string', 'max:20'],
             'starts_at'          => ['required', 'date', 'before:ends_at'],
             'ends_at'            => ['required', 'date', 'after:starts_at'],
             'spots'              => ['required', 'integer', 'min:1'],
             'price'              => ['nullable', 'numeric', 'min:0'],
             'notes'              => ['nullable', 'string'],
         ]);
+
+        if (!empty($validated['flight_reference'])) {
+            $validated['flight_reference'] = strtoupper(trim($validated['flight_reference']));
+        }
 
         $listing = ParkingListing::findOrFail($validated['parking_listing_id']);
         $result  = $this->reservationService->create($listing, $validated);
@@ -107,6 +112,12 @@ class ReservationController extends Controller
         return redirect()
             ->route('reservations.index')
             ->with('success', 'Prenotazione creata con successo.');
+    }
+
+    public function show(Reservation $reservation)
+    {
+        $reservation->load(['parkingListing.platform', 'parkingListing.parking', 'parkingProduct']);
+        return view('reservations.show', compact('reservation'));
     }
 
     public function edit(Reservation $reservation)
@@ -133,6 +144,7 @@ class ReservationController extends Controller
             'customer_email' => ['nullable', 'email', 'max:255'],
             'customer_phone' => ['nullable', 'string', 'max:50'],
             'license_plate'  => ['nullable', 'string', 'max:20'],
+            'flight_reference' => ['nullable', 'string', 'max:20'],
             'starts_at'      => ['required', 'date', 'before:ends_at'],
             'ends_at'        => ['required', 'date', 'after:starts_at'],
             'spots'          => ['required', 'integer', 'min:1'],
@@ -140,6 +152,10 @@ class ReservationController extends Controller
             'price'          => ['nullable', 'numeric', 'min:0'],
             'notes'          => ['nullable', 'string'],
         ]);
+
+        if (!empty($validated['flight_reference'])) {
+            $validated['flight_reference'] = strtoupper(trim($validated['flight_reference']));
+        }
 
         $result = $this->reservationService->update($reservation, $validated);
 

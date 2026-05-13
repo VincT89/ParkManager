@@ -20,10 +20,43 @@
             <div class="pm-stat-value blue">{{ $physicalOccupied + $allocatedSpots }} / {{ $physicalTotal }}</div>
             <div class="pm-stat-delta">{{ $physicalPct }}% della capienza totale (include riservati)</div>
         </div>
-        <div class="pm-stat pm-animate-2">
-            <div class="pm-stat-label">Attive (settimana)</div>
-            <div class="pm-stat-value green">{{ $stats['week_count'] }}</div>
-            <div class="pm-stat-delta">prenotazioni future attive</div>
+
+        <div class="pm-stat pm-animate-2" x-data="{ mode: 'incoming' }">
+            <div class="pm-kpi-switch-header">
+                <div class="pm-stat-label" x-text="mode === 'incoming' ? 'Prenotazioni in entrata' : 'Prenotazioni in uscita'"></div>
+
+                <div class="pm-segmented-control">
+                    <button
+                        type="button"
+                        class="pm-segmented-btn"
+                        :class="{ 'active': mode === 'incoming' }"
+                        @click="mode = 'incoming'"
+                    >
+                        Entrata
+                    </button>
+
+                    <button
+                        type="button"
+                        class="pm-segmented-btn"
+                        :class="{ 'active amber': mode === 'outgoing' }"
+                        @click="mode = 'outgoing'"
+                    >
+                        Uscita
+                    </button>
+                </div>
+            </div>
+
+            <div class="pm-kpi-switch-value">
+                <div class="pm-stat-value green" x-show="mode === 'incoming'">
+                    {{ $incomingReservationsToday }}
+                </div>
+
+                <div class="pm-stat-value amber" x-show="mode === 'outgoing'" x-cloak>
+                    {{ $outgoingReservationsToday }}
+                </div>
+            </div>
+
+            <div class="pm-stat-delta" x-text="mode === 'incoming' ? 'arrivi previsti oggi' : 'uscite previste oggi'"></div>
         </div>
         <div class="pm-stat pm-animate-3">
             <div class="pm-stat-label">Questo mese</div>
@@ -46,11 +79,11 @@
             {{-- Prenotazioni oggi --}}
             <div class="pm-card pm-animate-3" style="height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
                 <div class="pm-card-header">
-                    <div class="pm-card-title">Prenotazioni attive</div>
-                    <div class="pm-card-badge">{{ now()->format('d M') }}</div>
+                    <div class="pm-card-title">Ultime prenotazioni</div>
+                    <div class="pm-card-badge">ultime 5</div>
                 </div>
-                @if ($todayReservations->isEmpty())
-                    <p class="pm-text-muted" style="font-size:13px">Nessuna prenotazione attiva oggi.</p>
+                @if ($latestReservations->isEmpty())
+                    <p class="pm-text-muted" style="font-size:13px">Nessuna prenotazione trovata.</p>
                 @else
                     <style>
                         .pm-table-scrollable th {
@@ -73,7 +106,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($todayReservations as $reservation)
+                                @foreach ($latestReservations as $reservation)
                                     <tr>
                                         <td>
                                             <div class="pm-td-main">{{ $reservation->customer_name }}</div>
@@ -84,7 +117,7 @@
                                         <td>
                                             <div class="pm-platform">
                                                 <div class="pm-dot blue"></div>
-                                                {{ $reservation->parkingListing->platform->name }}
+                                                {{ $reservation->parkingListing?->platform?->name ?? '-' }}
                                             </div>
                                         </td>
                                         <td class="pm-mono">{{ $reservation->starts_at->format('d-m H:i') }}</td>
@@ -105,17 +138,15 @@
                                     </tr>
                                 @endforeach
                             </tbody>
-                            @if ($stats['today_count'] > 8)
                             <tfoot>
                                 <tr>
                                     <td colspan="5" style="text-align: center; padding: 4px 0 0 0; border-bottom: none;">
-                                        <a href="{{ route('reservations.index', ['date_from' => now()->format('Y-m-d'), 'date_to' => now()->format('Y-m-d')]) }}" class="pm-text-primary" style="text-decoration: none; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--pm-text-muted);">
-                                            Vedi tutte le {{ $stats['today_count'] }} prenotazioni &rarr;
+                                        <a href="{{ route('reservations.index') }}" class="pm-text-primary" style="text-decoration: none; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: var(--pm-text-muted);">
+                                            Vedi tutte le prenotazioni &rarr;
                                         </a>
                                     </td>
                                 </tr>
                             </tfoot>
-                            @endif
                         </table>
                     </div>
                 @endif

@@ -43,7 +43,7 @@
                 </div>
             </div>
 
-            <div class="pm-form-grid-2">
+            <div class="pm-form-grid-3">
                 <div class="pm-form-group">
                     <label class="pm-label pm-label-required">Nome cliente</label>
                     <input type="text" name="customer_name"
@@ -62,7 +62,12 @@
                 <div class="pm-form-group">
                     <label class="pm-label">Targa</label>
                     <input type="text" name="license_plate"
-                           value="{{ old('license_plate') }}" class="pm-input" />
+                           value="{{ old('license_plate') }}" class="pm-input" style="text-transform: uppercase;" />
+                </div>
+                <div class="pm-form-group">
+                    <label class="pm-label">Rif. Volo</label>
+                    <input type="text" name="flight_reference"
+                           value="{{ old('flight_reference') }}" class="pm-input" placeholder="Es. AZ1602" style="text-transform: uppercase;" />
                 </div>
             </div>
 

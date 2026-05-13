@@ -17,6 +17,7 @@ class Reservation extends Model
         'customer_email',
         'customer_phone',
         'license_plate',
+        'flight_reference',
         'starts_at',
         'ends_at',
         'spots',

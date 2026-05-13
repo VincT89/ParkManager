@@ -12,6 +12,10 @@
 
     <x-flash-message />
 
+    <style>
+        .pm-analytics-card { overflow: visible !important; }
+    </style>
+
     {{-- Totali --}}
     <div class="pm-stats-grid pm-mb-16 pm-animate">
         <div class="pm-stat">
@@ -39,7 +43,7 @@
     {{-- Canali --}}
     <div class="pm-gap">
         @foreach ($channelStats as $stat)
-            <div class="pm-card pm-animate-2">
+            <div class="pm-card pm-analytics-card pm-animate-2">
                 <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:24px;align-items:start">
 
                     {{-- Nome canale --}}
@@ -98,26 +102,30 @@
 
                     {{-- Trend sparkline --}}
                     <div>
-                        <div class="pm-stat-label" style="margin-bottom:8px">Trend 6 mesi</div>
-                        <div style="display:flex;align-items:flex-end;gap:4px;height:40px">
+                        <div class="pm-stat-label" style="margin-bottom:8px">Trend annuale</div>
+                        <div class="pm-trend-bars">
                             @php
                                 $maxRevenue = max(array_column($stat['trend'], 'revenue')) ?: 1;
                             @endphp
                             @foreach ($stat['trend'] as $i => $t)
                                 @php
-                                    $height = $maxRevenue > 0 ? max(4, round(($t['revenue'] / $maxRevenue) * 40)) : 4;
-                                    $isLast = $i === count($stat['trend']) - 1;
+                                    $height = $maxRevenue > 0 ? max(6, round(($t['revenue'] / $maxRevenue) * 50)) : 6;
+                                    $isCurrent = $t['is_current'] ?? false;
                                 @endphp
                                 <div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1">
-                                    <div
-                                        style="
-                                        width:100%;
-                                        height:{{ $height }}px;
-                                        background:{{ $isLast ? 'var(--pm-accent)' : 'rgba(255,255,255,0.12)' }};
-                                        border-radius:2px;
-                                        transition:height 0.3s;
-                                    ">
+                                    <div class="pm-trend-bar-wrap">
+                                        <div
+                                            class="pm-trend-bar {{ $isCurrent ? 'is-current' : '' }}"
+                                            style="height: {{ $height }}px;"
+                                        >
+                                            <div class="pm-trend-tooltip">
+                                                <div class="pm-trend-tooltip-month">{{ $t['month'] }}</div>
+                                                <div class="pm-trend-tooltip-value">€ {{ number_format($t['revenue'], 2) }}</div>
+                                                <div class="pm-trend-tooltip-meta">{{ $t['count'] }} prenotazioni</div>
+                                            </div>
+                                        </div>
                                     </div>
+                                
                                     <div style="font-size:9px;font-family:var(--pm-mono);color:var(--pm-text-dim)">
                                         {{ $t['month'] }}
                                     </div>

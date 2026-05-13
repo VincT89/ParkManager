@@ -49,6 +49,7 @@
                         <tr>
                             <th>Ora</th>
                             <th>Targa</th>
+                            <th>Volo</th>
                             <th>Cliente</th>
                             <th>Telefono</th>
                             <th>Prodotto</th>
@@ -67,6 +68,15 @@
                                         <span style="font-family: var(--pm-mono); font-weight: 600; color: var(--pm-accent); background: rgba(249, 96, 32, 0.1); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(249, 96, 32, 0.2);">
                                             {{ $reservation->license_plate }}
                                         </span>
+                                    @else
+                                        <span class="pm-text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($reservation->flight_reference)
+                                        <a href="https://www.flightradar24.com/data/flights/{{ strtolower($reservation->flight_reference) }}" target="_blank" style="font-family: var(--pm-mono); font-weight: 600; color: var(--pm-accent); text-decoration: none; background: rgba(249, 96, 32, 0.1); padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(249, 96, 32, 0.2);">
+                                            {{ $reservation->flight_reference }}
+                                        </a>
                                     @else
                                         <span class="pm-text-muted">-</span>
                                     @endif

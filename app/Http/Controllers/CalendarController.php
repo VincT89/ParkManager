@@ -67,6 +67,7 @@ class CalendarController extends Controller
                 'id' => $r->id,
                 'customer_name' => $r->customer_name,
                 'license_plate' => $r->license_plate,
+                'flight_reference' => $r->flight_reference,
                 'platform' => $r->parkingListing?->platform?->name ?? 'Unknown',
                 'platform_slug' => $r->parkingListing?->platform?->slug ?? 'unknown',
                 'product_name' => $r->parkingProduct?->name ?? 'Senza Categoria',
@@ -122,7 +123,7 @@ class CalendarController extends Controller
             "Expires"             => "0"
         ];
 
-        $columns = ['Ora', 'Targa', 'Cliente', 'Telefono', 'Prodotto', 'Parcheggio', 'Posti', 'Note'];
+        $columns = ['Ora', 'Targa', 'Volo', 'Cliente', 'Telefono', 'Prodotto', 'Parcheggio', 'Posti', 'Note'];
 
         $callback = function() use($reservations, $columns, $type) {
             $file = fopen('php://output', 'w');
@@ -142,6 +143,7 @@ class CalendarController extends Controller
                 fputcsv($file, [
                     $time,
                     $res->license_plate ?? '-',
+                    $res->flight_reference ?? '-',
                     $res->customer_name,
                     $res->customer_phone ?? '-',
                     $res->parkingProduct->name ?? 'N/D',

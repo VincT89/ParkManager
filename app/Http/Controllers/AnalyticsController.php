@@ -69,19 +69,20 @@ class AnalyticsController extends Controller
                 ? round((($thisCount - $lastCount) / $lastCount) * 100)
                 : ($thisCount > 0 ? 100 : 0);
 
-            // Trend ultimi 6 mesi
+            // Trend annuale dell'anno selezionato (Gen-Dic)
             $trend = [];
-            for ($i = 5; $i >= 0; $i--) {
-                $mStart = $now->copy()->subMonths($i)->startOfMonth();
-                $mEnd   = $now->copy()->subMonths($i)->endOfMonth();
+            for ($month = 1; $month <= 12; $month++) {
+                $mStart = $now->copy()->month($month)->startOfMonth();
+                $mEnd   = $now->copy()->month($month)->endOfMonth();
                 $mRes   = Reservation::whereIn('parking_listing_id', $listingIds)
                     ->where('status', '!=', ReservationStatus::Cancelled->value)
                     ->whereBetween('created_at', [$mStart, $mEnd])
                     ->get();
                 $trend[] = [
-                    'month'   => $mStart->isoFormat('MMM'),
-                    'revenue' => round($mRes->sum('price'), 2),
-                    'count'   => $mRes->count(),
+                    'month'      => $mStart->isoFormat('MMM'),
+                    'revenue'    => round($mRes->sum('price'), 2),
+                    'count'      => $mRes->count(),
+                    'is_current' => $month === $now->month,
                 ];
             }
 

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'ParkManager') }}</title>
+    <link rel="icon" type="image/png" href="{{ asset('img/logo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -18,12 +19,8 @@
 
             <div class="pm-sidebar-header">
                 <a href="{{ route('dashboard') }}" class="pm-sidebar-logo">
-                    <div class="pm-sidebar-logo-icon">
-                        <svg viewBox="0 0 16 16">
-                            <path d="M2 2h12v2H2zm0 3h12v9H2zm2 2v5h3V7zm5 0v5h3V7z" />
-                        </svg>
-                    </div>
-                    <span class="pm-sidebar-logo-text">{{ config('app.name', 'ParkManager') }}</span>
+                    <img src="{{ asset('img/logo.png') }}" alt="Logo" style="height: 48px; width: auto; object-fit: contain; flex-shrink: 0;" />
+                    <span class="pm-sidebar-logo-text">MODAUTO</span>
                 </a>
                 <button class="pm-sidebar-toggle" onclick="toggleSidebar()" title="Comprimi sidebar">
                     <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5">
