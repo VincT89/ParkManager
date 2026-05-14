@@ -171,7 +171,7 @@
                                             <td class="pm-mono">{{ $reservation->spots }}</td>
                                             <td>
                                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                                    <input type="checkbox" id="check_in_{{ $reservation->id }}" style="width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--pm-border); cursor: pointer;">
+                                                    <input type="checkbox" id="check_in_{{ $reservation->id }}" {{ $reservation->has_entered ? 'checked' : '' }} onchange="toggleMovement({{ $reservation->id }}, 'entered', this.checked)" style="width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--pm-border); cursor: pointer;">
                                                     <label for="check_in_{{ $reservation->id }}" style="font-size: 13px; color: var(--pm-text-muted); cursor: pointer; user-select: none; margin: 0;">
                                                         {{ $reservation->parkingProduct->name ?? 'Veicolo' }} entrato
                                                     </label>
@@ -247,7 +247,7 @@
                                             <td class="pm-mono">{{ $reservation->spots }}</td>
                                             <td>
                                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                                    <input type="checkbox" id="check_out_{{ $reservation->id }}" style="width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--pm-border); cursor: pointer;">
+                                                    <input type="checkbox" id="check_out_{{ $reservation->id }}" {{ $reservation->has_exited ? 'checked' : '' }} onchange="toggleMovement({{ $reservation->id }}, 'exited', this.checked)" style="width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--pm-border); cursor: pointer;">
                                                     <label for="check_out_{{ $reservation->id }}" style="font-size: 13px; color: var(--pm-text-muted); cursor: pointer; user-select: none; margin: 0;">
                                                         {{ $reservation->parkingProduct->name ?? 'Veicolo' }} uscito
                                                     </label>
@@ -434,4 +434,27 @@
 
     </div>
 
+    <script>
+        function toggleMovement(reservationId, type, isChecked) {
+            fetch(`/reservations/${reservationId}/toggle-movement`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    type: type,
+                    value: isChecked
+                })
+            }).then(res => {
+                if (!res.ok) {
+                    alert('Errore nel salvataggio dello stato.');
+                }
+            }).catch(err => {
+                console.error(err);
+                alert('Errore di rete nel salvataggio.');
+            });
+        }
+    </script>
 </x-app-layout>

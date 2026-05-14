@@ -184,17 +184,33 @@ class ReservationController extends Controller
     }
 
     public function export(Request $request)
-{
-    $filename = 'prenotazioni_' . now()->format('Y-m-d_His') . '.xlsx';
+    {
+        $filename = 'prenotazioni_' . now()->format('Y-m-d_His') . '.xlsx';
 
-    return Excel::download(
-        new ReservationsExport(
-            platformId: $request->input('platform_id'),
-            status:     $request->input('status'),
-            dateFrom:   $request->input('date_from'),
-            dateTo:     $request->input('date_to'),
-        ),
-        $filename
-    );
-}
+        return Excel::download(
+            new ReservationsExport(
+                platformId: $request->input('platform_id'),
+                status:     $request->input('status'),
+                dateFrom:   $request->input('date_from'),
+                dateTo:     $request->input('date_to'),
+            ),
+            $filename
+        );
+    }
+
+    public function toggleMovement(Request $request, Reservation $reservation)
+    {
+        $validated = $request->validate([
+            'type' => ['required', 'in:entered,exited'],
+            'value' => ['required', 'boolean'],
+        ]);
+
+        if ($validated['type'] === 'entered') {
+            $reservation->update(['has_entered' => $validated['value']]);
+        } elseif ($validated['type'] === 'exited') {
+            $reservation->update(['has_exited' => $validated['value']]);
+        }
+
+        return response()->json(['success' => true]);
+    }
 }

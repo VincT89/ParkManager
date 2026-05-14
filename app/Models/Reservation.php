@@ -26,6 +26,8 @@ class Reservation extends Model
         'notes',
         'raw_data',
         'expires_at',
+        'has_entered',
+        'has_exited',
     ];
 
     protected function casts(): array
@@ -38,6 +40,8 @@ class Reservation extends Model
             'price'     => 'decimal:2',
             'raw_data'  => 'array',
             'expires_at'=> 'datetime',
+            'has_entered' => 'boolean',
+            'has_exited' => 'boolean',
         ];
     }
 

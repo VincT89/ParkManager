@@ -44,6 +44,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ->name('reservations.export');  
 
     // Prenotazioni
+    Route::post('/reservations/{reservation}/toggle-movement', [ReservationController::class, 'toggleMovement'])->name('reservations.toggle-movement');
     Route::resource('reservations', ReservationController::class);
 
     // Blocchi disponibilità
