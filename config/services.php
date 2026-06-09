@@ -61,20 +61,34 @@ return [
 
     'vologio' => [
         'enabled' => env('VOLOGIO_ENABLED', false),
-        'base_url' => env('VOLOGIO_BASE_URL', 'https://api.vologio.it/v1'),
+        'base_url' => env('VOLOGIO_BASE_URL', 'https://api.backend.staging.roosh.online/provider/v1'),
         'api_key' => env('VOLOGIO_API_KEY'),
-        'timeout' => env('VOLOGIO_TIMEOUT', 15),
-        'fixture_mode' => env('VOLOGIO_FIXTURE_MODE', false),
-        'fixture_file' => env('VOLOGIO_FIXTURE_FILE', 'reservations_success.json'),
+        'client_id' => env('VOLOGIO_CLIENT_ID'),
+        'timeout' => env('VOLOGIO_TIMEOUT', 20),
     ],
 
     'parking_my_car' => [
         'enabled' => env('PARKING_MY_CAR_ENABLED', false),
-        'base_url' => env('PARKING_MY_CAR_BASE_URL', 'https://api.parkingmycar.it/v1'),
-        'api_key' => env('PARKING_MY_CAR_API_KEY'),
-        'timeout' => env('PARKING_MY_CAR_TIMEOUT', 15),
-        'fixture_mode' => env('PARKING_MY_CAR_FIXTURE_MODE', false),
-        'fixture_file' => env('PARKING_MY_CAR_FIXTURE_FILE', 'reservations_success.json'),
+        'base_url' => env('PARKING_MY_CAR_BASE_URL', 'https://api.parkingmycar.it'),
+
+        'client_id' => env('PARKING_MY_CAR_CLIENT_ID'),
+        'client_secret' => env('PARKING_MY_CAR_CLIENT_SECRET'),
+        'username' => env('PARKING_MY_CAR_USERNAME'),
+        'password' => env('PARKING_MY_CAR_PASSWORD'),
+
+        'timeout' => env('PARKING_MY_CAR_TIMEOUT', 20),
+        'auth_path' => env('PARKING_MY_CAR_AUTH_PATH', '/oauth/token'),
+        'refresh_path' => env('PARKING_MY_CAR_REFRESH_PATH', '/oauth/token'),
+        'resources_path' => env('PARKING_MY_CAR_RESOURCES_PATH', '/api/v1/resources'),
+        'reservations_update_path' => env('PARKING_MY_CAR_RESERVATIONS_UPDATE_PATH', '/api/v1/resources/reservations_update'),
+
+        'token_cache_key' => env('PARKING_MY_CAR_TOKEN_CACHE_KEY', 'parking_my_car_access_token'),
+        'refresh_token_cache_key' => env('PARKING_MY_CAR_REFRESH_TOKEN_CACHE_KEY', 'parking_my_car_refresh_token'),
+        'token_cache_ttl' => env('PARKING_MY_CAR_TOKEN_CACHE_TTL', 3300),
+
+        'default_product_ref' => env('PARKING_MY_CAR_DEFAULT_PRODUCT_REF', 'DEFAULT'),
+
+        'sync_lookback_hours' => env('PARKING_MY_CAR_SYNC_LOOKBACK_HOURS', 2),
     ],
 
 ];

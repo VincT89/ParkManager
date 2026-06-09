@@ -20,6 +20,8 @@ class NormalizedReservation
         public readonly ?float $price = null,
         public readonly ?string $currency = null,
         public readonly ?string $notes = null,
-        public readonly array $raw_data = []
+        public readonly array $raw_data = [],
+        public readonly ?string $status = null,
+        public readonly ?string $flight_reference = null
     ) {}
 }

@@ -15,8 +15,14 @@ class AppServiceProvider extends ServiceProvider
             
             $registry->register(new \App\Integrations\Adapters\ParkosAdapter());
             $registry->register(new \App\Integrations\Adapters\MyParkingAdapter());
-            $registry->register(new \App\Integrations\Adapters\VologioAdapter());
-            $registry->register(new \App\Integrations\Adapters\ParkingMyCarAdapter());
+            $registry->register(new \App\Integrations\Adapters\VologioAdapter($app->make(\App\Integrations\Support\RooshProviderClient::class)));
+            if (config('services.parking_my_car.enabled')) {
+                $registry->register(
+                    new \App\Integrations\Adapters\ParkingMyCarAdapter(
+                        $app->make(\App\Integrations\Support\ParkingMyCarClient::class)
+                    )
+                );
+            }
             
             return $registry;
         });

@@ -25,8 +25,22 @@ class ReservationImportPayloadFactory
             'spots'              => $dto->spots,
             'price'              => $dto->price,
             'notes'              => $dto->notes,
-            'status'             => 'confirmed', // Assuming external imports are confirmed by default
+            'status'             => $dto->status ?? 'confirmed',
+            'flight_reference'   => $dto->flight_reference,
             'raw_data'           => $dto->raw_data,
+        ];
+    }
+
+    /**
+     * Converts a NormalizedReservation into a payload for cancellation.
+     * Does not require a resolved ParkingProduct.
+     */
+    public function makeCancellationPayload(NormalizedReservation $dto): array
+    {
+        return [
+            'external_id' => $dto->external_id,
+            'status'      => 'cancelled',
+            'raw_data'    => $dto->raw_data,
         ];
     }
 }

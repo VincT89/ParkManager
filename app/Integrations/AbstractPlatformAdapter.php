@@ -57,4 +57,12 @@ abstract class AbstractPlatformAdapter implements PlatformAdapterInterface
     {
         return Http::timeout(15)->send($method, $url, $options);
     }
+
+    public function defaultSyncWindow(): array
+    {
+        return [
+            Carbon::today()->subDays(30),
+            Carbon::today()->addDays(90),
+        ];
+    }
 }

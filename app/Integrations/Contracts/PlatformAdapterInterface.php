@@ -3,6 +3,7 @@
 namespace App\Integrations\Contracts;
 
 use App\Models\ParkingListing;
+use App\Models\ParkingProduct;
 use Carbon\Carbon;
 
 interface PlatformAdapterInterface
@@ -23,4 +24,16 @@ interface PlatformAdapterInterface
      * @return \App\Integrations\DTO\NormalizedReservation[]
      */
     public function fetchReservations(ParkingListing $listing, Carbon $from, Carbon $to): array;
+
+    /**
+     * Resolve the internal ParkingProduct for a given external product reference.
+     */
+    public function resolveProduct(ParkingListing $listing, string $externalRef): ParkingProduct;
+
+    /**
+     * Get the default synchronization window [from, to] for this adapter.
+     * 
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    public function defaultSyncWindow(): array;
 }

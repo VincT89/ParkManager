@@ -59,8 +59,8 @@ class ReservationService
                 }
 
                 $status = $data['status'] ?? ReservationStatus::Confirmed->value;
-                $expiresAt = null;
-                if ($status === ReservationStatus::Pending->value) {
+                $expiresAt = array_key_exists('expires_at', $data) ? $data['expires_at'] : null;
+                if ($status === ReservationStatus::Pending->value && !$expiresAt) {
                     $expiresAt = now()->addMinutes(30);
                 }
 
@@ -170,6 +170,7 @@ class ReservationService
                     'expires_at'     => $expiresAt,
                     'price'          => array_key_exists('price', $data) ? $data['price'] : $reservation->price,
                     'notes'          => array_key_exists('notes', $data) ? $data['notes'] : $reservation->notes,
+                    'raw_data'       => array_key_exists('raw_data', $data) ? $data['raw_data'] : $reservation->raw_data,
                 ]);
             });
 
@@ -204,6 +205,22 @@ class ReservationService
             return \App\Services\Results\ReservationImportResult::failed('external_id è obbligatorio per le prenotazioni importate.');
         }
 
+        $existing = Reservation::where('parking_listing_id', $listing->id)
+            ->where('external_id', $data['external_id'])
+            ->first();
+
+        if (isset($data['status']) && $data['status'] === ReservationStatus::Cancelled->value) {
+            if ($existing) {
+                $result = $this->cancel($existing);
+                if ($result->success) {
+                    return \App\Services\Results\ReservationImportResult::updated($result->reservation);
+                }
+                return \App\Services\Results\ReservationImportResult::failed($result->error ?? 'Errore in cancellazione.');
+            } else {
+                return \App\Services\Results\ReservationImportResult::skipped(null, "Prenotazione cancellata in origine e non presente a sistema.");
+            }
+        }
+
         if (empty($data['parking_product_id'])) {
             return \App\Services\Results\ReservationImportResult::failed('parking_product_id non risolto per la prenotazione importata.');
         }
@@ -211,10 +228,6 @@ class ReservationService
         if (empty($data['starts_at']) || empty($data['ends_at'])) {
             return \App\Services\Results\ReservationImportResult::failed('Le date starts_at e ends_at sono obbligatorie.');
         }
-
-        $existing = Reservation::where('parking_listing_id', $listing->id)
-            ->where('external_id', $data['external_id'])
-            ->first();
 
         if ($existing) {
             $result = $this->update($existing, $data);

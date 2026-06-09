@@ -32,8 +32,8 @@ class SyncListingJob implements ShouldQueue
             return;
         }
 
-        $from = Carbon::today()->subDays(30);
-        $to = Carbon::today()->addDays(90);
+        $adapter = app(\App\Integrations\AdapterRegistry::class)->forPlatform($this->listing->platform);
+        [$from, $to] = $adapter->defaultSyncWindow();
 
         $stats = $action->execute($this->listing, $from, $to, dryRun: false);
 

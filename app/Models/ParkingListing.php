@@ -12,6 +12,7 @@ class ParkingListing extends Model
         'parking_id',
         'platform_id',
         'is_active',
+        'external_id',
     ];
 
     protected function casts(): array

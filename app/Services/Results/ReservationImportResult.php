@@ -30,7 +30,7 @@ class ReservationImportResult
         return new self(ImportAction::Updated, $reservation);
     }
 
-    public static function skipped(Reservation $reservation, string $reason = ''): self
+    public static function skipped(?Reservation $reservation = null, string $reason = ''): self
     {
         return new self(ImportAction::Skipped, $reservation, $reason);
     }

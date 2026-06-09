@@ -18,6 +18,8 @@ class SyncPlatformsCommand extends Command
     protected $signature = 'sync:platforms 
                             {--platform= : Platform slug to sync (optional)} 
                             {--listing= : Specific listing ID to sync (optional)}
+                            {--from= : Start date (optional)}
+                            {--to= : End date (optional)}
                             {--dry-run : Only fetch and output, do not save}';
 
     /**
@@ -56,13 +58,21 @@ class SyncPlatformsCommand extends Command
             return 0;
         }
 
-        $from = Carbon::today()->subDays(30);
-        $to = Carbon::today()->addDays(90);
-
-        $this->info("Starting sync from {$from->toDateString()} to {$to->toDateString()} " . ($dryRun ? '[DRY-RUN]' : ''));
+        $this->info("Starting sync " . ($dryRun ? '[DRY-RUN]' : ''));
 
         foreach ($listings as $listing) {
             $this->info("Syncing listing ID: {$listing->id} (Platform: {$listing->platform->name}, Parking: {$listing->parking->name})...");
+
+            $fromOption = $this->option('from');
+            $toOption = $this->option('to');
+
+            $adapter = app(\App\Integrations\AdapterRegistry::class)->forPlatform($listing->platform);
+            [$defaultFrom, $defaultTo] = $adapter->defaultSyncWindow();
+
+            $from = $fromOption ? Carbon::parse($fromOption) : $defaultFrom;
+            $to = $toOption ? Carbon::parse($toOption) : $defaultTo;
+
+            $this->info("Window: {$from->toDateTimeString()} to {$to->toDateTimeString()}");
 
             $stats = $action->execute($listing, $from, $to, $dryRun);
 

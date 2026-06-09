@@ -72,7 +72,7 @@ class PublicPaymentFlowTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('TEST-5678');
-        $response->assertSee('Completa il pagamento');
+        $response->assertSee('Completa il tuo ordine');
     }
 
     public function test_success_page_requires_confirmed_status()

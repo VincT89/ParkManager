@@ -7,6 +7,8 @@ use App\Integrations\ReservationImportPayloadFactory;
 use App\Models\ParkingListing;
 use App\Services\ReservationService;
 use App\Services\Results\ImportAction;
+use App\Enums\ReservationStatus;
+use App\Models\Reservation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -42,27 +44,43 @@ class SyncListingAction
             // 3. Process each reservation
             foreach ($normalizedReservations as $normalized) {
                 try {
-                    // Resolve internal product
-                    $product = $adapter->resolveProduct($listing, $normalized->external_product_ref);
+                    // Intercept cancellation before resolving product
+                    if ($normalized->status === ReservationStatus::Cancelled->value) {
+                        $payload = $this->payloadFactory->makeCancellationPayload($normalized);
                     
-                    // Build payload
-                    $payload = $this->payloadFactory->makePayload($normalized, $product);
-
-                    if ($dryRun) {
-                        $exists = \App\Models\Reservation::where('parking_listing_id', $listing->id)
-                            ->where('external_id', $payload['external_id'])
-                            ->exists();
-                            
-                        if ($exists) {
-                            $stats['updated']++;
-                        } else {
-                            $stats['created']++;
+                        if ($dryRun) {
+                            $exists = Reservation::where('parking_listing_id', $listing->id)
+                                ->where('external_id', $payload['external_id'])
+                                ->exists();
+                    
+                            $exists ? $stats['updated']++ : $stats['skipped']++;
+                            continue;
                         }
-                        continue;
+                    
+                        $result = $this->reservationService->importFromExternal($listing, $payload);
+                    } else {
+                        // Resolve internal product for normal imports
+                        $product = $adapter->resolveProduct($listing, $normalized->external_product_ref);
+                        
+                        // Build payload
+                        $payload = $this->payloadFactory->makePayload($normalized, $product);
+                    
+                        if ($dryRun) {
+                            $exists = Reservation::where('parking_listing_id', $listing->id)
+                                ->where('external_id', $payload['external_id'])
+                                ->exists();
+                                
+                            if ($exists) {
+                                $stats['updated']++;
+                            } else {
+                                $stats['created']++;
+                            }
+                            continue;
+                        }
+                    
+                        // Import via ReservationService
+                        $result = $this->reservationService->importFromExternal($listing, $payload);
                     }
-
-                    // Import via ReservationService
-                    $result = $this->reservationService->importFromExternal($listing, $payload);
 
                     if ($result->isSuccess()) {
                         if ($result->action === ImportAction::Created) {

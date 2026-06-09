@@ -72,7 +72,7 @@ class PublicBookingTest extends TestCase
         ]);
         
         $reservation = Reservation::first();
-        $response->assertRedirect(route('public.booking.success', $reservation->external_id));
+        $response->assertRedirect(route('public.booking.payment', $reservation->external_id));
         
         // Assert source logic is saved in raw_data
         $this->assertEquals('website', $reservation->raw_data['source']);

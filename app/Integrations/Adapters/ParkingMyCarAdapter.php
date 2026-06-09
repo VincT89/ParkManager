@@ -3,11 +3,17 @@
 namespace App\Integrations\Adapters;
 
 use App\Integrations\AbstractPlatformAdapter;
+use App\Integrations\DTO\NormalizedReservation;
+use App\Integrations\Support\ParkingMyCarClient;
 use App\Models\ParkingListing;
 use Carbon\Carbon;
 
 class ParkingMyCarAdapter extends AbstractPlatformAdapter
 {
+    public function __construct(
+        private ParkingMyCarClient $client
+    ) {}
+
     public function getName(): string
     {
         return 'ParkingMyCar';
@@ -18,8 +24,122 @@ class ParkingMyCarAdapter extends AbstractPlatformAdapter
         return 'parking-my-car';
     }
 
+    public function defaultSyncWindow(): array
+    {
+        return [
+            Carbon::now()->subHours((int) config('services.parking_my_car.sync_lookback_hours', 2)),
+            Carbon::now(),
+        ];
+    }
+
     public function fetchReservations(ParkingListing $listing, Carbon $from, Carbon $to): array
     {
-        throw new \Exception("Doc API non disponibile per ParkingMyCar.");
+        if (empty($listing->external_id)) {
+            throw new \RuntimeException("ParkingListing ID {$listing->id} non ha external_id configurato.");
+        }
+
+        $records = $this->client->findBookingsByModification($from, $to);
+
+        return collect($records)
+            ->filter(fn (array $record) => (string)($record['parking_id'] ?? $record['parking']['id'] ?? '') === (string)$listing->external_id)
+            ->map(fn (array $record) => $this->normalizeRecord($record))
+            ->values()
+            ->all();
+    }
+
+    protected function normalizeRecord(array $record): NormalizedReservation
+    {
+        $externalId = $record['id'] ?? $record['booking_id'] ?? $record['reservation_id'] ?? null;
+
+        if (!$externalId) {
+            throw new \RuntimeException('ParkingMyCar: campo id prenotazione mancante.');
+        }
+
+        $startsAtRaw = $record['in_dttm']
+            ?? $record['start_dtm']
+            ?? $record['start_dttm']
+            ?? $record['date_start']
+            ?? $record['start_date']
+            ?? $record['checkin_at']
+            ?? $record['entry_at']
+            ?? null;
+
+        $endsAtRaw = $record['out_dttm']
+            ?? $record['end_dtm']
+            ?? $record['end_dttm']
+            ?? $record['date_end']
+            ?? $record['end_date']
+            ?? $record['checkout_at']
+            ?? $record['exit_at']
+            ?? null;
+
+        if (!$startsAtRaw || !$endsAtRaw) {
+            \Log::error('ParkingMyCar missing dates JSON: ' . json_encode($record));
+            throw new \RuntimeException("ParkingMyCar: date mancanti per prenotazione {$externalId}.");
+        }
+
+        $startsAt = is_numeric($startsAtRaw) ? Carbon::createFromTimestamp($startsAtRaw) : Carbon::parse($startsAtRaw);
+        $endsAt = is_numeric($endsAtRaw) ? Carbon::createFromTimestamp($endsAtRaw) : Carbon::parse($endsAtRaw);
+
+        if ($endsAt->isBefore($startsAt)) {
+            throw new \RuntimeException("ParkingMyCar: ends_at prima di starts_at per prenotazione {$externalId}.");
+        }
+
+        $customerName = trim(
+            ($record['customer']['first_name'] ?? $record['first_name'] ?? '') . ' ' .
+            ($record['customer']['last_name'] ?? $record['last_name'] ?? '')
+        );
+
+        if ($customerName === '') {
+            $customerName = $record['customer']['name']
+                ?? $record['customer_name']
+                ?? $record['name']
+                ?? $record['user']
+                ?? 'Sconosciuto';
+        }
+
+        $externalProductRef =
+            $record['parking_model_id']
+            ?? $record['model_id']
+            ?? $record['product_id']
+            ?? $record['service_id']
+            ?? $record['rate_id']
+            ?? $record['parking_type_id']
+            ?? config('services.parking_my_car.default_product_ref', 'DEFAULT');
+
+        $flightReference = collect([
+            $record['departure_flight'] ?? null,
+            $record['arrival_flight'] ?? null,
+            $record['flight_reference'] ?? null,
+            $record['flight_number'] ?? null,
+        ])->filter()->unique()->join(' / ') ?: null;
+
+        return new NormalizedReservation(
+            external_id: (string) $externalId,
+            external_product_ref: (string) $externalProductRef,
+            external_product_name: $record['product_name'] ?? $record['service_name'] ?? null,
+            customer_name: $customerName,
+            customer_email: $record['customer']['email'] ?? $record['email'] ?? null,
+            customer_phone: $record['customer']['phone'] ?? $record['phone'] ?? $record['mobile'] ?? null,
+            license_plate: $record['vehicle']['license_plate'] ?? $record['license_plate'] ?? $record['plate'] ?? null,
+            starts_at: $startsAt,
+            ends_at: $endsAt,
+            spots: (int) ($record['spots'] ?? 1),
+            price: isset($record['price']) ? (float) $record['price'] : (isset($record['total']) ? (float) $record['total'] : null),
+            currency: $record['currency'] ?? 'EUR',
+            notes: $record['notes'] ?? $record['note'] ?? null,
+            raw_data: $record,
+            status: $this->mapStatus($record['status'] ?? null),
+            flight_reference: $flightReference
+        );
+    }
+
+    protected function mapStatus(?string $status): string
+    {
+        return match (strtolower(trim((string) $status))) {
+            'cancelled', 'canceled', 'annullata', 'annullato' => 'cancelled',
+            'pending', 'waiting', 'in_attesa', 'attesa' => 'pending',
+            default => 'confirmed',
+        };
     }
 }
