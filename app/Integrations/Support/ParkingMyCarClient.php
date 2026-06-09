@@ -58,13 +58,7 @@ class ParkingMyCarClient
 
         $data = $response->json();
 
-        Cache::put(
-            config('services.parking_my_car.refresh_token_cache_key'),
-            $data['refresh_token'] ?? null,
-            now()->addDays(30)
-        );
-
-        return $data;
+        return $this->storeTokens($data);
     }
 
     public function refreshToken(): array
@@ -89,7 +83,26 @@ class ParkingMyCarClient
             return $this->authenticate();
         }
 
-        return $response->json();
+        return $this->storeTokens($response->json());
+    }
+
+    private function storeTokens(array $data): array
+    {
+        Cache::put(
+            config('services.parking_my_car.refresh_token_cache_key'),
+            $data['refresh_token'] ?? null,
+            now()->addDays(30)
+        );
+
+        Cache::put(
+            config('services.parking_my_car.token_cache_key'),
+            $data['access_token'] ?? null,
+            now()->addSeconds(
+                (int) config('services.parking_my_car.token_cache_ttl', 3300)
+            )
+        );
+
+        return $data;
     }
 
     public function getParkings(): array
@@ -102,6 +115,7 @@ class ParkingMyCarClient
 
     public function findBookingsByModification(Carbon $from, Carbon $to): array
     {
+        // PMC usa start_dttm/end_dttm (con doppia t)
         $response = $this->request()->get($this->url(config('services.parking_my_car.reservations_update_path')), [
             'start_dttm' => $from->format('Y-m-d H:i:s'),
             'end_dttm' => $to->format('Y-m-d H:i:s'),

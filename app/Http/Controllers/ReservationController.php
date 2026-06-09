@@ -21,6 +21,22 @@ class ReservationController extends Controller
 
     public function index(Request $request)
     {
+        if ($request->get('quick_filter') === 'arrivals_today') {
+            $request->merge([
+                'date_filter_type' => 'starts_at',
+                'date_from' => now()->toDateString(),
+                'date_to' => now()->toDateString(),
+            ]);
+        }
+
+        if ($request->get('quick_filter') === 'departures_today') {
+            $request->merge([
+                'date_filter_type' => 'ends_at',
+                'date_from' => now()->toDateString(),
+                'date_to' => now()->toDateString(),
+            ]);
+        }
+
         $query = Reservation::query()
             ->with(['parkingListing.platform', 'parkingListing.parking']);
 
@@ -43,13 +59,19 @@ class ReservationController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Filtro per data (Presenza fisica nel periodo)
-        if ($request->filled('date_from') && $request->filled('date_to')) {
-            $query->overlapping($request->date_from, $request->date_to . ' 23:59:59');
-        } elseif ($request->filled('date_from')) {
-            $query->where('ends_at', '>=', $request->date_from);
-        } elseif ($request->filled('date_to')) {
-            $query->where('starts_at', '<=', $request->date_to . ' 23:59:59');
+        // Filtro per data
+        $dateColumn = $request->input('date_filter_type', 'starts_at');
+
+        if (! in_array($dateColumn, ['starts_at', 'ends_at'], true)) {
+            $dateColumn = 'starts_at';
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate($dateColumn, '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate($dateColumn, '<=', $request->date_to);
         }
 
         // Filtro per nome cliente
@@ -193,6 +215,7 @@ class ReservationController extends Controller
                 status:     $request->input('status'),
                 dateFrom:   $request->input('date_from'),
                 dateTo:     $request->input('date_to'),
+                dateFilterType: $request->input('date_filter_type', 'starts_at'),
             ),
             $filename
         );

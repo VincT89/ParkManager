@@ -24,13 +24,7 @@ class PlatformSeeder extends Seeder
                 'contact_email' => 'partner@parkos.it',
                 'is_active'     => true,
             ],
-            [
-                'name'          => 'My Parking',
-                'slug'          => 'my-parking',
-                'website'       => 'https://www.myparking.it',
-                'contact_email' => 'partner@myparking.it',
-                'is_active'     => true,
-            ],
+
             [
                 'name'          => 'Vologio',
                 'slug'          => 'vologio',

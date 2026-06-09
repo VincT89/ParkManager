@@ -26,6 +26,7 @@ class ReservationsExport implements
         private ?string $status     = null,
         private ?string $dateFrom   = null,
         private ?string $dateTo     = null,
+        private ?string $dateFilterType = 'starts_at',
     ) {}
 
     public function query()
@@ -44,12 +45,16 @@ class ReservationsExport implements
             $query->where('status', $this->status);
         }
 
+        $dateColumn = in_array($this->dateFilterType, ['starts_at', 'ends_at'], true)
+            ? $this->dateFilterType
+            : 'starts_at';
+
         if ($this->dateFrom) {
-            $query->where('starts_at', '>=', $this->dateFrom);
+            $query->whereDate($dateColumn, '>=', $this->dateFrom);
         }
 
         if ($this->dateTo) {
-            $query->where('ends_at', '<=', $this->dateTo . ' 23:59:59');
+            $query->whereDate($dateColumn, '<=', $this->dateTo);
         }
 
         return $query;

@@ -17,7 +17,8 @@ class SyncListingAction
     public function __construct(
         private AdapterRegistry $registry,
         private ReservationService $reservationService,
-        private ReservationImportPayloadFactory $payloadFactory
+        private ReservationImportPayloadFactory $payloadFactory,
+        private \App\Services\OverbookingNotificationService $overbookingNotificationService
     ) {}
 
     /**
@@ -85,8 +86,14 @@ class SyncListingAction
                     if ($result->isSuccess()) {
                         if ($result->action === ImportAction::Created) {
                             $stats['created']++;
+                            if (!$dryRun && $result->reservation) {
+                                $this->overbookingNotificationService->checkAndNotifyForReservation($result->reservation);
+                            }
                         } elseif ($result->action === ImportAction::Updated) {
                             $stats['updated']++;
+                            if (!$dryRun && $result->reservation) {
+                                $this->overbookingNotificationService->checkAndNotifyForReservation($result->reservation);
+                            }
                         } else {
                             $stats['skipped']++;
                         }

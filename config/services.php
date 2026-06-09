@@ -79,8 +79,8 @@ return [
         'timeout' => env('PARKING_MY_CAR_TIMEOUT', 20),
         'auth_path' => env('PARKING_MY_CAR_AUTH_PATH', '/oauth/token'),
         'refresh_path' => env('PARKING_MY_CAR_REFRESH_PATH', '/oauth/token'),
-        'resources_path' => env('PARKING_MY_CAR_RESOURCES_PATH', '/api/v1/resources'),
-        'reservations_update_path' => env('PARKING_MY_CAR_RESERVATIONS_UPDATE_PATH', '/api/v1/resources/reservations_update'),
+        'resources_path' => env('PARKING_MY_CAR_RESOURCES_PATH', '/pmc_rest/parkings_resource'),
+        'reservations_update_path' => env('PARKING_MY_CAR_RESERVATIONS_UPDATE_PATH', '/pmc_rest/bookings_resource_updated'),
 
         'token_cache_key' => env('PARKING_MY_CAR_TOKEN_CACHE_KEY', 'parking_my_car_access_token'),
         'refresh_token_cache_key' => env('PARKING_MY_CAR_REFRESH_TOKEN_CACHE_KEY', 'parking_my_car_refresh_token'),

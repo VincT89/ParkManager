@@ -30,7 +30,7 @@ class ParkingMyCarTestCommand extends Command
             $refreshData = $client->refreshToken();
             $this->line('Success! Token refreshed.');
 
-            $this->info("\n3. Testing Get Parkings (/api/v1/resources)...");
+            $this->info("\n3. Testing Get Parkings (" . config('services.parking_my_car.resources_path') . ")...");
             $parkings = $client->getParkings();
             $this->line('Success! Found ' . count($parkings) . ' parkings.');
             if (count($parkings) > 0) {
@@ -38,7 +38,7 @@ class ParkingMyCarTestCommand extends Command
                 $this->line(json_encode($parkings[0], JSON_PRETTY_PRINT));
             }
 
-            $this->info("\n4. Testing Sync Endpoint (/api/v1/resources/reservations_update)...");
+            $this->info("\n4. Testing Sync Endpoint (" . config('services.parking_my_car.reservations_update_path') . ")...");
             $from = now()->subHours(2);
             $to = now();
             $this->line("Fetching reservations modified from {$from} to {$to}...");

@@ -7,6 +7,8 @@ use App\Models\ParkingListing;
 use App\Enums\ReservationStatus;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 
 class ReservationService
 {
@@ -205,6 +207,21 @@ class ReservationService
             return \App\Services\Results\ReservationImportResult::failed('external_id è obbligatorio per le prenotazioni importate.');
         }
 
+        $lockKey = 'import_reservation:' . $listing->id . ':' . sha1((string) $data['external_id']);
+
+        try {
+            return Cache::lock($lockKey, 30)->block(10, function () use ($listing, $data) {
+                return $this->importFromExternalLocked($listing, $data);
+            });
+        } catch (LockTimeoutException $e) {
+            return \App\Services\Results\ReservationImportResult::failed(
+                "Impossibile acquisire il lock per l'importazione della prenotazione {$data['external_id']}. Sarà riprovata al prossimo ciclo."
+            );
+        }
+    }
+
+    private function importFromExternalLocked(ParkingListing $listing, array $data): \App\Services\Results\ReservationImportResult
+    {
         $existing = Reservation::where('parking_listing_id', $listing->id)
             ->where('external_id', $data['external_id'])
             ->first();

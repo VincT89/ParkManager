@@ -90,7 +90,7 @@ class AvailabilityService
         return AvailabilityResult::available($availableSpots);
     }
 
-    protected function countReservedSpots(int $productId, Carbon $startsAt, Carbon $endsAt, int $excludeId = 0): int
+    public function countReservedSpots(int $productId, Carbon $startsAt, Carbon $endsAt, int $excludeId = 0): int
     {
         $query = Reservation::query()
             ->where('parking_product_id', $productId)
@@ -104,7 +104,7 @@ class AvailabilityService
         return (int) $query->lockForUpdate()->sum('spots');
     }
 
-    protected function countAllReservedSpotsInParking(int $parkingId, Carbon $startsAt, Carbon $endsAt, int $excludeId = 0): int
+    public function countAllReservedSpotsInParking(int $parkingId, Carbon $startsAt, Carbon $endsAt, int $excludeId = 0): int
     {
         $query = Reservation::query()
             ->where('parking_id', $parkingId)
@@ -121,7 +121,7 @@ class AvailabilityService
     /**
      * Calcola i posti bloccati manualmente per un intero parcheggio in un dato periodo.
      */
-    protected function countBlockedSpots(int $parkingId, Carbon $startsAt, Carbon $endsAt): int
+    public function countBlockedSpots(int $parkingId, Carbon $startsAt, Carbon $endsAt): int
     {
         return (int) AvailabilityBlock::query()
             ->active()
@@ -134,7 +134,7 @@ class AvailabilityService
     /**
      * Calcola i posti riservati (allocati) per tutto il parcheggio.
      */
-    protected function countGlobalAllocatedSpots(int $parkingId, Carbon $startsAt, Carbon $endsAt): int
+    public function countGlobalAllocatedSpots(int $parkingId, Carbon $startsAt, Carbon $endsAt): int
     {
         return (int) \App\Models\ParkingCapacityAllocation::query()
             ->active()
@@ -148,7 +148,7 @@ class AvailabilityService
     /**
      * Calcola i posti riservati (allocati) per un prodotto specifico.
      */
-    protected function countAllocatedSpotsForProduct(int $productId, Carbon $startsAt, Carbon $endsAt): int
+    public function countAllocatedSpotsForProduct(int $productId, Carbon $startsAt, Carbon $endsAt): int
     {
         return (int) \App\Models\ParkingCapacityAllocation::query()
             ->active()

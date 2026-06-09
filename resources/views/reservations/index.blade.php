@@ -12,39 +12,78 @@
     <x-flash-message />
 
     <div class="pm-card pm-mb-16 pm-animate">
-        <form method="GET" action="{{ route('reservations.index') }}" class="pm-filters">
-            <input type="text" name="search" value="{{ request('search') }}"
-                placeholder="Cerca cliente (premi Invio)..." class="pm-input" onchange="this.form.submit()" />
-            <select name="platform_id" class="pm-select" onchange="this.form.submit()">
-                <option value="">Tutti i canali</option>
-                @foreach ($platforms as $platform)
-                    <option value="{{ $platform->id }}" {{ request('platform_id') == $platform->id ? 'selected' : '' }}>
-                        {{ $platform->name }}
+        <form method="GET" action="{{ route('reservations.index') }}">
+            <!-- Prima riga: Ricerca e dropdown generali -->
+            <div class="pm-filters" style="margin-bottom: 16px;">
+                <input type="text" name="search" value="{{ request('search') }}"
+                    placeholder="Cerca cliente (premi Invio)..." class="pm-input" style="flex: 2" onchange="this.form.submit()" />
+                <select name="platform_id" class="pm-select" onchange="this.form.submit()">
+                    <option value="">Tutti i canali</option>
+                    @foreach ($platforms as $platform)
+                        <option value="{{ $platform->id }}" {{ request('platform_id') == $platform->id ? 'selected' : '' }}>
+                            {{ $platform->name }}
+                        </option>
+                    @endforeach
+                </select>
+                <select name="status" class="pm-select" onchange="this.form.submit()">
+                    <option value="">Tutti gli stati</option>
+                    @foreach ($statuses as $status)
+                        <option value="{{ $status->value }}" {{ request('status') == $status->value ? 'selected' : '' }}>
+                            {{ $status->label() }}
+                        </option>
+                    @endforeach
+                </select>
+                <select name="sort_by" class="pm-select" onchange="this.form.submit()">
+                    <option value="created_at_desc" {{ request('sort_by', 'created_at_desc') == 'created_at_desc' ? 'selected' : '' }}>Data Inserimento (Più recenti)</option>
+                    <option value="starts_at_asc" {{ request('sort_by') == 'starts_at_asc' ? 'selected' : '' }}>Data Arrivo (Crescente)</option>
+                    <option value="starts_at_desc" {{ request('sort_by') == 'starts_at_desc' ? 'selected' : '' }}>Data Arrivo (Decrescente)</option>
+                    <option value="created_at_asc" {{ request('sort_by') == 'created_at_asc' ? 'selected' : '' }}>Data Inserimento (Meno recenti)</option>
+                </select>
+            </div>
+
+            <!-- Seconda riga: Date e bottoni -->
+            <div class="pm-filters" style="align-items: center;">
+                <select name="date_filter_type" class="pm-select" onchange="this.form.submit()" style="max-width: 160px; flex: unset;">
+                    <option value="starts_at" {{ request('date_filter_type', 'starts_at') === 'starts_at' ? 'selected' : '' }}>
+                        Filtra per: Arrivo
                     </option>
-                @endforeach
-            </select>
-            <select name="status" class="pm-select" onchange="this.form.submit()">
-                <option value="">Tutti gli stati</option>
-                @foreach ($statuses as $status)
-                    <option value="{{ $status->value }}" {{ request('status') == $status->value ? 'selected' : '' }}>
-                        {{ $status->label() }}
+                    <option value="ends_at" {{ request('date_filter_type') === 'ends_at' ? 'selected' : '' }}>
+                        Filtra per: Partenza
                     </option>
-                @endforeach
-            </select>
-            <select name="sort_by" class="pm-select" onchange="this.form.submit()">
-                <option value="created_at_desc" {{ request('sort_by', 'created_at_desc') == 'created_at_desc' ? 'selected' : '' }}>Data Inserimento (Più recenti)</option>
-                <option value="starts_at_asc" {{ request('sort_by') == 'starts_at_asc' ? 'selected' : '' }}>Data Arrivo (Crescente)</option>
-                <option value="starts_at_desc" {{ request('sort_by') == 'starts_at_desc' ? 'selected' : '' }}>Data Arrivo (Decrescente)</option>
-                <option value="created_at_asc" {{ request('sort_by') == 'created_at_asc' ? 'selected' : '' }}>Data Inserimento (Meno recenti)</option>
-            </select>
-            <input type="date" name="date_from" value="{{ request('date_from') }}" class="pm-input"
-                onchange="this.form.submit()" />
-            <input type="date" name="date_to" value="{{ request('date_to') }}" class="pm-input"
-                onchange="this.form.submit()" />
-            <a href="{{ route('reservations.index') }}" class="pm-btn pm-btn-secondary pm-btn-sm">Reset</a>
-            <a href="{{ route('reservations.export', request()->query()) }}" class="pm-btn pm-btn-secondary pm-btn-sm">
-                Esporta Excel
-            </a>
+                </select>
+                
+                <div style="display:flex; align-items:center; gap: 8px;">
+                    <span style="font-size: 13px; color: var(--pm-text-muted); font-weight: 500;">Dal</span>
+                    <input type="date" name="date_from" value="{{ request('date_from') }}" class="pm-input"
+                        onchange="this.form.submit()" style="flex: unset; width: 140px;" />
+                </div>
+                
+                <div style="display:flex; align-items:center; gap: 8px;">
+                    <span style="font-size: 13px; color: var(--pm-text-muted); font-weight: 500;">Al</span>
+                    <input type="date" name="date_to" value="{{ request('date_to') }}" class="pm-input"
+                        onchange="this.form.submit()" style="flex: unset; width: 140px;" />
+                </div>
+
+                <div style="margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap;">
+                    <a href="{{ route('reservations.index', array_merge(request()->except(['page', 'date_from', 'date_to', 'quick_filter']), [
+                        'quick_filter' => 'arrivals_today',
+                    ])) }}" class="pm-btn {{ request('quick_filter') === 'arrivals_today' ? 'pm-btn-primary' : 'pm-btn-secondary' }} pm-btn-sm" style="background: {{ request('quick_filter') === 'arrivals_today' ? 'var(--pm-accent)' : 'transparent' }};">
+                        Arrivi oggi
+                    </a>
+                    <a href="{{ route('reservations.index', array_merge(request()->except(['page', 'date_from', 'date_to', 'quick_filter']), [
+                        'quick_filter' => 'departures_today',
+                    ])) }}" class="pm-btn {{ request('quick_filter') === 'departures_today' ? 'pm-btn-primary' : 'pm-btn-secondary' }} pm-btn-sm" style="background: {{ request('quick_filter') === 'departures_today' ? 'var(--pm-accent)' : 'transparent' }};">
+                        Partenze oggi
+                    </a>
+                    <a href="{{ route('reservations.index') }}" class="pm-btn pm-btn-secondary pm-btn-sm" title="Reimposta filtri">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    </a>
+                    <a href="{{ route('reservations.export', request()->query()) }}" class="pm-btn pm-btn-sm" style="background: var(--pm-green); color: white; border-color: var(--pm-green);">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Export Excel
+                    </a>
+                </div>
+            </div>
         </form>
     </div>
 
