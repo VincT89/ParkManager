@@ -43,10 +43,21 @@ return [
 
     'parkos' => [
         'enabled' => env('PARKOS_ENABLED', false),
-        'base_url' => env('PARKOS_BASE_URL', 'https://api.parkos.com/v1'),
-        'api_key' => env('PARKOS_API_KEY'),
-        'timeout' => env('PARKOS_TIMEOUT', 15),
-        'fixture_mode' => env('PARKOS_FIXTURE_MODE', false),
+        'fixture_mode' => env('PARKOS_FIXTURE_MODE', true),
+
+        'base_url' => env('PARKOS_BASE_URL', 'https://api.parkos.com'),
+        'auth_path' => env('PARKOS_AUTH_PATH', '/oauth/token'),
+        'reservations_path' => env('PARKOS_RESERVATIONS_PATH', '/v1/reservations'),
+
+        'username' => env('PARKOS_USERNAME'),
+        'password' => env('PARKOS_PASSWORD'),
+        'client_id' => env('PARKOS_CLIENT_ID'),
+        'client_secret' => env('PARKOS_CLIENT_SECRET'),
+
+        'timeout' => env('PARKOS_TIMEOUT', 20),
+        'token_cache_key' => env('PARKOS_TOKEN_CACHE_KEY', 'parkos_access_token'),
+        'token_cache_ttl' => env('PARKOS_TOKEN_CACHE_TTL', 31500000),
+
         'fixture_file' => env('PARKOS_FIXTURE_FILE', 'reservations_success.json'),
     ],
 

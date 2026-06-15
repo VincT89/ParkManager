@@ -96,7 +96,9 @@ class ReservationController extends Controller
             ->active()
             ->get();
         $statuses  = ReservationStatus::cases();
-        $products  = \App\Models\ParkingProduct::active()->get();
+        $products  = \App\Models\ParkingProduct::active()
+            ->whereNotIn('code', ['auto_covered', 'truck_covered'])
+            ->get();
 
         return view('reservations.create', compact('listings', 'statuses', 'products'));
     }
@@ -148,7 +150,9 @@ class ReservationController extends Controller
             ->active()
             ->get();
         $statuses = ReservationStatus::cases();
-        $products = \App\Models\ParkingProduct::active()->get();
+        $products = \App\Models\ParkingProduct::active()
+            ->whereNotIn('code', ['auto_covered', 'truck_covered'])
+            ->get();
 
         return view('reservations.edit', compact(
             'reservation',

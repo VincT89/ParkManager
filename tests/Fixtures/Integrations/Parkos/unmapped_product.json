@@ -1,12 +1,12 @@
 {
   "meta": {
     "platform": "parkos",
-    "fixture": "reservations_success",
+    "fixture": "unmapped_product",
     "generated_at": "2026-04-23T10:00:00+02:00"
   },
   "data": {
     "1": {
-      "code": "AA11BB22",
+      "code": "UNMAPPED",
       "name": "Mario Rossi",
       "phone": "+393331112233",
       "car_license_plate": "AB123CD",
@@ -14,9 +14,9 @@
       "arrival_time": "10:00",
       "departure_date": "2026-06-20",
       "departure_time": "18:00",
-      "parking_type": "shuttle",
-      "location_type": "outdoor",
-      "merchant_id": 15325,
+      "parking_type": "valet",
+      "location_type": "indoor",
+      "merchant_id": 99999,
       "total_price": 99,
       "currency": "EUR",
       "cancelled_at": null

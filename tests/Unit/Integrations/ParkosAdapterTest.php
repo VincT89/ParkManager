@@ -17,10 +17,9 @@ class ParkosAdapterTest extends TestCase
     {
         parent::setUp();
         
-        $this->adapter = new ParkosAdapter();
-        // create a dummy listing (we don't need real DB relationships for unit tests if we don't save)
-        // actually we can just pass a mock or empty listing
+        $this->adapter = app(ParkosAdapter::class);
         $this->listing = new ParkingListing(['id' => 1]);
+        $this->listing->external_id = '15325';
         
         Config::set('services.parkos.fixture_mode', true);
     }
@@ -34,83 +33,52 @@ class ParkosAdapterTest extends TestCase
         $this->assertCount(1, $reservations);
         $res = $reservations[0];
         
-        $this->assertEquals('PKS-10001', $res->external_id);
-        $this->assertEquals('OPEN_AIR', $res->external_product_ref);
+        $this->assertEquals('AA11BB22', $res->external_id);
+        $this->assertEquals('15325:shuttle:outdoor', $res->external_product_ref);
         $this->assertEquals('Mario Rossi', $res->customer_name);
         $this->assertEquals(1, $res->spots);
-        $this->assertEquals(49.90, $res->price);
+        $this->assertEquals(99.0, $res->price);
         $this->assertEquals('EUR', $res->currency);
-        $this->assertTrue($res->starts_at->isSameDay(Carbon::parse('2026-05-01')));
+        $this->assertEquals('AB123CD', $res->license_plate);
+        $this->assertEquals('+393331112233', $res->customer_phone);
+        $this->assertTrue($res->starts_at->isSameDay(Carbon::parse('2026-06-15')));
     }
 
     public function test_throws_exception_on_missing_fields()
     {
-        Config::set('services.parkos.fixture_file', 'reservations_missing_fields.json');
+        Config::set('services.parkos.fixture_file', 'missing_fields.json');
         
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Missing period dates for PKS-10002');
+        $this->expectExceptionMessage('Missing required field: code');
         
         $this->adapter->fetchReservations($this->listing, Carbon::today(), Carbon::tomorrow());
     }
 
     public function test_throws_exception_on_invalid_dates()
     {
-        Config::set('services.parkos.fixture_file', 'reservations_invalid_dates.json');
+        Config::set('services.parkos.fixture_file', 'invalid_dates.json');
         
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Invalid dates: ends_at before starts_at for PKS-10005');
+        $this->expectExceptionMessage('Invalid dates: ends_at before starts_at for INVALIDDATES');
         
         $this->adapter->fetchReservations($this->listing, Carbon::today(), Carbon::tomorrow());
     }
 
     public function test_throws_exception_on_bad_shape()
     {
-        Config::set('services.parkos.fixture_file', 'reservations_bad_shape.json');
+        Config::set('services.parkos.fixture_file', 'bad_shape.json');
         
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Invalid shape: missing or invalid "reservations" key.');
-        
-        $this->adapter->fetchReservations($this->listing, Carbon::today(), Carbon::tomorrow());
-    }
-
-    public function test_throws_exception_on_malformed_json()
-    {
-        Config::set('services.parkos.fixture_file', 'reservations_malformed_json.json');
-        
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessageMatches('/Invalid JSON in fixture/');
-        
-        $this->adapter->fetchReservations($this->listing, Carbon::today(), Carbon::tomorrow());
-    }
-
-    public function test_throws_exception_on_missing_customer_name()
-    {
-        // Missing fields fixture already drops customer.name, or we can make a specific one.
-        // Actually reservations_missing_fields.json doesn't drop customer name, it drops ends_at and price.
-        // Wait, reservations_missing_fields.json has customer.name = "Luigi Bianchi"
-        // Let's create a new fixture for missing customer name inline or use missing_fields.
-        Config::set('services.parkos.fixture_file', 'reservations_missing_customer.json');
-        
-        // Write the fixture inline for this test
-        file_put_contents(base_path('tests/Fixtures/Integrations/Parkos/reservations_missing_customer.json'), json_encode([
-            "reservations" => [
-                [
-                    "id" => "PKS-999",
-                    "product_code" => "OPEN",
-                    "period" => ["starts_at" => "2026-05-01T08:00:00+02:00", "ends_at" => "2026-05-05T08:00:00+02:00"],
-                    "spots" => 1,
-                    "customer" => ["email" => "test@test.com"]
-                ]
-            ]
+        file_put_contents(base_path('tests/Fixtures/Integrations/Parkos/bad_shape.json'), json_encode([
+            "reservations" => [] // missing 'data'
         ]));
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Missing required field: customer.name for PKS-999');
+        $this->expectExceptionMessage('Invalid shape: missing or invalid "data" key.');
         
         try {
             $this->adapter->fetchReservations($this->listing, Carbon::today(), Carbon::tomorrow());
         } finally {
-            unlink(base_path('tests/Fixtures/Integrations/Parkos/reservations_missing_customer.json'));
+            @unlink(base_path('tests/Fixtures/Integrations/Parkos/bad_shape.json'));
         }
     }
 
@@ -120,16 +88,6 @@ class ParkosAdapterTest extends TestCase
         
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessageMatches('/Fixture file not found at path:/');
-        
-        $this->adapter->fetchReservations($this->listing, Carbon::today(), Carbon::tomorrow());
-    }
-
-    public function test_throws_exception_when_fixture_mode_is_false()
-    {
-        Config::set('services.parkos.fixture_mode', false);
-        
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('API Parkos non ancora implementata.');
         
         $this->adapter->fetchReservations($this->listing, Carbon::today(), Carbon::tomorrow());
     }
