@@ -31,6 +31,7 @@ class ParkingProductsSeeder extends Seeder
                 'capacity' => 600,
                 'price' => 7.80,
                 'sort_order' => 20,
+                'is_active' => false,
             ],
             [
                 'code' => 'truck_open',
@@ -38,6 +39,7 @@ class ParkingProductsSeeder extends Seeder
                 'capacity' => 200,
                 'price' => 14.80,
                 'sort_order' => 30,
+                'is_active' => true,
             ],
             [
                 'code' => 'truck_covered',
@@ -45,6 +47,7 @@ class ParkingProductsSeeder extends Seeder
                 'capacity' => 200,
                 'price' => 17.80,
                 'sort_order' => 40,
+                'is_active' => false,
             ],
         ];
 
@@ -62,7 +65,7 @@ class ParkingProductsSeeder extends Seeder
                         'name' => $product['name'],
                         'capacity' => $capacity,
                         'price' => $product['price'],
-                        'is_active' => true,
+                        'is_active' => $product['is_active'] ?? true,
                         'sort_order' => $product['sort_order'],
                     ]
                 );

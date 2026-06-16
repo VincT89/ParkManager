@@ -24,7 +24,6 @@ class PublicBookingController extends Controller
         $products = ParkingProduct::whereHas('parking', function ($q) {
             $q->active();
         })->active()
-          ->whereNotIn('code', ['auto_covered', 'truck_covered'])
           ->get()
           ->unique('code');
 

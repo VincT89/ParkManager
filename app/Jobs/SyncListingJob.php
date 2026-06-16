@@ -20,7 +20,10 @@ class SyncListingJob implements ShouldQueue
      * Create a new job instance.
      */
     public function __construct(
-        public readonly ParkingListing $listing
+        public readonly ParkingListing $listing,
+        public readonly ?string $from = null,
+        public readonly ?string $to = null,
+        public readonly string $source = 'job',
     ) {}
 
     /**
@@ -32,8 +35,18 @@ class SyncListingJob implements ShouldQueue
             return;
         }
 
+        if ($this->listing->platform->slug === 'website') {
+            return;
+        }
+
         $adapter = app(\App\Integrations\AdapterRegistry::class)->forPlatform($this->listing->platform);
-        [$from, $to] = $adapter->defaultSyncWindow();
+        
+        if ($this->from && $this->to) {
+            $from = Carbon::parse($this->from);
+            $to = Carbon::parse($this->to);
+        } else {
+            [$from, $to] = $adapter->defaultSyncWindow();
+        }
 
         $stats = $action->execute($this->listing, $from, $to, dryRun: false);
 
@@ -43,14 +56,16 @@ class SyncListingJob implements ShouldQueue
         SyncLog::create([
             'platform_id'          => $this->listing->platform_id,
             'parking_listing_id'   => $this->listing->id,
-            'source'               => 'job',
+            'source'               => $this->source,
             'status'               => $status,
             'is_dry_run'           => false,
             'reservations_created' => $stats['created'],
             'reservations_updated' => $stats['updated'],
             'reservations_failed'  => $stats['failed'],
             'reservations_skipped' => $stats['skipped'],
-            'notes'                => empty($stats['errors']) ? null : implode("\n", $stats['errors']),
+            'notes'                => empty($stats['errors']) ? null : substr(implode("\n", $stats['errors']), 0, 1000),
+            'window_from'          => $from,
+            'window_to'            => $to,
         ]);
     }
 }

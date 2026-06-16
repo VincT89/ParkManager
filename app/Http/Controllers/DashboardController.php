@@ -71,8 +71,9 @@ class DashboardController extends Controller
         // 3. Ultime prenotazioni e movimenti operativi di oggi
         $latestReservations = Reservation::query()
             ->whereIn('parking_id', $parkingIds)
+            ->where('starts_at', '>=', now()->startOfDay())
             ->with(['parkingListing.platform'])
-            ->orderByDesc('created_at')
+            ->orderBy('starts_at', 'asc')
             ->take(5)
             ->get();
 

@@ -32,6 +32,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
+    // Admin Account
+    Route::get('/admin/account', [\App\Http\Controllers\AdminAccountController::class, 'edit'])
+        ->name('admin.account.edit');
+    Route::put('/admin/account/email', [\App\Http\Controllers\AdminAccountController::class, 'updateEmail'])
+        ->name('admin.account.email.update');
+    Route::put('/admin/account/password', [\App\Http\Controllers\AdminAccountController::class, 'updatePassword'])
+        ->name('admin.account.password.update');
+
     // Report
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
 
@@ -57,6 +65,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->except(['show']);
         Route::post('platforms/{platform}/attach', [PlatformController::class, 'attachToParking'])
             ->name('platforms.attach');
+
+        Route::post('/platforms/sync', \App\Http\Controllers\ManualPlatformSyncController::class)
+            ->name('platforms.sync');
+            
+        Route::post('/platforms/historical-sync', \App\Http\Controllers\HistoricalPlatformSyncController::class)
+            ->name('platforms.historical-sync');
         
         Route::post('platforms/{platform}/mappings', [PlatformController::class, 'storeMapping'])
             ->name('platforms.mappings.store');

@@ -15,7 +15,11 @@ class PlatformController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('platforms.index', compact('platforms'));
+        $lastSyncLog = \App\Models\SyncLog::with(['platform', 'parkingListing'])
+            ->latest()
+            ->first();
+
+        return view('platforms.index', compact('platforms', 'lastSyncLog'));
     }
 
     public function create()

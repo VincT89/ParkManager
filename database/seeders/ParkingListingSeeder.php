@@ -16,11 +16,31 @@ class ParkingListingSeeder extends Seeder
 
         foreach ($parkings as $parking) {
             foreach ($platforms as $platform) {
+                $externalId = null;
+                $isActive = false;
+
+                if ($parking->name === 'Parcheggio Centrale') {
+                    if ($platform->slug === 'parking-my-car') {
+                        $externalId = '2248';
+                        $isActive = true;
+                    } elseif ($platform->slug === 'vologio') {
+                        $externalId = null; // in attesa di discovery
+                        $isActive = false;
+                    } elseif ($platform->slug === 'parkos') {
+                        $externalId = null; // in attesa di credenziali
+                        $isActive = false;
+                    } elseif ($platform->slug === 'website') {
+                        $externalId = null;
+                        $isActive = true; // attivo ma escluso dal sync
+                    }
+                }
+
                 ParkingListing::firstOrCreate([
                     'parking_id'     => $parking->id,
                     'platform_id'    => $platform->id,
                 ], [
-                    'is_active'      => true,
+                    'is_active'      => $isActive,
+                    'external_id'    => $externalId,
                 ]);
             }
         }

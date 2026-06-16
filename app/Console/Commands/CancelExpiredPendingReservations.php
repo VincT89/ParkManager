@@ -6,8 +6,6 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
-#[Signature('app:cancel-expired-pending-reservations')]
-#[Description('Command description')]
 class CancelExpiredPendingReservations extends Command
 {
     /**
@@ -15,7 +13,7 @@ class CancelExpiredPendingReservations extends Command
      *
      * @var string
      */
-    protected $signature = 'reservations:cancel-expired';
+    protected $signature = 'app:cancel-expired-pending-reservations';
 
     /**
      * The console command description.

@@ -11,7 +11,8 @@ Artisan::command('inspire', function () {
     $listings = \App\Models\ParkingListing::with('platform')
         ->where('is_active', true)
         ->whereHas('platform', function ($q) {
-            $q->where('is_active', true);
+            $q->where('is_active', true)
+              ->where('slug', '!=', 'website');
         })
         ->get();
     
@@ -20,4 +21,6 @@ Artisan::command('inspire', function () {
     }
 })->everyFifteenMinutes()->name('sync_all_active_listings')->withoutOverlapping(14);
 
-\Illuminate\Support\Facades\Schedule::command('reservations:cancel-expired')->everyMinute();
+\Illuminate\Support\Facades\Schedule::command('app:cancel-expired-pending-reservations')
+    ->everyMinute()
+    ->withoutOverlapping();

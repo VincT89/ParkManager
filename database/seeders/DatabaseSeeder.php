@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
         \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
 
         // Pulisce le tabelle (ordine rispettando le FK, anche se disabilitate è buona pratica)
+        \App\Models\Payment::truncate();
         \App\Models\Reservation::truncate();
         \App\Models\AvailabilityBlock::truncate();
         \App\Models\ParkingCapacityAllocation::truncate();
@@ -32,7 +33,7 @@ class DatabaseSeeder extends Seeder
             ParkingProductsSeeder::class,
             PlatformSeeder::class,
             ParkingListingSeeder::class,
-            ReservationsDemoSeeder::class,
+            PlatformProductMappingSeeder::class,
         ]);
     }
 }

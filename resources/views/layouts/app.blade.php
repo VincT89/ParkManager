@@ -157,13 +157,19 @@
 
             <div class="pm-sidebar-footer">
                 <div class="pm-sidebar-user">
-                    <div class="pm-avatar" style="flex-shrink:0">
-                        {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
-                    </div>
-                    <div class="pm-sidebar-user-info">
-                        <div class="pm-sidebar-user-name">{{ auth()->user()->name }}</div>
-                        <div class="pm-sidebar-user-role">{{ auth()->user()->role->label() }}</div>
-                    </div>
+                    <a href="{{ route('admin.account.edit') }}"
+                       style="display:flex;align-items:center;gap:10px;flex:1;text-decoration:none;color:inherit">
+
+                        <div class="pm-avatar" style="flex-shrink:0">
+                            {{ strtoupper(substr(auth()->user()->name, 0, 2)) }}
+                        </div>
+
+                        <div class="pm-sidebar-user-info">
+                            <div class="pm-sidebar-user-name">{{ auth()->user()->name }}</div>
+                            <div class="pm-sidebar-user-role">{{ auth()->user()->role->label() }}</div>
+                        </div>
+                    </a>
+
                     <form method="POST" action="{{ route('logout') }}" style="flex-shrink:0">
                         @csrf
                         <button type="submit" class="pm-sidebar-logout" title="Esci">

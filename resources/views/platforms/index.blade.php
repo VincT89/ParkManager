@@ -2,14 +2,81 @@
     <x-slot name="header">
         <div>
             <div class="pm-page-title">Piattaforme</div>
-            <div class="pm-page-subtitle">gestione canali di vendita e Posti assegnati</div>
+            <div class="pm-page-subtitle">gestione canali di vendita e posti assegnati</div>
         </div>
-        <a href="{{ route('platforms.create') }}" class="pm-btn pm-btn-primary">
-            Nuova piattaforma
-        </a>
+
+        <div style="display:flex;align-items:center;gap:10px">
+            <button type="button" class="pm-btn pm-btn-secondary" onclick="document.getElementById('historical-sync-modal').style.display='flex'">
+                Recupera storico
+            </button>
+
+            <form method="POST"
+                  action="{{ route('platforms.sync') }}"
+                  onsubmit="return confirm('Avviare ora la sincronizzazione con le piattaforme esterne?')">
+                @csrf
+                <button type="submit" class="pm-btn pm-btn-secondary">
+                    Sincronizza piattaforme
+                </button>
+            </form>
+
+            <a href="{{ route('platforms.create') }}" class="pm-btn pm-btn-primary">
+                Nuova piattaforma
+            </a>
+        </div>
     </x-slot>
 
+    <div id="historical-sync-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:1000;">
+        <div class="pm-card" style="width:100%; max-width:400px; margin:20px;">
+            <div class="pm-card-header">
+                <div class="pm-card-title">Recupera storico</div>
+                <button type="button" onclick="document.getElementById('historical-sync-modal').style.display='none'" style="background:none; border:none; cursor:pointer; font-size:20px; color:var(--pm-text-muted)">&times;</button>
+            </div>
+            <div class="pm-card-body" style="padding: 16px;">
+                <p style="font-size:13px; color:var(--pm-text-muted); margin-bottom:16px;">
+                    Recupera prenotazioni e modifiche dalle piattaforme nel periodo selezionato. (Massimo 6 mesi).
+                </p>
+                <form method="POST" action="{{ route('platforms.historical-sync') }}" class="pm-form">
+                    @csrf
+                    <div class="pm-field" style="margin-bottom:12px;">
+                        <label class="pm-label">Data inizio</label>
+                        <input type="date" name="from" class="pm-input" required>
+                    </div>
+                    <div class="pm-field" style="margin-bottom:16px;">
+                        <label class="pm-label">Data fine</label>
+                        <input type="date" name="to" class="pm-input" required>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:8px;">
+                        <button type="button" class="pm-btn" onclick="document.getElementById('historical-sync-modal').style.display='none'">Annulla</button>
+                        <button type="submit" class="pm-btn pm-btn-primary">Conferma recupero</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <x-flash-message />
+
+    @if (!empty($lastSyncLog))
+        <div class="pm-card" style="margin-bottom:16px">
+            <div class="pm-card-header">
+                <div>
+                    <div class="pm-card-title">Ultima sincronizzazione</div>
+                    <div class="pm-text-muted" style="font-size:12px">
+                        {{ $lastSyncLog->created_at->format('d/m/Y H:i') }}
+                        · stato: {{ $lastSyncLog->status }}
+                        · origine: {{ $lastSyncLog->source }}
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px">
+                <div>Create: {{ $lastSyncLog->reservations_created }}</div>
+                <div>Aggiornate: {{ $lastSyncLog->reservations_updated }}</div>
+                <div>Saltate: {{ $lastSyncLog->reservations_skipped }}</div>
+                <div>Errori: {{ $lastSyncLog->reservations_failed }}</div>
+            </div>
+        </div>
+    @endif
 
     <div class="pm-gap">
         @forelse ($platforms as $platform)

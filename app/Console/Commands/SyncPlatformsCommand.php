@@ -38,7 +38,8 @@ class SyncPlatformsCommand extends Command
         $query = ParkingListing::with(['platform', 'parking'])
             ->active()
             ->whereHas('platform', function ($q) {
-                $q->active();
+                $q->active()
+                  ->where('slug', '!=', 'website');
             });
 
         if ($platformSlug) {
@@ -88,7 +89,7 @@ class SyncPlatformsCommand extends Command
                 'reservations_updated' => $stats['updated'],
                 'reservations_failed'  => $stats['failed'],
                 'reservations_skipped' => $stats['skipped'],
-                'notes'                => empty($stats['errors']) ? null : implode("\n", $stats['errors']),
+                'notes'                => empty($stats['errors']) ? null : substr(implode("\n", $stats['errors']), 0, 1000),
             ]);
 
             $this->table(

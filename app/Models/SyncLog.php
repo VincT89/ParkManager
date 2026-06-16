@@ -19,6 +19,8 @@ class SyncLog extends Model
         'reservations_skipped',
         'notes',
         'raw_payload',
+        'window_from',
+        'window_to',
     ];
 
     protected function casts(): array
