@@ -129,6 +129,34 @@ class ParkingMyCarClient
             ?? [];
     }
 
+    public function findBookingsByPeriod(Carbon $from, Carbon $to): array
+    {
+        $response = $this->request()->get(
+            $this->url('/pmc_rest/bookings_resource'),
+            [
+                'start_dttm' => $from->format('Y-m-d H:i:s'),
+                'end_dttm' => $to->format('Y-m-d H:i:s'),
+            ]
+        );
+
+        $response->throw();
+
+        \Log::info('PMC bookings_resource response', [
+            'from' => $from->toDateTimeString(),
+            'to' => $to->toDateTimeString(),
+            'keys' => array_keys($response->json() ?? []),
+            'bookings_count' => count($response->json('bookings') ?? []),
+            'data_count' => count($response->json('data') ?? []),
+            'reservations_count' => count($response->json('reservations') ?? []),
+            'total_count' => count($response->json() ?? []),
+        ]);
+
+        return $response->json('bookings')
+            ?? $response->json('reservations')
+            ?? $response->json('data')
+            ?? [];
+    }
+
     private function ensureConfigured(): void
     {
         foreach (['base_url', 'client_id', 'client_secret', 'username', 'password'] as $key) {

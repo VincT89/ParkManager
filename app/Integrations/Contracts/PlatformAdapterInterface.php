@@ -23,7 +23,7 @@ interface PlatformAdapterInterface
      * 
      * @return \App\Integrations\DTO\NormalizedReservation[]
      */
-    public function fetchReservations(ParkingListing $listing, Carbon $from, Carbon $to): array;
+    public function fetchReservations(ParkingListing $listing, Carbon $from, Carbon $to, string $mode = 'modified'): array;
 
     /**
      * Resolve the internal ParkingProduct for a given external product reference.

@@ -34,7 +34,7 @@ class ParkosAdapter extends AbstractPlatformAdapter
         ];
     }
 
-    public function fetchReservations(ParkingListing $listing, Carbon $from, Carbon $to): array
+    public function fetchReservations(ParkingListing $listing, Carbon $from, Carbon $to, string $mode = 'modified'): array
     {
         if (config('services.parkos.fixture_mode')) {
             $fixtureFile = config('services.parkos.fixture_file', 'reservations_success.json');
@@ -54,9 +54,40 @@ class ParkosAdapter extends AbstractPlatformAdapter
             throw new \RuntimeException("ParkingListing ID {$listing->id} non ha external_id configurato.");
         }
 
-        $records = $this->client->findBookingsByModification($from, $to, $listing->external_id);
+        if ($mode === 'stay_period') {
+            $apiFrom = $from->copy()->subMonths(6);
+            $arrival = $this->client->findBookingsByPeriodType($apiFrom, $to, 'arrival', $listing->external_id);
+            $departure = $this->client->findBookingsByPeriodType($apiFrom, $to, 'departure', $listing->external_id);
+
+            $records = collect($arrival)
+                ->merge($departure)
+                ->unique(fn ($record) => $record['code'] ?? json_encode($record))
+                ->values()
+                ->all();
+        } else {
+            $records = $this->client->findBookingsByModification($from, $to, $listing->external_id);
+        }
 
         return collect($records)
+            ->filter(function ($record) use ($from, $to, $mode) {
+                if ($mode !== 'stay_period') {
+                    return true;
+                }
+
+                $arrivalDate = $record['arrival_date'] ?? null;
+                $arrivalTime = $record['arrival_time'] ?? '00:00:00';
+                $departureDate = $record['departure_date'] ?? null;
+                $departureTime = $record['departure_time'] ?? '23:59:59';
+
+                if (!$arrivalDate || !$departureDate) {
+                    return false;
+                }
+
+                $start = Carbon::parse("{$arrivalDate} {$arrivalTime}");
+                $end = Carbon::parse("{$departureDate} {$departureTime}");
+
+                return $start->lte($to) && $end->gte($from);
+            })
             ->map(fn (array $record) => $this->normalizeRecord($record))
             ->values()
             ->all();

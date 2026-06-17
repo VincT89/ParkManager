@@ -55,13 +55,41 @@ class ParkosClient
             ]);
 
         $response->throw();
-
-        $data = $response->json();
-
-        return $this->storeTokens($data);
+        return $this->storeTokens($response->json());
     }
 
+    public function findBookingsByPeriodType(
+        Carbon $from,
+        Carbon $to,
+        string $periodType,
+        ?string $merchantId = null
+    ): array {
+        $records = [];
+        $url = $this->url(config('services.parkos.reservations_path', '/v1/reservations'));
 
+        $params = [
+            'period_type' => $periodType,
+            'from' => $from->toDateString(),
+            'till' => $to->toDateString(),
+        ];
+
+        if ($merchantId) {
+            $params['merchant_id'] = $merchantId;
+        }
+
+        do {
+            $response = $this->request()->get($url, $params);
+            $response->throw();
+
+            $data = $response->json();
+            $records = array_merge($records, array_values($data['data'] ?? []));
+
+            $url = $data['paginator']['next_page_url'] ?? null;
+            $params = [];
+        } while ($url);
+
+        return $records;
+    }
 
     private function storeTokens(array $data): array
     {

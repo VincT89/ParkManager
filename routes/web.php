@@ -70,7 +70,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('platforms.sync');
             
         Route::post('/platforms/historical-sync', \App\Http\Controllers\HistoricalPlatformSyncController::class)
-            ->name('platforms.historical-sync');
+        ->name('platforms.historical-sync');
+
+    Route::post('/platforms/future-sync', \App\Http\Controllers\FuturePlatformSyncController::class)
+        ->name('platforms.future-sync');
         
         Route::post('platforms/{platform}/mappings', [PlatformController::class, 'storeMapping'])
             ->name('platforms.mappings.store');

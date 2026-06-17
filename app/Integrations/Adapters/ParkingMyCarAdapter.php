@@ -32,16 +32,49 @@ class ParkingMyCarAdapter extends AbstractPlatformAdapter
         ];
     }
 
-    public function fetchReservations(ParkingListing $listing, Carbon $from, Carbon $to): array
+    public function fetchReservations(ParkingListing $listing, Carbon $from, Carbon $to, string $mode = 'modified'): array
     {
         if (empty($listing->external_id)) {
             throw new \RuntimeException("ParkingListing ID {$listing->id} non ha external_id configurato.");
         }
 
-        $records = $this->client->findBookingsByModification($from, $to);
+        $apiFrom = $mode === 'stay_period' ? $from->copy()->subMonths(6) : $from;
 
-        return collect($records)
+        $records = $mode === 'stay_period'
+            ? $this->client->findBookingsByPeriod($apiFrom, $to)
+            : $this->client->findBookingsByModification($from, $to);
+
+        \Log::info('PMC bookings_resource ids after API', [
+            'ids' => collect($records)->pluck('id')->values()->all(),
+        ]);
+
+        $filtered = collect($records)
             ->filter(fn (array $record) => (string)($record['parking_id'] ?? $record['parking']['id'] ?? '') === (string)$listing->external_id)
+            ->filter(function (array $record) use ($from, $to, $mode) {
+                if ($mode !== 'stay_period') {
+                    return true;
+                }
+
+                $startsAtRaw = $record['in_dttm'] ?? $record['start_dtm'] ?? $record['start_dttm'] ?? $record['date_start'] ?? $record['start_date'] ?? null;
+                $endsAtRaw = $record['out_dttm'] ?? $record['end_dtm'] ?? $record['end_dttm'] ?? $record['date_end'] ?? $record['end_date'] ?? null;
+
+                if (!$startsAtRaw || !$endsAtRaw) {
+                    return false;
+                }
+
+                $startsAt = is_numeric($startsAtRaw) ? Carbon::createFromTimestamp($startsAtRaw) : Carbon::parse($startsAtRaw);
+                $endsAt = is_numeric($endsAtRaw) ? Carbon::createFromTimestamp($endsAtRaw) : Carbon::parse($endsAtRaw);
+
+                return $startsAt->lte($to) && $endsAt->gte($from);
+            })
+            ->values()
+            ->all();
+
+        \Log::info('PMC bookings_resource ids after filters', [
+            'ids' => collect($filtered)->pluck('id')->values()->all(),
+        ]);
+
+        return collect($filtered)
             ->map(fn (array $record) => $this->normalizeRecord($record))
             ->values()
             ->all();

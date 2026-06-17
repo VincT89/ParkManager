@@ -15,12 +15,13 @@ class SyncPlatformsCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'sync:platforms 
-                            {--platform= : Platform slug to sync (optional)} 
+    protected $signature = 'platforms:sync 
+                            {--platform= : Slug of a specific platform to sync} 
                             {--listing= : Specific listing ID to sync (optional)}
                             {--from= : Start date (optional)}
                             {--to= : End date (optional)}
-                            {--dry-run : Only fetch and output, do not save}';
+                            {--mode=modified : Sync mode (modified or stay_period)}
+                            {--dry-run : Simulate sync without writing to DB}';
 
     /**
      * The console command description.
@@ -34,6 +35,7 @@ class SyncPlatformsCommand extends Command
         $platformSlug = $this->option('platform');
         $listingId = $this->option('listing');
         $dryRun = $this->option('dry-run');
+        $mode = $this->option('mode');
 
         $query = ParkingListing::with(['platform', 'parking'])
             ->active()
@@ -62,7 +64,7 @@ class SyncPlatformsCommand extends Command
         $this->info("Starting sync " . ($dryRun ? '[DRY-RUN]' : ''));
 
         foreach ($listings as $listing) {
-            $this->info("Syncing listing ID: {$listing->id} (Platform: {$listing->platform->name}, Parking: {$listing->parking->name})...");
+            $this->info("Syncing {$listing->platform->name} - {$listing->parking->name} (Mode: {$mode})");
 
             $fromOption = $this->option('from');
             $toOption = $this->option('to');
@@ -75,7 +77,7 @@ class SyncPlatformsCommand extends Command
 
             $this->info("Window: {$from->toDateTimeString()} to {$to->toDateTimeString()}");
 
-            $stats = $action->execute($listing, $from, $to, $dryRun);
+            $stats = $action->execute($listing, $from, $to, $dryRun, $mode);
 
             $status = empty($stats['errors']) ? 'success' : 'failed';
 

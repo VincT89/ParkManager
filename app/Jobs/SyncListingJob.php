@@ -16,6 +16,9 @@ class SyncListingJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public int $timeout = 120;
+    public int $tries = 1;
+
     /**
      * Create a new job instance.
      */
@@ -24,6 +27,7 @@ class SyncListingJob implements ShouldQueue
         public readonly ?string $from = null,
         public readonly ?string $to = null,
         public readonly string $source = 'job',
+        public readonly string $mode = 'modified',
     ) {}
 
     /**
@@ -48,7 +52,7 @@ class SyncListingJob implements ShouldQueue
             [$from, $to] = $adapter->defaultSyncWindow();
         }
 
-        $stats = $action->execute($this->listing, $from, $to, dryRun: false);
+        $stats = $action->execute($this->listing, $from, $to, dryRun: false, mode: $this->mode);
 
         $status = empty($stats['errors']) ? 'success' : 'failed';
 

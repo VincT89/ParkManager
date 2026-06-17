@@ -24,7 +24,7 @@ class ReservationImportPayloadFactory
             'ends_at'            => $dto->ends_at->format('Y-m-d H:i:s'),
             'spots'              => $dto->spots,
             'price'              => $dto->price,
-            'notes'              => $dto->notes,
+            'notes'              => $dto->notes ? mb_substr((string)$dto->notes, 0, 60000) : null,
             'status'             => $dto->status ?? 'confirmed',
             'flight_reference'   => $dto->flight_reference,
             'raw_data'           => $dto->raw_data,

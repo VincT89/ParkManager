@@ -6,25 +6,13 @@ use App\Jobs\SyncListingJob;
 use App\Models\ParkingListing;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 
-class HistoricalPlatformSyncController extends Controller
+class FuturePlatformSyncController extends Controller
 {
-    public function __invoke(Request $request): RedirectResponse
+    public function __invoke(): RedirectResponse
     {
-        $validated = $request->validate([
-            'from' => ['required', 'date'],
-            'to' => ['required', 'date', 'after_or_equal:from'],
-        ]);
-
-        $from = Carbon::parse($validated['from'])->startOfDay();
-        $to = Carbon::parse($validated['to'])->endOfDay();
-
-        if ($from->diffInMonths($to) > 6) {
-            return back()->withErrors([
-                'to' => 'Il recupero storico non può superare 6 mesi per volta.',
-            ]);
-        }
+        $from = Carbon::today()->startOfDay();
+        $to = Carbon::today()->addMonths(6)->endOfDay();
 
         $listings = ParkingListing::with('platform')
             ->where('is_active', true)
@@ -39,14 +27,14 @@ class HistoricalPlatformSyncController extends Controller
                 $listing,
                 $from->toDateTimeString(),
                 $to->toDateTimeString(),
-                'storico',
+                'prossimi_6_mesi',
                 'stay_period'
             );
         }
 
         return back()->with(
             'success',
-            'Recupero storico piattaforme avviato. Le prenotazioni verranno aggiornate a breve.'
+            'Recupero prenotazioni da oggi ai prossimi 6 mesi avviato.'
         );
     }
 }

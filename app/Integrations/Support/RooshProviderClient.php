@@ -129,4 +129,39 @@ class RooshProviderClient
 
         return $allBookings;
     }
+
+    public function findBookingsByServiceLocationId(array $locationIds): array
+    {
+        if (empty($locationIds)) {
+            return [];
+        }
+
+        $allBookings = [];
+        $page = 1;
+        $limit = 100;
+        $maxPages = 50;
+
+        do {
+            $response = $this->request()->get("{$this->baseUrl}/bookings/findByServiceLocationId", [
+                'service_location_id' => implode(',', $locationIds),
+                'limit' => $limit,
+                'page' => $page,
+            ]);
+
+            $response->throw();
+            $data = $response->json() ?? [];
+            
+            $items = $data['bookingsByServiceLocationId'] ?? (isset($data[0]) ? $data : []);
+
+            $allBookings = array_merge($allBookings, $items);
+
+            if (count($items) < $limit || $page >= $maxPages) {
+                break;
+            }
+
+            $page++;
+        } while (true);
+
+        return $allBookings;
+    }
 }

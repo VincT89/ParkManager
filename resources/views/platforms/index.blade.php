@@ -10,12 +10,17 @@
                 Recupera storico
             </button>
 
-            <form method="POST"
-                  action="{{ route('platforms.sync') }}"
-                  onsubmit="return confirm('Avviare ora la sincronizzazione con le piattaforme esterne?')">
+            <form method="POST" action="{{ route('platforms.future-sync') }}" onsubmit="return confirm('Recuperare le prenotazioni da oggi ai prossimi 6 mesi?')">
                 @csrf
                 <button type="submit" class="pm-btn pm-btn-secondary">
-                    Sincronizza piattaforme
+                    Prossimi 6 mesi
+                </button>
+            </form>
+
+            <form method="POST" action="{{ route('platforms.sync') }}" onsubmit="return confirm('Vuoi avviare il sync manuale?')">
+                @csrf
+                <button type="submit" class="pm-btn pm-btn-primary">
+                    Sincronizza Piattaforme
                 </button>
             </form>
 
@@ -32,8 +37,8 @@
                 <button type="button" onclick="document.getElementById('historical-sync-modal').style.display='none'" style="background:none; border:none; cursor:pointer; font-size:20px; color:var(--pm-text-muted)">&times;</button>
             </div>
             <div class="pm-card-body" style="padding: 16px;">
-                <p style="font-size:13px; color:var(--pm-text-muted); margin-bottom:16px;">
-                    Recupera prenotazioni e modifiche dalle piattaforme nel periodo selezionato. (Massimo 6 mesi).
+                <p class="text-sm text-gray-500 mb-4">
+                    Recupera le prenotazioni con entrata, uscita o permanenza nel periodo selezionato.
                 </p>
                 <form method="POST" action="{{ route('platforms.historical-sync') }}" class="pm-form">
                     @csrf

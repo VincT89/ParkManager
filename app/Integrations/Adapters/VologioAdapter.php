@@ -35,7 +35,7 @@ class VologioAdapter extends AbstractPlatformAdapter
         ];
     }
 
-    public function fetchReservations(ParkingListing $listing, Carbon $from, Carbon $to): array
+    public function fetchReservations(ParkingListing $listing, Carbon $from, Carbon $to, string $mode = 'modified'): array
     {
         $externalLocationId = $listing->external_id;
 
@@ -43,19 +43,39 @@ class VologioAdapter extends AbstractPlatformAdapter
             throw new \RuntimeException("ParkingListing (ID: {$listing->id}) non ha un external_id configurato.");
         }
 
-        $bookings = $this->client->findBookingsByModification($from, $to);
-
-        $normalized = [];
-
-        foreach ($bookings as $record) {
-            if (($record['service_location_id'] ?? null) !== $externalLocationId) {
-                continue;
-            }
-
-            $normalized[] = $this->normalizeRecord($record);
+        if ($mode === 'stay_period') {
+            $records = $this->client->findBookingsByServiceLocationId([
+                $listing->external_id
+            ]);
+        } else {
+            $records = $this->client->findBookingsByModification($from, $to);
         }
 
-        return $normalized;
+        return collect($records)
+            ->filter(function ($record) use ($from, $to, $mode, $externalLocationId) {
+                if ((string) ($record['service_location_id'] ?? '') !== (string) $externalLocationId) {
+                    return false;
+                }
+
+                if ($mode !== 'stay_period') {
+                    return true;
+                }
+
+                $startRaw = $record['start'] ?? $record['start_at'] ?? null;
+                $endRaw = $record['end'] ?? $record['end_at'] ?? null;
+
+                if (!$startRaw || !$endRaw) {
+                    return false;
+                }
+
+                $start = Carbon::parse($startRaw);
+                $end = Carbon::parse($endRaw);
+
+                return $start->lte($to) && $end->gte($from);
+            })
+            ->map(fn ($record) => $this->normalizeRecord($record))
+            ->values()
+            ->all();
     }
 
     protected function normalizeRecord(array $record): NormalizedReservation
@@ -93,14 +113,24 @@ class VologioAdapter extends AbstractPlatformAdapter
             default => 'confirmed',
         };
 
+        $startRaw = $record['start'] ?? $record['start_at'] ?? null;
+        $endRaw = $record['end'] ?? $record['end_at'] ?? null;
+
+        if (!$startRaw || !$endRaw) {
+            throw new \RuntimeException("Missing period dates for {$record['id']}");
+        }
+
+        $startsAt = Carbon::parse($startRaw);
+        $endsAt = Carbon::parse($endRaw);
+
         return new NormalizedReservation(
-            external_id: (string) $record['id'],
-            external_product_ref: (string) $record['service_id'],
+            external_id: (string) ($record['id'] ?? ''),
+            external_product_ref: (string) ($record['service_id'] ?? ''),
             external_product_name: null,
-            customer_name: $customerName,
-            customer_email: $record['customer']['email'] ?? null,
-            customer_phone: $record['customer']['phone'] ?? null,
-            license_plate: $record['journey']['car']['license_plate'] ?? null,
+            customer_name: trim(($record['first_name'] ?? '') . ' ' . ($record['last_name'] ?? '')),
+            customer_email: $record['email'] ?? null,
+            customer_phone: $record['phone'] ?? null,
+            license_plate: $record['license_plate'] ?? null,
             starts_at: $startsAt,
             ends_at: $endsAt,
             spots: $spots,

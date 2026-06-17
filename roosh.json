@@ -1,0 +1,573 @@
+{
+    "serviceLocations": [
+        {
+            "id": "2T3Pw8KC91VyvyEQFnYq9ArApYW",
+            "provider_id": "2SCIaCMmoloDESW1P4RhZH2EBVs",
+            "parking_type_id": "6dvgln4ofde",
+            "parking_type_name": "Shuttle",
+            "services": [
+                {
+                    "id": "2T3Q8w4IN7nAyYrieE8xMl3OB6w",
+                    "availability": 100,
+                    "enabled": true,
+                    "covered": false,
+                    "parking_type_id": "6dvgln4ofde",
+                    "parking_type_name": "Shuttle",
+                    "vendor_service_id": "",
+                    "travel_time": 10,
+                    "max_travelers": 4,
+                    "delivery_address": {
+                        "street": "Via Delle Mimose ",
+                        "city": "Modugno BA",
+                        "zip_code": "70026 ",
+                        "country": "IT"
+                    },
+                    "pricelists": [
+                        {
+                            "name": "Default",
+                            "service_id": "2T3Q8w4IN7nAyYrieE8xMl3OB6w",
+                            "available_from": "0001-01-01T00:00:00Z",
+                            "available_to": "0001-01-01T00:00:00Z",
+                            "currency": "EUR",
+                            "nonbookable": false,
+                            "rows": [
+                                {
+                                    "from": 1,
+                                    "to": 1,
+                                    "price": 10,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 2,
+                                    "to": 2,
+                                    "price": 15,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 3,
+                                    "to": 3,
+                                    "price": 18,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 4,
+                                    "to": 4,
+                                    "price": 20,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 5,
+                                    "to": 5,
+                                    "price": 25,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 6,
+                                    "to": 6,
+                                    "price": 30,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 7,
+                                    "to": 7,
+                                    "price": 35,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 8,
+                                    "to": 8,
+                                    "price": 40,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 9,
+                                    "to": 9,
+                                    "price": 45,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 10,
+                                    "to": 10,
+                                    "price": 50,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 11,
+                                    "to": 11,
+                                    "price": 55,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 12,
+                                    "to": 12,
+                                    "price": 60,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 13,
+                                    "to": 13,
+                                    "price": 65,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 14,
+                                    "to": 14,
+                                    "price": 70,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 15,
+                                    "to": 15,
+                                    "price": 75,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 16,
+                                    "to": 16,
+                                    "price": 80,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 17,
+                                    "to": 17,
+                                    "price": 85,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 18,
+                                    "to": 18,
+                                    "price": 90,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 19,
+                                    "to": 19,
+                                    "price": 95,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 20,
+                                    "to": 20,
+                                    "price": 100,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 21,
+                                    "to": 21,
+                                    "price": 105,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 22,
+                                    "to": 22,
+                                    "price": 110,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 23,
+                                    "to": 23,
+                                    "price": 115,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 24,
+                                    "to": 24,
+                                    "price": 120,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 25,
+                                    "to": 25,
+                                    "price": 125,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 26,
+                                    "to": 26,
+                                    "price": 130,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 27,
+                                    "to": 27,
+                                    "price": 135,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 28,
+                                    "to": 28,
+                                    "price": 140,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 29,
+                                    "to": 29,
+                                    "price": 145,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 30,
+                                    "to": 30,
+                                    "price": 155,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 31,
+                                    "to": 9999,
+                                    "price": 160,
+                                    "extra": 10
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Blocked until 2 Jan 2025",
+                            "service_id": "2T3Q8w4IN7nAyYrieE8xMl3OB6w",
+                            "available_from": "2024-12-27T23:00:00Z",
+                            "available_to": "2025-01-02T22:59:59Z",
+                            "currency": "EUR",
+                            "nonbookable": true,
+                            "rows": []
+                        },
+                        {
+                            "name": "Natale",
+                            "service_id": "2T3Q8w4IN7nAyYrieE8xMl3OB6w",
+                            "available_from": "2023-12-25T23:00:00Z",
+                            "available_to": "2023-12-26T22:59:59Z",
+                            "currency": "EUR",
+                            "nonbookable": true,
+                            "rows": []
+                        },
+                        {
+                            "name": "Closed",
+                            "service_id": "2T3Q8w4IN7nAyYrieE8xMl3OB6w",
+                            "available_from": "2023-09-07T22:00:00Z",
+                            "available_to": "2023-09-09T21:59:59Z",
+                            "currency": "EUR",
+                            "nonbookable": true,
+                            "rows": []
+                        },
+                        {
+                            "name": "Natale",
+                            "service_id": "2T3Q8w4IN7nAyYrieE8xMl3OB6w",
+                            "available_from": "2023-12-07T23:00:00Z",
+                            "available_to": "2023-12-08T22:59:59Z",
+                            "currency": "EUR",
+                            "nonbookable": true,
+                            "rows": []
+                        }
+                    ]
+                },
+                {
+                    "id": "2U7GxI8eXrPp2c82xE1M1QmxvSU",
+                    "availability": 0,
+                    "enabled": false,
+                    "covered": true,
+                    "parking_type_id": "6dvgln4ofde",
+                    "parking_type_name": "Shuttle",
+                    "vendor_service_id": "",
+                    "travel_time": 2,
+                    "max_travelers": 4,
+                    "delivery_address": {
+                        "street": "Contrada Monaco",
+                        "city": "Modugno BA",
+                        "zip_code": "70026 ",
+                        "country": "IT"
+                    },
+                    "pricelists": [
+                        {
+                            "name": "Blocked until 2 Jan 2025",
+                            "service_id": "2U7GxI8eXrPp2c82xE1M1QmxvSU",
+                            "available_from": "2024-12-27T23:00:00Z",
+                            "available_to": "2025-01-02T22:59:59Z",
+                            "currency": "EUR",
+                            "nonbookable": true,
+                            "rows": []
+                        }
+                    ]
+                }
+            ],
+            "address": {
+                "zip_code": "70026 ",
+                "street": "Via Delle Mimose ",
+                "city": "Modugno BA",
+                "country": "IT"
+            },
+            "longitude": "16.7893396",
+            "latitude": "41.1044233",
+            "procedure": "",
+            "additional_information": "",
+            "address_instructions": "",
+            "remark": "",
+            "localized_procedure": "",
+            "localized_additional_information": "",
+            "localized_address_instructions": "",
+            "localized_remark": ""
+        },
+        {
+            "id": "2T3PwkNKd9Twx6n7FDeO1OT0Auq",
+            "provider_id": "2SCIaCMmoloDESW1P4RhZH2EBVs",
+            "parking_type_id": "8ftpe6gpdvi",
+            "parking_type_name": "Valet",
+            "services": [
+                {
+                    "id": "2T3QnXgNDDnzCalBJ8Sy7mQZi5F",
+                    "availability": 25,
+                    "enabled": false,
+                    "covered": false,
+                    "parking_type_id": "8ftpe6gpdvi",
+                    "parking_type_name": "Valet",
+                    "vendor_service_id": "",
+                    "travel_time": 10,
+                    "max_travelers": 4,
+                    "delivery_address": {
+                        "street": "Viale Enzo Ferrari",
+                        "city": "Bari BA, Italy",
+                        "zip_code": "70128 ",
+                        "country": "IT"
+                    },
+                    "pricelists": [
+                        {
+                            "name": "Default",
+                            "service_id": "2T3QnXgNDDnzCalBJ8Sy7mQZi5F",
+                            "available_from": "0001-01-01T00:00:00Z",
+                            "available_to": "0001-01-01T00:00:00Z",
+                            "currency": "EUR",
+                            "nonbookable": false,
+                            "rows": [
+                                {
+                                    "from": 1,
+                                    "to": 1,
+                                    "price": 20,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 2,
+                                    "to": 2,
+                                    "price": 22,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 3,
+                                    "to": 3,
+                                    "price": 28,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 4,
+                                    "to": 4,
+                                    "price": 36,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 5,
+                                    "to": 5,
+                                    "price": 43,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 6,
+                                    "to": 6,
+                                    "price": 50,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 7,
+                                    "to": 7,
+                                    "price": 57,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 8,
+                                    "to": 8,
+                                    "price": 64,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 9,
+                                    "to": 9,
+                                    "price": 71,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 10,
+                                    "to": 10,
+                                    "price": 78,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 11,
+                                    "to": 11,
+                                    "price": 85,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 12,
+                                    "to": 12,
+                                    "price": 92,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 13,
+                                    "to": 13,
+                                    "price": 99,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 14,
+                                    "to": 14,
+                                    "price": 106,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 15,
+                                    "to": 15,
+                                    "price": 113,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 16,
+                                    "to": 16,
+                                    "price": 120,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 17,
+                                    "to": 17,
+                                    "price": 127,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 18,
+                                    "to": 18,
+                                    "price": 134,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 19,
+                                    "to": 19,
+                                    "price": 141,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 20,
+                                    "to": 20,
+                                    "price": 148,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 21,
+                                    "to": 21,
+                                    "price": 155,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 22,
+                                    "to": 22,
+                                    "price": 162,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 23,
+                                    "to": 23,
+                                    "price": 169,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 24,
+                                    "to": 24,
+                                    "price": 176,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 25,
+                                    "to": 25,
+                                    "price": 183,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 26,
+                                    "to": 26,
+                                    "price": 190,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 27,
+                                    "to": 27,
+                                    "price": 197,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 28,
+                                    "to": 28,
+                                    "price": 204,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 29,
+                                    "to": 29,
+                                    "price": 211,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 30,
+                                    "to": 30,
+                                    "price": 218,
+                                    "extra": 0
+                                },
+                                {
+                                    "from": 31,
+                                    "to": 9999,
+                                    "price": 225,
+                                    "extra": 10
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Closed",
+                            "service_id": "2T3QnXgNDDnzCalBJ8Sy7mQZi5F",
+                            "available_from": "2023-09-07T22:00:00Z",
+                            "available_to": "2023-09-09T21:59:59Z",
+                            "currency": "EUR",
+                            "nonbookable": true,
+                            "rows": []
+                        },
+                        {
+                            "name": "Blocked until 2 Jan 2025",
+                            "service_id": "2T3QnXgNDDnzCalBJ8Sy7mQZi5F",
+                            "available_from": "2024-12-27T23:00:00Z",
+                            "available_to": "2025-01-02T22:59:59Z",
+                            "currency": "EUR",
+                            "nonbookable": true,
+                            "rows": []
+                        },
+                        {
+                            "name": "Closed",
+                            "service_id": "2T3QnXgNDDnzCalBJ8Sy7mQZi5F",
+                            "available_from": "2023-08-23T22:00:00Z",
+                            "available_to": "2023-08-24T21:59:59Z",
+                            "currency": "EUR",
+                            "nonbookable": true,
+                            "rows": []
+                        }
+                    ]
+                }
+            ],
+            "address": {
+                "zip_code": "70026 ",
+                "street": "Via Delle Mimose ",
+                "city": "Modugno BA",
+                "country": "IT"
+            },
+            "longitude": "16.7893396",
+            "latitude": "41.1044233",
+            "procedure": "",
+            "additional_information": "",
+            "address_instructions": "",
+            "remark": "",
+            "localized_procedure": "",
+            "localized_additional_information": "",
+            "localized_address_instructions": "",
+            "localized_remark": ""
+        }
+    ]
+}

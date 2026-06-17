@@ -25,7 +25,7 @@ class SyncListingAction
      * Executes the synchronization for a single ParkingListing.
      * Returns an array of statistics.
      */
-    public function execute(ParkingListing $listing, Carbon $from, Carbon $to, bool $dryRun = false): array
+    public function execute(ParkingListing $listing, Carbon $from, Carbon $to, bool $dryRun = false, string $mode = 'modified'): array
     {
         $stats = [
             'created' => 0,
@@ -40,7 +40,7 @@ class SyncListingAction
             $adapter = $this->registry->forPlatform($listing->platform);
 
             // 2. Fetch reservations
-            $normalizedReservations = $adapter->fetchReservations($listing, $from, $to);
+            $normalizedReservations = $adapter->fetchReservations($listing, $from, $to, $mode);
 
             // 3. Process each reservation
             foreach ($normalizedReservations as $normalized) {
