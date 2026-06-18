@@ -58,37 +58,57 @@ class ParkosClient
         return $this->storeTokens($response->json());
     }
 
+    private function paginateReservations(array $params): array
+    {
+        $records = [];
+        $page = 1;
+        $maxPages = 100;
+        $url = $this->url(config('services.parkos.reservations_path', '/v1/reservations'));
+
+        do {
+            $pageParams = array_merge($params, [
+                'page' => $page,
+            ]);
+
+            $response = $this->request()->get($url, $pageParams);
+            $response->throw();
+
+            $data = $response->json();
+            $items = array_values($data['data'] ?? []);
+
+            $records = array_merge($records, $items);
+
+            if (count($items) === 0) {
+                break;
+            }
+
+            $page++;
+
+            if ($page > $maxPages) {
+                throw new \RuntimeException('Parkos pagination limit exceeded.');
+            }
+        } while (true);
+
+        return $records;
+    }
+
     public function findBookingsByPeriodType(
         Carbon $from,
         Carbon $to,
         string $periodType,
         ?string $merchantId = null
     ): array {
-        $records = [];
-        $url = $this->url(config('services.parkos.reservations_path', '/v1/reservations'));
-
         $params = [
-            'period_type' => $periodType,
             'from' => $from->toDateString(),
             'till' => $to->toDateString(),
+            'period_type' => $periodType,
         ];
 
         if ($merchantId) {
             $params['merchant_id'] = $merchantId;
         }
 
-        do {
-            $response = $this->request()->get($url, $params);
-            $response->throw();
-
-            $data = $response->json();
-            $records = array_merge($records, array_values($data['data'] ?? []));
-
-            $url = $data['paginator']['next_page_url'] ?? null;
-            $params = [];
-        } while ($url);
-
-        return $records;
+        return $this->paginateReservations($params);
     }
 
     private function storeTokens(array $data): array
@@ -107,31 +127,17 @@ class ParkosClient
 
     public function findBookingsByModification(Carbon $from, Carbon $to, ?string $merchantId = null): array
     {
-        $records = [];
-        $url = $this->url(config('services.parkos.reservations_path', '/v1/reservations'));
-        
         $params = [
-            'period_type' => 'updated_at',
             'from' => $from->toDateString(),
             'till' => $to->toDateString(),
+            'period_type' => 'modified',
         ];
-        
+
         if ($merchantId) {
             $params['merchant_id'] = $merchantId;
         }
 
-        do {
-            $response = $this->request()->get($url, $params);
-            $response->throw();
-            
-            $data = $response->json();
-            $records = array_merge($records, array_values($data['data'] ?? []));
-
-            $url = $data['paginator']['next_page_url'] ?? null;
-            $params = []; // Clear params for next page as URL already contains them
-        } while ($url);
-
-        return $records;
+        return $this->paginateReservations($params);
     }
 
     private function ensureConfigured(): void

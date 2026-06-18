@@ -47,15 +47,25 @@ abstract class AbstractPlatformAdapter implements PlatformAdapterInterface
             throw new \Exception("Il prodotto mappato appartiene a un parcheggio diverso rispetto al listing in elaborazione.");
         }
 
-        // Se il mapping punta a un coperto (che ora è inattivo), forziamo su scoperto
+        // Regola commerciale: i prodotti coperti sono inattivi e vengono gestiti come scoperti.
         if ($product->code === 'auto_covered' && !$product->is_active) {
             $fallback = ParkingProduct::where('parking_id', $listing->parking_id)->where('code', 'auto_open')->first();
             if ($fallback) {
+                \Illuminate\Support\Facades\Log::warning('Fallback prodotto coperto inattivo gestito come scoperto', [
+                    'platform' => $listing->platform->slug,
+                    'original_product' => $product->code,
+                    'fallback_product' => $fallback->code,
+                ]);
                 $product = $fallback;
             }
         } elseif ($product->code === 'truck_covered' && !$product->is_active) {
             $fallback = ParkingProduct::where('parking_id', $listing->parking_id)->where('code', 'truck_open')->first();
             if ($fallback) {
+                \Illuminate\Support\Facades\Log::warning('Fallback prodotto coperto inattivo gestito come scoperto', [
+                    'platform' => $listing->platform->slug,
+                    'original_product' => $product->code,
+                    'fallback_product' => $fallback->code,
+                ]);
                 $product = $fallback;
             }
         }

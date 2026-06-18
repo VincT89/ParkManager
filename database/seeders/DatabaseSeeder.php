@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             PlatformSeeder::class,
             ParkingListingSeeder::class,
             PlatformProductMappingSeeder::class,
+            ParkosMappingSeeder::class,
         ]);
     }
 }

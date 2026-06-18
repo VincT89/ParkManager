@@ -27,8 +27,8 @@ class ParkingListingSeeder extends Seeder
                         $externalId = null; // in attesa di discovery
                         $isActive = false;
                     } elseif ($platform->slug === 'parkos') {
-                        $externalId = null; // in attesa di credenziali
-                        $isActive = false;
+                        $externalId = '1895';
+                        $isActive = true;
                     } elseif ($platform->slug === 'website') {
                         $externalId = null;
                         $isActive = true; // attivo ma escluso dal sync

@@ -22,7 +22,7 @@ class PlatformSeeder extends Seeder
                 'slug'          => 'parkos',
                 'website'       => 'https://www.parkos.it',
                 'contact_email' => 'partner@parkos.it',
-                'is_active'     => false,
+                'is_active'     => true,
             ],
 
             [

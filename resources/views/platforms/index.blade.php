@@ -5,8 +5,8 @@
             <div class="pm-page-subtitle">gestione canali di vendita e posti assegnati</div>
         </div>
 
-        <div style="display:flex;align-items:center;gap:10px">
-            <button type="button" class="pm-btn pm-btn-secondary" onclick="document.getElementById('historical-sync-modal').style.display='flex'">
+        <div class="pm-platform-actions">
+            <button type="button" class="pm-btn pm-btn-secondary" onclick="document.getElementById('historical-sync-modal').classList.add('pm-modal-open')">
                 Recupera storico
             </button>
 
@@ -30,13 +30,13 @@
         </div>
     </x-slot>
 
-    <div id="historical-sync-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:1000;">
-        <div class="pm-card" style="width:100%; max-width:400px; margin:20px;">
+    <div id="historical-sync-modal" class="pm-modal">
+        <div class="pm-modal-card">
             <div class="pm-card-header">
                 <div class="pm-card-title">Recupera storico</div>
-                <button type="button" onclick="document.getElementById('historical-sync-modal').style.display='none'" style="background:none; border:none; cursor:pointer; font-size:20px; color:var(--pm-text-muted)">&times;</button>
+                <button type="button" onclick="document.getElementById('historical-sync-modal').classList.remove('pm-modal-open')" class="pm-modal-close">&times;</button>
             </div>
-            <div class="pm-card-body" style="padding: 16px;">
+            <div class="pm-card-body">
                 <p class="text-sm text-gray-500 mb-4">
                     Recupera le prenotazioni con entrata, uscita o permanenza nel periodo selezionato.
                 </p>
@@ -50,8 +50,8 @@
                         <label class="pm-label">Data fine</label>
                         <input type="date" name="to" class="pm-input" required>
                     </div>
-                    <div style="display:flex; justify-content:flex-end; gap:8px;">
-                        <button type="button" class="pm-btn" onclick="document.getElementById('historical-sync-modal').style.display='none'">Annulla</button>
+                    <div class="pm-modal-actions">
+                        <button type="button" class="pm-btn" onclick="document.getElementById('historical-sync-modal').classList.remove('pm-modal-open')">Annulla</button>
                         <button type="submit" class="pm-btn pm-btn-primary">Conferma recupero</button>
                     </div>
                 </form>
@@ -62,7 +62,7 @@
     <x-flash-message />
 
     @if (!empty($lastSyncLog))
-        <div class="pm-card" style="margin-bottom:16px">
+        <div class="pm-card pm-sync-summary">
             <div class="pm-card-header">
                 <div>
                     <div class="pm-card-title">Ultima sincronizzazione</div>
@@ -74,7 +74,7 @@
                 </div>
             </div>
 
-            <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px">
+            <div class="pm-sync-stats">
                 <div>Create: {{ $lastSyncLog->reservations_created }}</div>
                 <div>Aggiornate: {{ $lastSyncLog->reservations_updated }}</div>
                 <div>Saltate: {{ $lastSyncLog->reservations_skipped }}</div>
@@ -88,22 +88,21 @@
             <div class="pm-card pm-animate">
 
                 {{-- Header piattaforma --}}
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-                    <div style="display:flex;align-items:center;gap:12px">
-                        <div style="display:flex;flex-direction:column;gap:2px">
-                            <div style="display:flex;align-items:center;gap:10px">
-                                <span style="font-size:15px;font-weight:600;color:var(--pm-text)">
+                <div class="pm-platform-header">
+                    <div class="pm-platform-info">
+                        <div class="pm-platform-details">
+                            <div class="pm-platform-title-row">
+                                <span class="pm-platform-name">
                                     {{ $platform->name }}
                                 </span>
                                 <span class="pm-badge {{ $platform->is_active ? 'green' : 'red' }}">
                                     {{ $platform->is_active ? 'Attiva' : 'Inattiva' }}
                                 </span>
                             </div>
-                            <div style="display:flex;align-items:center;gap:16px">
+                            <div class="pm-platform-meta">
                                 <span class="pm-text-muted pm-text-mono">{{ $platform->slug }}</span>
                                 @if ($platform->website)
-                                    <a href="{{ $platform->website }}" target="_blank"
-                                       style="font-size:12px;color:var(--pm-accent);text-decoration:none">
+                                    <a href="{{ $platform->website }}" target="_blank" class="pm-platform-link">
                                         {{ $platform->website }}
                                     </a>
                                 @endif
@@ -115,7 +114,7 @@
                             </div>
                         </div>
                     </div>
-                    <div style="display:flex;gap:8px">
+                    <div class="pm-platform-actions-sm">
                         <a href="{{ route('platforms.edit', $platform) }}"
                            class="pm-btn pm-btn-secondary pm-btn-sm">
                             Modifica
