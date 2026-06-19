@@ -12,51 +12,71 @@ class AnalyticsController extends Controller
 {
     public function index(\Illuminate\Http\Request $request)
     {
-        $now        = Carbon::now();
-        if ($request->has('month') && $request->has('year')) {
-            $now = Carbon::createFromDate($request->year, $request->month, 1);
+        try {
+            $now = Carbon::createFromFormat('Y-m', $request->input('month', now()->format('Y-m')))->startOfMonth();
+        } catch (\Exception $e) {
+            $now = Carbon::now()->startOfMonth();
         }
         
-        $thisMonth  = $now->copy()->startOfMonth();
-        $lastMonth  = $now->copy()->subMonth()->startOfMonth();
-        $lastMonthEnd = $now->copy()->subMonth()->endOfMonth();
+        $thisMonthStart = $now->copy()->startOfMonth();
+        $thisMonthEnd   = $now->copy()->endOfMonth();
+        
+        $lastMonthStart = $now->copy()->subMonth()->startOfMonth();
+        $lastMonthEnd   = $now->copy()->subMonth()->endOfMonth();
 
-        $prevMonthUrl = route('analytics', ['month' => $now->copy()->subMonth()->month, 'year' => $now->copy()->subMonth()->year]);
-        $nextMonthUrl = route('analytics', ['month' => $now->copy()->addMonth()->month, 'year' => $now->copy()->addMonth()->year]);
+        $prevMonthUrl = route('analytics', ['month' => $now->copy()->subMonth()->format('Y-m')]);
+        $nextMonthUrl = route('analytics', ['month' => $now->copy()->addMonth()->format('Y-m')]);
 
         $activeParkingIds = \App\Models\Parking::active()->pluck('id');
 
-        // Dati per canale
         $platforms = Platform::with(['listings' => function ($q) use ($activeParkingIds) {
             $q->whereIn('parking_id', $activeParkingIds);
-        }, 'listings.reservations' => function ($q) use ($thisMonth) {
-            $q->where('status', '!=', ReservationStatus::Cancelled->value)
-              ->where('created_at', '>=', $thisMonth);
         }])->active()->get();
 
-        $channelStats = $platforms->map(function ($platform) use ($thisMonth, $lastMonth, $lastMonthEnd, $now) {
+        $revenueStatuses = [
+            ReservationStatus::Confirmed->value,
+            ReservationStatus::Modified->value,
+        ];
+
+        $activeStatuses = [
+            ReservationStatus::Confirmed->value,
+            ReservationStatus::Modified->value,
+            ReservationStatus::Pending->value,
+        ];
+
+        $channelStats = $platforms->map(function ($platform) use ($thisMonthStart, $thisMonthEnd, $lastMonthStart, $lastMonthEnd, $now, $revenueStatuses, $activeStatuses) {
             $listingIds = $platform->listings->pluck('id');
 
             // Questo mese
             $thisMonthRes = Reservation::whereIn('parking_listing_id', $listingIds)
-                ->where('status', '!=', ReservationStatus::Cancelled->value)
-                ->where('created_at', '>=', $thisMonth)
+                ->whereIn('status', $activeStatuses)
+                ->whereBetween('starts_at', [$thisMonthStart, $thisMonthEnd])
+                ->get();
+
+            $thisRevenueRes = Reservation::whereIn('parking_listing_id', $listingIds)
+                ->whereIn('status', $revenueStatuses)
+                ->whereBetween('starts_at', [$thisMonthStart, $thisMonthEnd])
                 ->get();
 
             // Mese scorso
             $lastMonthRes = Reservation::whereIn('parking_listing_id', $listingIds)
-                ->where('status', '!=', ReservationStatus::Cancelled->value)
-                ->whereBetween('created_at', [$lastMonth, $lastMonthEnd])
+                ->whereIn('status', $activeStatuses)
+                ->whereBetween('starts_at', [$lastMonthStart, $lastMonthEnd])
+                ->get();
+
+            $lastRevenueRes = Reservation::whereIn('parking_listing_id', $listingIds)
+                ->whereIn('status', $revenueStatuses)
+                ->whereBetween('starts_at', [$lastMonthStart, $lastMonthEnd])
                 ->get();
 
             // Cancellate questo mese
             $cancelled = Reservation::whereIn('parking_listing_id', $listingIds)
                 ->where('status', ReservationStatus::Cancelled->value)
-                ->where('created_at', '>=', $thisMonth)
+                ->whereBetween('starts_at', [$thisMonthStart, $thisMonthEnd])
                 ->count();
 
-            $thisRevenue = $thisMonthRes->sum('price');
-            $lastRevenue = $lastMonthRes->sum('price');
+            $thisRevenue = $thisRevenueRes->sum('price');
+            $lastRevenue = $lastRevenueRes->sum('price');
             $thisCount   = $thisMonthRes->count();
             $lastCount   = $lastMonthRes->count();
             $avgPrice    = $thisCount > 0 ? $thisRevenue / $thisCount : 0;
@@ -74,14 +94,18 @@ class AnalyticsController extends Controller
             for ($month = 1; $month <= 12; $month++) {
                 $mStart = $now->copy()->month($month)->startOfMonth();
                 $mEnd   = $now->copy()->month($month)->endOfMonth();
-                $mRes   = Reservation::whereIn('parking_listing_id', $listingIds)
-                    ->where('status', '!=', ReservationStatus::Cancelled->value)
-                    ->whereBetween('created_at', [$mStart, $mEnd])
+                
+                $mRes = Reservation::whereIn('parking_listing_id', $listingIds)
+                    ->whereBetween('starts_at', [$mStart, $mEnd])
                     ->get();
+                    
+                $mRevenue = $mRes->whereIn('status', $revenueStatuses)->sum('price');
+                $mCount = $mRes->whereIn('status', $activeStatuses)->count();
+
                 $trend[] = [
                     'month'      => $mStart->isoFormat('MMM'),
-                    'revenue'    => round($mRes->sum('price'), 2),
-                    'count'      => $mRes->count(),
+                    'revenue'    => round($mRevenue, 2),
+                    'count'      => $mCount,
                     'is_current' => $month === $now->month,
                 ];
             }
