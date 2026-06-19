@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PaymentStatus;
 use App\Enums\ReservationStatus;
 use App\Models\Reservation;
+use Illuminate\Support\Facades\DB;
 
 class PublicPaymentController extends Controller
 {
@@ -19,5 +21,41 @@ class PublicPaymentController extends Controller
             'stripePublicKey' => config('payments.stripe.public_key'),
             'paypalClientId' => config('payments.paypal.client_id'),
         ]);
+    }
+
+    public function confirmOnsite(string $externalId)
+    {
+        $reservation = Reservation::where('external_id', $externalId)->firstOrFail();
+
+        if ($reservation->status !== ReservationStatus::Pending) {
+            abort(404);
+        }
+
+        if ($reservation->expires_at && $reservation->expires_at->isPast()) {
+            abort(410);
+        }
+
+        DB::transaction(function () use ($reservation) {
+            $reservation->payments()->firstOrCreate(
+                [
+                    'provider' => 'onsite',
+                    'status' => PaymentStatus::Pending->value,
+                ],
+                [
+                    'amount' => $reservation->price,
+                    'currency' => 'EUR',
+                    'raw_data' => [
+                        'source' => 'temporary_onsite_payment',
+                    ],
+                ]
+            );
+
+            $reservation->update([
+                'status' => ReservationStatus::Confirmed->value,
+                'expires_at' => null,
+            ]);
+        });
+
+        return redirect()->route('public.booking.success', $reservation->external_id);
     }
 }

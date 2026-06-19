@@ -22,7 +22,7 @@ Route::get('/booking/{externalId}/payment', [\App\Http\Controllers\PublicPayment
 Route::post('/booking/{externalId}/stripe/checkout', [\App\Http\Controllers\StripePaymentController::class, 'checkout'])->name('public.booking.stripe.checkout');
 Route::post('/booking/{externalId}/paypal/order', [\App\Http\Controllers\PayPalPaymentController::class, 'createOrder'])->name('public.booking.paypal.order');
 Route::post('/booking/{externalId}/paypal/capture', [\App\Http\Controllers\PayPalPaymentController::class, 'capture'])->name('public.booking.paypal.capture');
-
+Route::post('/booking/{externalId}/onsite/confirm', [\App\Http\Controllers\PublicPaymentController::class, 'confirmOnsite'])->name('public.booking.onsite.confirm');
 Route::post('/webhooks/stripe', [\App\Http\Controllers\StripeWebhookController::class, 'handle'])->name('webhooks.stripe');
 Route::post('/webhooks/paypal', [\App\Http\Controllers\PayPalWebhookController::class, 'handle'])->name('webhooks.paypal');
 
@@ -53,6 +53,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Prenotazioni
     Route::post('/reservations/{reservation}/toggle-movement', [ReservationController::class, 'toggleMovement'])->name('reservations.toggle-movement');
+    Route::post('/reservations/{reservation}/mark-paid', [ReservationController::class, 'markPaid'])->name('reservations.mark-paid');
     Route::resource('reservations', ReservationController::class);
 
     // Blocchi disponibilità

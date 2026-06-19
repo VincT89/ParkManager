@@ -17,15 +17,29 @@
                 @csrf
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-                    <div class="pm-form-group" style="margin-bottom: 0;">
-                        <label class="pm-label">Data e Ora di Arrivo</label>
-                        <input type="datetime-local" name="starts_at" id="starts_at" class="pm-input" value="{{ old('starts_at') }}" required>
-                        @error('starts_at') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
+                    <div class="pm-form-group" style="margin-bottom: 0; display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+                        <div>
+                            <label class="pm-label">Data arrivo</label>
+                            <input type="date" name="arrival_date" id="arrival_date" class="pm-input" value="{{ old('arrival_date') }}" required>
+                            @error('arrival_date') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="pm-label">Ora arrivo</label>
+                            <input type="time" name="arrival_time" id="arrival_time" class="pm-input" value="{{ old('arrival_time') }}" required>
+                            @error('arrival_time') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
+                        </div>
                     </div>
-                    <div class="pm-form-group" style="margin-bottom: 0;">
-                        <label class="pm-label">Data e Ora di Partenza</label>
-                        <input type="datetime-local" name="ends_at" id="ends_at" class="pm-input" value="{{ old('ends_at') }}" required>
-                        @error('ends_at') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
+                    <div class="pm-form-group" style="margin-bottom: 0; display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+                        <div>
+                            <label class="pm-label">Data partenza</label>
+                            <input type="date" name="departure_date" id="departure_date" class="pm-input" value="{{ old('departure_date') }}" required>
+                            @error('departure_date') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="pm-label">Ora partenza</label>
+                            <input type="time" name="departure_time" id="departure_time" class="pm-input" value="{{ old('departure_time') }}" required>
+                            @error('departure_time') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
+                        </div>
                     </div>
                 </div>
 
@@ -121,8 +135,10 @@
                     },
                     body: JSON.stringify({
                         product_code: document.getElementById('product_code').value,
-                        starts_at: document.getElementById('starts_at').value,
-                        ends_at: document.getElementById('ends_at').value,
+                        arrival_date: document.getElementById('arrival_date').value,
+                        arrival_time: document.getElementById('arrival_time').value,
+                        departure_date: document.getElementById('departure_date').value,
+                        departure_time: document.getElementById('departure_time').value,
                         spots: document.getElementById('spots').value
                     })
                 });
@@ -170,7 +186,7 @@
         });
 
         // Hide customer form if inputs change
-        const inputs = ['starts_at', 'ends_at', 'product_code', 'spots'];
+        const inputs = ['arrival_date', 'arrival_time', 'departure_date', 'departure_time', 'product_code', 'spots'];
         inputs.forEach(id => {
             document.getElementById(id)?.addEventListener('change', () => {
                 document.getElementById('availability-result').style.display = 'none';

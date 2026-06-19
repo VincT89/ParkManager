@@ -22,7 +22,7 @@
             </div>
             <h2 class="pm-card-title" style="font-size: 24px; color: #0f172a; margin-bottom: 8px;">Prenotazione Confermata!</h2>
             <div style="font-size: 15px; color: var(--pm-text-muted);">
-                Grazie per aver scelto il nostro servizio. Il pagamento è andato a buon fine.
+                Prenotazione confermata. Il pagamento sarà effettuato presso la struttura al momento dell'arrivo.
             </div>
         </div>
 
@@ -96,11 +96,7 @@
             <!-- Total Paid -->
             <div style="background: var(--pm-bg-soft); border: 1px solid var(--pm-border); border-radius: 8px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
                 <div>
-                    <div style="color: var(--pm-text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase;">Importo Pagato</div>
-                    <div style="display: flex; align-items: center; margin-top: 4px;">
-                        <svg style="width: 16px; height: 16px; color: #16a34a; margin-right: 6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <span style="color: #16a34a; font-size: 14px; font-weight: 500;">Transazione Completata</span>
-                    </div>
+                    <div style="color: var(--pm-text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase;">Importo da pagare in struttura</div>
                 </div>
                 <div style="font-size: 28px; font-weight: 700; color: #0f172a;">
                     € {{ number_format($reservation->price, 2, ',', '.') }}

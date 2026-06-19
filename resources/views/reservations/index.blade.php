@@ -138,10 +138,22 @@
                                         \App\Enums\ReservationStatus::Pending => 'amber',
                                         default => 'gray',
                                     };
+                                    $platformSlug = $reservation->parkingListing?->platform?->slug;
+                                    $payment = $reservation->latestPayment;
                                 @endphp
-                                <span class="pm-badge {{ $statusColor }}">
-                                    {{ $reservation->status->label() }}
-                                </span>
+                                <div style="display: flex; flex-direction: column; gap: 4px; align-items: flex-start;">
+                                    <span class="pm-badge {{ $statusColor }}">
+                                        {{ $reservation->status->label() }}
+                                    </span>
+                                    
+                                    @if($platformSlug === 'website')
+                                        @if($payment?->status === \App\Enums\PaymentStatus::Paid->value)
+                                            <span class="pm-badge green">Pagato</span>
+                                        @else
+                                            <span class="pm-badge amber" style="color: #b45309; border-color: #fcd34d; background-color: #fffbeb;">Da pagare</span>
+                                        @endif
+                                    @endif
+                                </div>
                             </td>
                             <td>
                                 <div style="display:flex;gap:8px;align-items:center">

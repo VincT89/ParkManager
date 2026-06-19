@@ -38,13 +38,30 @@ class PublicBookingController extends Controller
     {
         $validated = $request->validate([
             'product_code' => 'required|string|exists:parking_products,code',
-            'starts_at' => 'required|date|after_or_equal:today',
-            'ends_at' => 'required|date|after:starts_at',
+            'arrival_date' => ['required', 'date_format:Y-m-d'],
+            'arrival_time' => ['required', 'date_format:H:i'],
+            'departure_date' => ['required', 'date_format:Y-m-d'],
+            'departure_time' => ['required', 'date_format:H:i'],
             'spots' => 'integer|min:1|max:10',
         ]);
 
-        $startsAt = Carbon::parse($validated['starts_at']);
-        $endsAt = Carbon::parse($validated['ends_at']);
+        $startsAt = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            $validated['arrival_date'].' '.$validated['arrival_time']
+        );
+
+        $endsAt = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            $validated['departure_date'].' '.$validated['departure_time']
+        );
+
+        if ($endsAt->lessThanOrEqualTo($startsAt)) {
+            return response()->json([
+                'available' => false,
+                'reason' => 'La partenza deve essere successiva all’arrivo.'
+            ]);
+        }
+
         $spots = $validated['spots'] ?? 1;
 
         try {
@@ -72,8 +89,10 @@ class PublicBookingController extends Controller
     {
         $validated = $request->validate([
             'product_code' => 'required|string|exists:parking_products,code',
-            'starts_at' => 'required|date|after_or_equal:today',
-            'ends_at' => 'required|date|after:starts_at',
+            'arrival_date' => ['required', 'date_format:Y-m-d'],
+            'arrival_time' => ['required', 'date_format:H:i'],
+            'departure_date' => ['required', 'date_format:Y-m-d'],
+            'departure_time' => ['required', 'date_format:H:i'],
             'spots' => 'required|integer|min:1|max:10',
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
@@ -85,8 +104,21 @@ class PublicBookingController extends Controller
         // Website Platform (deve già esistere, configurata via seeder, altrimenti fallisce esplicitamente 404)
         $platform = Platform::where('slug', 'website')->firstOrFail();
 
-        $startsAt = Carbon::parse($validated['starts_at']);
-        $endsAt = Carbon::parse($validated['ends_at']);
+        $startsAt = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            $validated['arrival_date'].' '.$validated['arrival_time']
+        );
+
+        $endsAt = Carbon::createFromFormat(
+            'Y-m-d H:i',
+            $validated['departure_date'].' '.$validated['departure_time']
+        );
+
+        if ($endsAt->lessThanOrEqualTo($startsAt)) {
+            return back()
+                ->withErrors(['departure_date' => 'La partenza deve essere successiva all’arrivo.'])
+                ->withInput();
+        }
 
         try {
             // Rifà l'assegnazione autoritativa

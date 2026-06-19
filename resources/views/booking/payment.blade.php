@@ -92,6 +92,8 @@
                 </div>
                 --}}
 
+                {{-- 
+                <!-- PayPal Button temporaneamente disabilitato -->
                 <!-- PayPal Button Container -->
                 @if($paypalClientId)
                     <div id="paypal-button-container" style="min-height: 50px; position: relative; z-index: 0;">
@@ -102,6 +104,20 @@
                         ⚠️ PayPal non è configurato. Inserisci <strong style="font-family: monospace;">PAYPAL_CLIENT_ID</strong> nel file .env
                     </div>
                 @endif
+                --}}
+
+                <div style="background: #fffbeb; border: 1px solid #fef3c7; color: #b45309; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+                    <strong style="display: block; margin-bottom: 8px; font-size: 15px;">Pagamento in struttura</strong>
+                    <span style="font-size: 14px;">Il pagamento online è temporaneamente non disponibile. La prenotazione sarà confermata ora e il saldo verrà effettuato direttamente presso la struttura al momento dell'arrivo.</span>
+                </div>
+
+                <form method="POST" action="{{ route('public.booking.onsite.confirm', $reservation->external_id) }}">
+                    @csrf
+                    <button type="submit" class="pm-btn pm-btn-primary" style="width: 100%; padding: 14px; font-size: 16px; display: flex; justify-content: center; align-items: center;">
+                        <svg style="width: 20px; height: 20px; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Conferma prenotazione (paga all'arrivo)
+                    </button>
+                </form>
                 
             </div>
         </div>
@@ -111,10 +127,12 @@
         </div>
     </div>
 
-    <!-- JS SDKs -->
+    {{--
+    <!-- JS SDKs temporaneamente disabilitati -->
     @if($paypalClientId)
         <script src="https://www.paypal.com/sdk/js?client-id={{ $paypalClientId }}&currency={{ config('payments.paypal.currency', 'EUR') }}&disable-funding=card"></script>
     @endif
+    --}}
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -199,7 +217,8 @@
                 }
             }
 
-            // PayPal Setup
+            /*
+            // PayPal Setup temporaneamente disabilitato
             if (typeof paypal !== 'undefined') {
                 paypal.Buttons({
                     fundingSource: paypal.FUNDING.PAYPAL,
@@ -280,6 +299,7 @@
                     }
                 }).render('#paypal-button-container');
             }
+            */
         });
     </script>
 @endsection

@@ -8,6 +8,7 @@ use App\Models\Platform;
 use App\Services\ReservationService;
 use App\Services\AvailabilityService;
 use App\Enums\ReservationStatus;
+use App\Enums\PaymentStatus;
 use Illuminate\Http\Request;
 use App\Exports\ReservationsExport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -38,7 +39,7 @@ class ReservationController extends Controller
         }
 
         $query = Reservation::query()
-            ->with(['parkingListing.platform', 'parkingListing.parking']);
+            ->with(['parkingListing.platform', 'parkingListing.parking', 'latestPayment']);
 
         match ($request->sort_by) {
             'starts_at_asc'   => $query->orderBy('starts_at', 'asc'),
@@ -139,7 +140,7 @@ class ReservationController extends Controller
 
     public function show(Reservation $reservation)
     {
-        $reservation->load(['parkingListing.platform', 'parkingListing.parking', 'parkingProduct']);
+        $reservation->load(['parkingListing.platform', 'parkingListing.parking', 'parkingProduct', 'latestPayment']);
         return view('reservations.show', compact('reservation'));
     }
 
@@ -237,5 +238,33 @@ class ReservationController extends Controller
         }
 
         return response()->json(['success' => true]);
+    }
+
+    public function markPaid(Reservation $reservation)
+    {
+        if ($reservation->parkingListing?->platform?->slug !== 'website') {
+            return back()->with('error', 'Pagamento manuale disponibile solo per prenotazioni dal sito.');
+        }
+
+        $payment = $reservation->latestPayment;
+
+        if (! $payment) {
+            $payment = $reservation->payments()->create([
+                'provider' => 'onsite',
+                'status' => PaymentStatus::Pending->value,
+                'amount' => $reservation->price,
+                'currency' => 'EUR',
+                'raw_data' => [
+                    'source' => 'admin_manual_payment',
+                ],
+            ]);
+        }
+
+        $payment->update([
+            'status' => PaymentStatus::Paid->value,
+            'paid_at' => now(),
+        ]);
+
+        return back()->with('success', 'Pagamento segnato come pagato.');
     }
 }

@@ -43,7 +43,7 @@ class ParkingAssignmentService
 
             if ($availability->available) {
                 // Calcola il prezzo base. In futuro si può estendere con logiche di pricing dinamico (es PricingService)
-                $days = max(1, $startsAt->startOfDay()->diffInDays($endsAt->startOfDay()));
+                $days = max(1, $startsAt->copy()->startOfDay()->diffInDays($endsAt->copy()->startOfDay()));
                 $totalPrice = $product->price * $days * $spots;
 
                 return [

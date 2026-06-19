@@ -121,6 +121,42 @@
             </div>
         </div>
 
+        @php
+            $platformSlug = $reservation->parkingListing?->platform?->slug;
+            $payment = $reservation->latestPayment;
+        @endphp
+
+        @if($platformSlug === 'website')
+            <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--pm-border-color);">
+                <div class="pm-label" style="font-size: 16px; font-weight: 600; color: var(--pm-text); margin-bottom: 16px;">Stato Pagamento</div>
+                
+                @if($payment?->status === \App\Enums\PaymentStatus::Paid->value)
+                    <span class="pm-badge green" style="padding: 6px 12px; font-size: 14px;">Pagato</span>
+
+                    @if($payment->paid_at)
+                        <div style="margin-top: 8px; font-size: 14px; color: var(--pm-text-muted);">
+                            Pagato il: {{ \Carbon\Carbon::parse($payment->paid_at)->format('d/m/Y H:i') }}
+                        </div>
+                    @endif
+                @else
+                    <span class="pm-badge amber" style="padding: 6px 12px; font-size: 14px;">Pagamento in attesa</span>
+
+                    <form method="POST" action="{{ route('reservations.mark-paid', $reservation) }}" style="margin-top: 16px;">
+                        @csrf
+                        <button type="submit" class="pm-btn pm-btn-primary" style="background-color: var(--pm-green); border-color: var(--pm-green);"
+                                onclick="return confirm('Confermi che il cliente ha pagato in struttura?')">
+                            Segna come pagato
+                        </button>
+                    </form>
+                @endif
+
+                <div style="margin-top: 16px; font-size: 14px; color: var(--pm-text-muted);">
+                    Metodo: <strong style="color: var(--pm-text);">{{ ucfirst($payment?->provider ?? 'onsite') }}</strong><br>
+                    Importo: <strong style="color: var(--pm-text);">€ {{ number_format($payment?->amount ?? $reservation->price, 2, ',', '.') }}</strong>
+                </div>
+            </div>
+        @endif
+
         @if ($reservation->notes)
             <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--pm-border-color);">
                 <div class="pm-label">Note Operative</div>
