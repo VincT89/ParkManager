@@ -298,8 +298,10 @@ body {
 .pm-badge.blue  { background:var(--pm-accent-glow);color:#2850CC; border:1px solid rgba(79,124,255,0.2); }
 .pm-badge.gray  { background:var(--pm-bg);         color:var(--pm-text-muted); border:1px solid var(--pm-border); }
 
-/* PLATFORM DOT */
+/* PLATFORM DOT & ACTIONS */
 .pm-platform { display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--pm-text-muted); }
+.pm-platform-actions { display: flex; align-items: center; gap: 12px; }
+.pm-platform-actions-sm { display: flex; align-items: center; gap: 8px; }
 .pm-dot { width:6px;height:6px;border-radius:50%;flex-shrink:0; }
 .pm-dot.blue  { background: var(--pm-accent); }
 .pm-dot.green { background: var(--pm-green); }
@@ -407,6 +409,16 @@ body {
 .pm-param-card { padding:20px;background:var(--pm-bg);border:1px solid var(--pm-border);border-radius:var(--pm-radius-sm);display:flex;flex-direction:column;gap:6px; }
 .pm-param-value { font-family:var(--pm-mono);font-size:24px;font-weight:600;color:var(--pm-accent); }
 .pm-param-desc { font-size:13px;color:var(--pm-text-muted); }
+
+/* MODALS */
+.pm-modal { position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;pointer-events:none;transition:all var(--pm-transition);padding:16px; }
+.pm-modal.pm-modal-open { opacity:1;visibility:visible;pointer-events:auto; }
+.pm-modal-card { background:var(--pm-bg-card);border-radius:var(--pm-radius-lg);width:100%;max-width:500px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,0.1);transform:translateY(20px);transition:transform var(--pm-transition); }
+.pm-modal.pm-modal-open .pm-modal-card { transform:translateY(0); }
+.pm-modal-close { background:none;border:none;font-size:24px;color:var(--pm-text-muted);cursor:pointer;line-height:1;transition:color var(--pm-transition); }
+.pm-modal-close:hover { color:var(--pm-text); }
+.pm-modal-actions { display:flex;justify-content:flex-end;gap:12px;margin-top:24px; }
+
 
 /* ANIMATIONS */
 @keyframes pm-fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
