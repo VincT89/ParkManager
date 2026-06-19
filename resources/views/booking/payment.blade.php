@@ -72,7 +72,8 @@
             <!-- Payment Options -->
             <div id="payment-options">
                 
-                <!-- Stripe Button -->
+                {{-- 
+                <!-- Stripe Button temporaneamente disabilitato -->
                 <form method="POST" action="{{ route('public.booking.stripe.checkout', $reservation->external_id) }}" id="stripe-form">
                     @csrf
                     <button type="submit" id="stripe-btn" class="pm-btn pm-btn-primary" style="width: 100%; padding: 14px; font-size: 16px; display: flex; justify-content: center; align-items: center; position: relative;">
@@ -89,6 +90,7 @@
                     <span style="padding: 0 16px; color: var(--pm-text-muted); font-size: 13px;">oppure</span>
                     <div style="flex-grow: 1; border-top: 1px solid var(--pm-border);"></div>
                 </div>
+                --}}
 
                 <!-- PayPal Button Container -->
                 @if($paypalClientId)
@@ -158,9 +160,11 @@
                 expiredAlert.style.display = 'flex';
                 
                 // Disable Stripe
-                stripeBtn.disabled = true;
-                stripeBtn.style.opacity = '0.5';
-                stripeBtn.style.cursor = 'not-allowed';
+                if (stripeBtn) {
+                    stripeBtn.disabled = true;
+                    stripeBtn.style.opacity = '0.5';
+                    stripeBtn.style.cursor = 'not-allowed';
+                }
                 
                 // Disable PayPal visually (prevent clicks)
                 if (paypalOverlay) {
@@ -172,23 +176,27 @@
             updateTimer();
 
             // Stripe Loading State
-            stripeForm.addEventListener('submit', () => {
-                stripeBtn.disabled = true;
-                stripeBtn.style.opacity = '0.9';
-                stripeBtn.style.cursor = 'wait';
-                stripeSpinner.style.display = 'block';
-                errorContainer.style.display = 'none';
-            });
+            if (stripeForm && stripeBtn && stripeSpinner) {
+                stripeForm.addEventListener('submit', () => {
+                    stripeBtn.disabled = true;
+                    stripeBtn.style.opacity = '0.9';
+                    stripeBtn.style.cursor = 'wait';
+                    stripeSpinner.style.display = 'block';
+                    errorContainer.style.display = 'none';
+                });
+            }
 
             function showError(message) {
                 errorContainer.textContent = message;
                 errorContainer.style.display = 'block';
                 
                 // Reset Stripe btn just in case
-                stripeBtn.disabled = false;
-                stripeBtn.style.opacity = '1';
-                stripeBtn.style.cursor = 'pointer';
-                stripeSpinner.style.display = 'none';
+                if (stripeBtn && stripeSpinner) {
+                    stripeBtn.disabled = false;
+                    stripeBtn.style.opacity = '1';
+                    stripeBtn.style.cursor = 'pointer';
+                    stripeSpinner.style.display = 'none';
+                }
             }
 
             // PayPal Setup
