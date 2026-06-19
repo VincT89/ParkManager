@@ -83,8 +83,8 @@ class ParkosAdapter extends AbstractPlatformAdapter
                     return false;
                 }
 
-                $start = Carbon::parse("{$arrivalDate} {$arrivalTime}");
-                $end = Carbon::parse("{$departureDate} {$departureTime}");
+                $start = Carbon::parse("{$arrivalDate} {$arrivalTime}", 'Europe/Rome');
+                $end = Carbon::parse("{$departureDate} {$departureTime}", 'Europe/Rome');
 
                 return $start->lte($to) && $end->gte($from);
             })
@@ -108,8 +108,8 @@ class ParkosAdapter extends AbstractPlatformAdapter
         }
 
         try {
-            $startsAt = Carbon::parse($record['arrival_date'] . ' ' . $record['arrival_time']);
-            $endsAt = Carbon::parse($record['departure_date'] . ' ' . $record['departure_time']);
+            $startsAt = Carbon::parse($record['arrival_date'] . ' ' . $record['arrival_time'], 'Europe/Rome');
+            $endsAt = Carbon::parse($record['departure_date'] . ' ' . $record['departure_time'], 'Europe/Rome');
         } catch (\Exception $e) {
             throw new \RuntimeException("Invalid date format for {$record['code']}");
         }

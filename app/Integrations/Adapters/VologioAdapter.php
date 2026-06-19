@@ -68,8 +68,8 @@ class VologioAdapter extends AbstractPlatformAdapter
                     return false;
                 }
 
-                $start = Carbon::parse($startRaw);
-                $end = Carbon::parse($endRaw);
+                $start = Carbon::parse($startRaw, 'Europe/Rome');
+                $end = Carbon::parse($endRaw, 'Europe/Rome');
 
                 return $start->lte($to) && $end->gte($from);
             })
@@ -92,8 +92,8 @@ class VologioAdapter extends AbstractPlatformAdapter
             throw new \RuntimeException("Missing period dates for {$record['id']}");
         }
 
-        $startsAt = Carbon::parse($record['start']);
-        $endsAt = Carbon::parse($record['end']);
+        $startsAt = Carbon::parse($record['start'], 'Europe/Rome');
+        $endsAt = Carbon::parse($record['end'], 'Europe/Rome');
 
         $customerName = trim(($record['customer']['first_name'] ?? '') . ' ' . ($record['customer']['last_name'] ?? ''));
         if (empty($customerName)) {
@@ -120,8 +120,8 @@ class VologioAdapter extends AbstractPlatformAdapter
             throw new \RuntimeException("Missing period dates for {$record['id']}");
         }
 
-        $startsAt = Carbon::parse($startRaw);
-        $endsAt = Carbon::parse($endRaw);
+        $startsAt = Carbon::parse($startRaw, 'Europe/Rome');
+        $endsAt = Carbon::parse($endRaw, 'Europe/Rome');
 
         return new NormalizedReservation(
             external_id: (string) ($record['id'] ?? ''),

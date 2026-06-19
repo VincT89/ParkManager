@@ -62,8 +62,12 @@ class ParkingMyCarAdapter extends AbstractPlatformAdapter
                     return false;
                 }
 
-                $startsAt = is_numeric($startsAtRaw) ? Carbon::createFromTimestamp($startsAtRaw) : Carbon::parse($startsAtRaw);
-                $endsAt = is_numeric($endsAtRaw) ? Carbon::createFromTimestamp($endsAtRaw) : Carbon::parse($endsAtRaw);
+                $startsAt = is_numeric($startsAtRaw)
+                    ? Carbon::createFromTimestamp($startsAtRaw, 'Europe/Rome')
+                    : Carbon::parse($startsAtRaw, 'Europe/Rome');
+                $endsAt = is_numeric($endsAtRaw)
+                    ? Carbon::createFromTimestamp($endsAtRaw, 'Europe/Rome')
+                    : Carbon::parse($endsAtRaw, 'Europe/Rome');
 
                 return $startsAt->lte($to) && $endsAt->gte($from);
             })
@@ -111,8 +115,12 @@ class ParkingMyCarAdapter extends AbstractPlatformAdapter
             throw new \RuntimeException("ParkingMyCar: date mancanti per prenotazione {$externalId}.");
         }
 
-        $startsAt = is_numeric($startsAtRaw) ? Carbon::createFromTimestamp($startsAtRaw) : Carbon::parse($startsAtRaw);
-        $endsAt = is_numeric($endsAtRaw) ? Carbon::createFromTimestamp($endsAtRaw) : Carbon::parse($endsAtRaw);
+        $startsAt = is_numeric($startsAtRaw)
+            ? Carbon::createFromTimestamp($startsAtRaw, 'Europe/Rome')
+            : Carbon::parse($startsAtRaw, 'Europe/Rome');
+        $endsAt = is_numeric($endsAtRaw)
+            ? Carbon::createFromTimestamp($endsAtRaw, 'Europe/Rome')
+            : Carbon::parse($endsAtRaw, 'Europe/Rome');
 
         if ($endsAt->isBefore($startsAt)) {
             throw new \RuntimeException("ParkingMyCar: ends_at prima di starts_at per prenotazione {$externalId}.");
