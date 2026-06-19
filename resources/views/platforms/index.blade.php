@@ -67,7 +67,7 @@
                 <div>
                     <div class="pm-card-title">Ultima sincronizzazione</div>
                     <div class="pm-text-muted" style="font-size:12px">
-                        {{ $lastSyncLog->created_at->format('d/m/Y H:i') }}
+                        {{ $lastSyncLog->created_at->timezone('Europe/Rome')->format('d/m/Y H:i') }}
                         · stato: {{ $lastSyncLog->status }}
                         · origine: {{ $lastSyncLog->source }}
                     </div>

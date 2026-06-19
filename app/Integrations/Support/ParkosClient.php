@@ -130,7 +130,7 @@ class ParkosClient
         $params = [
             'from' => $from->toDateString(),
             'till' => $to->toDateString(),
-            'period_type' => 'modified',
+            'period_type' => 'updated_at',
         ];
 
         if ($merchantId) {
