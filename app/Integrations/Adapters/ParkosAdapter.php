@@ -74,21 +74,23 @@ class ParkosAdapter extends AbstractPlatformAdapter
                 ->values()
                 ->all();
 
-            \Illuminate\Support\Facades\Log::info('Parkos sync records merged', [
-                'listing_id' => $listing->id,
-                'merchant_id' => $listing->external_id,
-                'from' => $from->toDateString(),
-                'to' => $to->toDateString(),
-                'updated_count' => count($updatedRecords),
-                'created_count' => count($createdRecords),
-                'merged_count' => count($records),
-            ]);
-
-            foreach ($records as $rec) {
-                \Illuminate\Support\Facades\Log::info('Parkos booking received', [
-                    'code' => $rec['code'] ?? null,
-                    'customer' => $rec['name'] ?? null,
+            if (config('services.parkos.debug_sync', false)) {
+                \Illuminate\Support\Facades\Log::debug('Parkos sync records merged', [
+                    'listing_id' => $listing->id,
+                    'merchant_id' => $listing->external_id,
+                    'from' => $from->toDateString(),
+                    'to' => $to->toDateString(),
+                    'updated_count' => count($updatedRecords),
+                    'created_count' => count($createdRecords),
+                    'merged_count' => count($records),
                 ]);
+
+                foreach ($records as $rec) {
+                    \Illuminate\Support\Facades\Log::debug('Parkos booking received', [
+                        'code' => $rec['code'] ?? null,
+                        'customer' => $rec['name'] ?? null,
+                    ]);
+                }
             }
         }
 

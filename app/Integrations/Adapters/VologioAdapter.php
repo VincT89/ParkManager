@@ -53,7 +53,12 @@ class VologioAdapter extends AbstractPlatformAdapter
 
         return collect($records)
             ->filter(function ($record) use ($from, $to, $mode, $externalLocationId) {
-                if ((string) ($record['service_location_id'] ?? '') !== (string) $externalLocationId) {
+                $locationId = $record['service_location_id']
+                    ?? $record['service_location']['id']
+                    ?? $record['serviceLocation']['id']
+                    ?? null;
+
+                if ((string) $locationId !== (string) $externalLocationId) {
                     return false;
                 }
 
@@ -95,9 +100,17 @@ class VologioAdapter extends AbstractPlatformAdapter
         $startsAt = Carbon::parse($record['start'], 'Europe/Rome');
         $endsAt = Carbon::parse($record['end'], 'Europe/Rome');
 
-        $customerName = trim(($record['customer']['first_name'] ?? '') . ' ' . ($record['customer']['last_name'] ?? ''));
-        if (empty($customerName)) {
-            $customerName = 'Sconosciuto';
+        $customerName = trim(
+            ($record['customer']['first_name'] ?? '') . ' ' .
+            ($record['customer']['last_name'] ?? '')
+        );
+
+        if ($customerName === '') {
+            $customerName = $record['customer']['name']
+                ?? $record['customer']['full_name']
+                ?? $record['customer_name']
+                ?? $record['name']
+                ?? 'Sconosciuto';
         }
 
         $departureFlight = $record['journey']['departure_flight_number'] ?? null;

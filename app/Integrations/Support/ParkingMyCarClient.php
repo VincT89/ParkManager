@@ -123,16 +123,18 @@ class ParkingMyCarClient
 
         $response->throw();
 
-        return $response->json('bookings')
-            ?? $response->json('reservations')
-            ?? $response->json('data')
-            ?? [];
+        $json = $response->json() ?? [];
+
+        return $json['bookings']
+            ?? $json['reservations']
+            ?? $json['data']
+            ?? (array_is_list($json) ? $json : []);
     }
 
     public function findBookingsByPeriod(Carbon $from, Carbon $to): array
     {
         $response = $this->request()->get(
-            $this->url('/pmc_rest/bookings_resource'),
+            $this->url(config('services.parking_my_car.reservations_path', '/pmc_rest/bookings_resource')),
             [
                 'start_dttm' => $from->format('Y-m-d H:i:s'),
                 'end_dttm' => $to->format('Y-m-d H:i:s'),
@@ -141,20 +143,24 @@ class ParkingMyCarClient
 
         $response->throw();
 
-        \Log::info('PMC bookings_resource response', [
-            'from' => $from->toDateTimeString(),
-            'to' => $to->toDateTimeString(),
-            'keys' => array_keys($response->json() ?? []),
-            'bookings_count' => count($response->json('bookings') ?? []),
-            'data_count' => count($response->json('data') ?? []),
-            'reservations_count' => count($response->json('reservations') ?? []),
-            'total_count' => count($response->json() ?? []),
-        ]);
+        if (config('services.parking_my_car.debug_sync')) {
+            \Log::debug('PMC bookings_resource response', [
+                'from' => $from->toDateTimeString(),
+                'to' => $to->toDateTimeString(),
+                'keys' => array_keys($response->json() ?? []),
+                'bookings_count' => count($response->json('bookings') ?? []),
+                'data_count' => count($response->json('data') ?? []),
+                'reservations_count' => count($response->json('reservations') ?? []),
+                'total_count' => count($response->json() ?? []),
+            ]);
+        }
 
-        return $response->json('bookings')
-            ?? $response->json('reservations')
-            ?? $response->json('data')
-            ?? [];
+        $json = $response->json() ?? [];
+
+        return $json['bookings']
+            ?? $json['reservations']
+            ?? $json['data']
+            ?? (array_is_list($json) ? $json : []);
     }
 
     private function ensureConfigured(): void

@@ -65,19 +65,23 @@ class ParkingMyCarAdapter extends AbstractPlatformAdapter
                 ->values()
                 ->all();
 
-            \Illuminate\Support\Facades\Log::info('PMC sync merged records', [
-                'listing_id' => $listing->id,
-                'parking_id' => $listing->external_id,
-                'updated_count' => count($updatedRecords),
-                'period_count' => count($periodRecords),
-                'merged_count' => count($records),
-                'ids' => collect($records)->pluck('id')->take(50)->values()->all(),
-            ]);
+            if (config('services.parking_my_car.debug_sync')) {
+                \Illuminate\Support\Facades\Log::debug('PMC sync merged records', [
+                    'listing_id' => $listing->id,
+                    'parking_id' => $listing->external_id,
+                    'updated_count' => count($updatedRecords),
+                    'period_count' => count($periodRecords),
+                    'merged_count' => count($records),
+                    'ids' => collect($records)->pluck('id')->take(50)->values()->all(),
+                ]);
+            }
         }
 
-        \Log::info('PMC bookings_resource ids after API', [
-            'ids' => collect($records)->pluck('id')->values()->all(),
-        ]);
+        if (config('services.parking_my_car.debug_sync')) {
+            \Log::debug('PMC bookings_resource ids after API', [
+                'ids' => collect($records)->pluck('id')->values()->all(),
+            ]);
+        }
 
         $filtered = collect($records)
             ->filter(fn (array $record) => (string)($record['parking_id'] ?? $record['parking']['id'] ?? '') === (string)$listing->external_id)
@@ -105,9 +109,11 @@ class ParkingMyCarAdapter extends AbstractPlatformAdapter
             ->values()
             ->all();
 
-        \Log::info('PMC bookings_resource ids after filters', [
-            'ids' => collect($filtered)->pluck('id')->values()->all(),
-        ]);
+        if (config('services.parking_my_car.debug_sync')) {
+            \Log::debug('PMC bookings_resource ids after filters', [
+                'ids' => collect($filtered)->pluck('id')->values()->all(),
+            ]);
+        }
 
         return collect($filtered)
             ->map(fn (array $record) => $this->normalizeRecord($record))

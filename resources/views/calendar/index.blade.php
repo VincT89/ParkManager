@@ -24,10 +24,10 @@
         <a href="{{ route('calendar', ['parking_id' => $parking->id ?? '']) }}" class="pm-btn pm-btn-primary">
             Vista calendario
         </a>
-        <a href="{{ route('calendar.day', ['type' => 'entries', 'parking_id' => $parking->id ?? '']) }}" class="pm-btn pm-btn-secondary">
+        <a href="{{ route('calendar.day', ['type' => 'entries', 'parking_id' => $parking->id ?? '', 'date' => now(config('app.timezone'))->toDateString()]) }}" class="pm-btn pm-btn-secondary">
             Entrate
         </a>
-        <a href="{{ route('calendar.day', ['type' => 'exits', 'parking_id' => $parking->id ?? '']) }}" class="pm-btn pm-btn-secondary">
+        <a href="{{ route('calendar.day', ['type' => 'exits', 'parking_id' => $parking->id ?? '', 'date' => now(config('app.timezone'))->toDateString()]) }}" class="pm-btn pm-btn-secondary">
             Uscite
         </a>
     </div>

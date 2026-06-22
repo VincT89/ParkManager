@@ -95,6 +95,7 @@ return [
         'auth_path' => env('PARKING_MY_CAR_AUTH_PATH', '/oauth/token'),
         'refresh_path' => env('PARKING_MY_CAR_REFRESH_PATH', '/oauth/token'),
         'resources_path' => env('PARKING_MY_CAR_RESOURCES_PATH', '/pmc_rest/parkings_resource'),
+        'reservations_path' => env('PARKING_MY_CAR_RESERVATIONS_PATH', '/pmc_rest/bookings_resource'),
         'reservations_update_path' => env('PARKING_MY_CAR_RESERVATIONS_UPDATE_PATH', '/pmc_rest/bookings_resource_updated'),
 
         'token_cache_key' => env('PARKING_MY_CAR_TOKEN_CACHE_KEY', 'parking_my_car_access_token'),
@@ -106,6 +107,8 @@ return [
         'sync_lookback_hours' => env('PARKING_MY_CAR_SYNC_LOOKBACK_HOURS', 72),
         'operational_past_days' => env('PARKING_MY_CAR_OPERATIONAL_PAST_DAYS', 1),
         'operational_future_days' => env('PARKING_MY_CAR_OPERATIONAL_FUTURE_DAYS', 60),
+        
+        'debug_sync' => env('PARKING_MY_CAR_SYNC_DEBUG', false),
     ],
 
 ];

@@ -92,7 +92,10 @@ class CalendarController extends Controller
     public function day(Request $request)
     {
         $type = $request->get('type', 'entries');
-        $date = Carbon::parse($request->get('date', now()->toDateString()));
+        $date = Carbon::parse(
+            $request->get('date', now(config('app.timezone'))->toDateString()),
+            config('app.timezone')
+        );
         $parkingId = $request->get('parking_id');
 
         abort_unless(in_array($type, ['entries', 'exits']), 404);
@@ -106,7 +109,10 @@ class CalendarController extends Controller
     public function exportDay(Request $request)
     {
         $type = $request->get('type', 'entries');
-        $date = Carbon::parse($request->get('date', now()->toDateString()));
+        $date = Carbon::parse(
+            $request->get('date', now(config('app.timezone'))->toDateString()),
+            config('app.timezone')
+        );
         $parkingId = $request->get('parking_id');
 
         abort_unless(in_array($type, ['entries', 'exits']), 404);

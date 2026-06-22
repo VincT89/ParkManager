@@ -30,7 +30,7 @@
         </div>
         <div class="calendar-date-actions" style="display:flex; gap:8px; align-items:center;">
             <a href="{{ route('calendar.day', ['type' => $type, 'parking_id' => $parkingId, 'date' => $date->copy()->subDay()->toDateString()]) }}" class="pm-btn pm-btn-secondary pm-btn-sm">◄ Giorno prima</a>
-            <a href="{{ route('calendar.day', ['type' => $type, 'parking_id' => $parkingId, 'date' => now()->toDateString()]) }}" class="pm-btn pm-btn-secondary pm-btn-sm">Oggi</a>
+            <a href="{{ route('calendar.day', ['type' => $type, 'parking_id' => $parkingId, 'date' => now(config('app.timezone'))->toDateString()]) }}" class="pm-btn pm-btn-secondary pm-btn-sm">Oggi</a>
             <a href="{{ route('calendar.day', ['type' => $type, 'parking_id' => $parkingId, 'date' => $date->copy()->addDay()->toDateString()]) }}" class="pm-btn pm-btn-secondary pm-btn-sm">Giorno dopo ►</a>
             <a href="{{ route('calendar.day.export', ['type' => $type, 'parking_id' => $parkingId, 'date' => $date->toDateString()]) }}" class="pm-btn pm-btn-secondary pm-btn-sm" style="margin-left: 16px;">Esporta Excel</a>
         </div>
