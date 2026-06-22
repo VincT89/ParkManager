@@ -58,7 +58,7 @@ return [
         'token_cache_key' => env('PARKOS_TOKEN_CACHE_KEY', 'parkos_access_token'),
         'token_cache_ttl' => env('PARKOS_TOKEN_CACHE_TTL', 3300),
 
-        'sync_lookback_hours' => env('PARKOS_SYNC_LOOKBACK_HOURS', 2),
+        'sync_lookback_hours' => env('PARKOS_SYNC_LOOKBACK_HOURS', 72),
         'location_id' => env('PARKOS_LOCATION_ID', '1895'),
         'parking_id' => env('PARKOS_PARKING_ID', 1),
         'fixture_file' => env('PARKOS_FIXTURE_FILE', 'reservations_success.json'),
@@ -79,6 +79,7 @@ return [
         'api_key' => env('VOLOGIO_API_KEY'),
         'client_id' => env('VOLOGIO_CLIENT_ID'),
         'timeout' => env('VOLOGIO_TIMEOUT', 20),
+        'sync_lookback_hours' => env('VOLOGIO_SYNC_LOOKBACK_HOURS', 72),
     ],
 
     'parking_my_car' => [
@@ -102,7 +103,7 @@ return [
 
         'default_product_ref' => env('PARKING_MY_CAR_DEFAULT_PRODUCT_REF', 'DEFAULT'),
 
-        'sync_lookback_hours' => env('PARKING_MY_CAR_SYNC_LOOKBACK_HOURS', 2),
+        'sync_lookback_hours' => env('PARKING_MY_CAR_SYNC_LOOKBACK_HOURS', 72),
     ],
 
 ];

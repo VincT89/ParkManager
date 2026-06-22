@@ -697,3 +697,106 @@ body.pm-public .pm-avail-no {
     font-size: 11px;
     color: rgba(255, 255, 255, 0.65);
 }
+
+/* BOX RIEPILOGATIVO */
+.calendar-summary-row {
+    display: flex;
+    gap: 16px;
+    margin: 16px 0 20px;
+    flex-wrap: wrap;
+}
+
+.calendar-summary-card {
+    min-width: 180px;
+    padding: 18px 22px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.calendar-summary-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #667085;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.calendar-summary-value {
+    margin-top: 8px;
+    font-size: 34px;
+    line-height: 1;
+    font-weight: 700;
+    color: #101828;
+}
+
+.calendar-summary-label {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #667085;
+}
+
+/* RESPONSIVE CALENDAR FIXES */
+.calendar-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.calendar-table {
+    min-width: 980px;
+}
+
+.calendar-actions,
+.calendar-date-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+@media (max-width: 767px) {
+    .calendar-actions,
+    .calendar-date-actions {
+        width: 100%;
+    }
+
+    .calendar-actions a,
+    .calendar-date-actions a,
+    .calendar-date-actions button {
+        flex: 1 1 auto;
+        text-align: center;
+    }
+    
+    .calendar-page-title {
+        font-size: 24px;
+        line-height: 1.2;
+    }
+
+    .calendar-current-date {
+        font-size: 28px;
+    }
+
+    .calendar-summary-card {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
+.calendar-day-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--pm-border);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+    gap: 16px;
+}
+
+@media (max-width: 767px) {
+    .calendar-day-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

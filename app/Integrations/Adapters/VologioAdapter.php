@@ -30,7 +30,7 @@ class VologioAdapter extends AbstractPlatformAdapter
     public function defaultSyncWindow(): array
     {
         return [
-            Carbon::now()->subHours(2),
+            Carbon::now()->subHours((int) config('services.vologio.sync_lookback_hours', 72)),
             Carbon::now(),
         ];
     }
@@ -127,10 +127,10 @@ class VologioAdapter extends AbstractPlatformAdapter
             external_id: (string) ($record['id'] ?? ''),
             external_product_ref: (string) ($record['service_id'] ?? ''),
             external_product_name: null,
-            customer_name: trim(($record['first_name'] ?? '') . ' ' . ($record['last_name'] ?? '')),
-            customer_email: $record['email'] ?? null,
-            customer_phone: $record['phone'] ?? null,
-            license_plate: $record['license_plate'] ?? null,
+            customer_name: $customerName,
+            customer_email: $record['customer']['email'] ?? $record['email'] ?? null,
+            customer_phone: $record['customer']['phone'] ?? $record['phone'] ?? null,
+            license_plate: $record['journey']['car']['license_plate'] ?? $record['license_plate'] ?? null,
             starts_at: $startsAt,
             ends_at: $endsAt,
             spots: $spots,

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div>
-            <div class="pm-page-title">
+            <div class="pm-page-title calendar-page-title">
                 {{ $type === 'entries' ? 'Macchine in entrata' : 'Macchine in uscita' }}
             </div>
             <div class="pm-page-subtitle">
@@ -10,7 +10,7 @@
         </div>
     </x-slot>
 
-    <div style="display:flex;gap:8px;margin-bottom:24px" class="pm-animate">
+    <div style="display:flex;gap:8px;margin-bottom:24px" class="pm-animate calendar-actions">
         <a href="{{ route('calendar', ['parking_id' => $parkingId]) }}" class="pm-btn pm-btn-secondary">
             Vista calendario
         </a>
@@ -22,17 +22,25 @@
         </a>
     </div>
 
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--pm-border); padding-bottom:16px; margin-bottom:24px;" class="pm-animate">
+    <div class="calendar-day-toolbar pm-animate">
         <div style="display:flex; align-items:baseline; gap:12px;">
-            <div style="font-size:24px; font-weight:600; color:var(--pm-text); font-family:var(--pm-mono); line-height:1">
+            <div class="calendar-current-date" style="font-size:24px; font-weight:600; color:var(--pm-text); font-family:var(--pm-mono); line-height:1">
                 {{ $date->format('d / m') }}
             </div>
         </div>
-        <div style="display:flex; gap:8px; align-items:center;">
+        <div class="calendar-date-actions" style="display:flex; gap:8px; align-items:center;">
             <a href="{{ route('calendar.day', ['type' => $type, 'parking_id' => $parkingId, 'date' => $date->copy()->subDay()->toDateString()]) }}" class="pm-btn pm-btn-secondary pm-btn-sm">◄ Giorno prima</a>
             <a href="{{ route('calendar.day', ['type' => $type, 'parking_id' => $parkingId, 'date' => now()->toDateString()]) }}" class="pm-btn pm-btn-secondary pm-btn-sm">Oggi</a>
             <a href="{{ route('calendar.day', ['type' => $type, 'parking_id' => $parkingId, 'date' => $date->copy()->addDay()->toDateString()]) }}" class="pm-btn pm-btn-secondary pm-btn-sm">Giorno dopo ►</a>
             <a href="{{ route('calendar.day.export', ['type' => $type, 'parking_id' => $parkingId, 'date' => $date->toDateString()]) }}" class="pm-btn pm-btn-secondary pm-btn-sm" style="margin-left: 16px;">Esporta Excel</a>
+        </div>
+    </div>
+
+    <div class="calendar-summary-row pm-animate">
+        <div class="calendar-summary-card">
+            <div class="calendar-summary-title">Clienti in {{ $type === 'entries' ? 'entrata' : 'uscita' }}</div>
+            <div class="calendar-summary-value">{{ $reservationsCount }}</div>
+            <div class="calendar-summary-label">Clienti</div>
         </div>
     </div>
 
@@ -43,8 +51,8 @@
             </div>
         @else
             <div class="pm-card">
-                <div class="pm-table-wrapper">
-                    <table class="pm-table">
+                <div class="pm-table-wrapper calendar-table-wrapper">
+                    <table class="pm-table calendar-table">
                     <thead>
                         <tr>
                             <th>Ora</th>

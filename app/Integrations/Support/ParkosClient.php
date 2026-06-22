@@ -125,19 +125,14 @@ class ParkosClient
         return $data;
     }
 
+    public function findBookingsByCreation(Carbon $from, Carbon $to, ?string $merchantId = null): array
+    {
+        return $this->findBookingsByPeriodType($from, $to, 'created_at', $merchantId);
+    }
+
     public function findBookingsByModification(Carbon $from, Carbon $to, ?string $merchantId = null): array
     {
-        $params = [
-            'from' => $from->toDateString(),
-            'till' => $to->toDateString(),
-            'period_type' => 'updated_at',
-        ];
-
-        if ($merchantId) {
-            $params['merchant_id'] = $merchantId;
-        }
-
-        return $this->paginateReservations($params);
+        return $this->findBookingsByPeriodType($from, $to, 'updated_at', $merchantId);
     }
 
     private function ensureConfigured(): void

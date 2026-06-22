@@ -98,8 +98,9 @@ class CalendarController extends Controller
         abort_unless(in_array($type, ['entries', 'exits']), 404);
 
         $reservations = $this->getDayReservationsQuery($type, $date, $parkingId)->get();
+        $reservationsCount = $reservations->count();
 
-        return view('calendar.day', compact('reservations', 'type', 'date', 'parkingId'));
+        return view('calendar.day', compact('reservations', 'reservationsCount', 'type', 'date', 'parkingId'));
     }
 
     public function exportDay(Request $request)

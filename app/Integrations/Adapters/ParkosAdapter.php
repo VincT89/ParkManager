@@ -29,7 +29,7 @@ class ParkosAdapter extends AbstractPlatformAdapter
     public function defaultSyncWindow(): array
     {
         return [
-            Carbon::now()->subHours((int) config('services.parkos.sync_lookback_hours', 2)),
+            Carbon::now()->subHours((int) config('services.parkos.sync_lookback_hours', 72)),
             Carbon::now(),
         ];
     }
@@ -65,7 +65,31 @@ class ParkosAdapter extends AbstractPlatformAdapter
                 ->values()
                 ->all();
         } else {
-            $records = $this->client->findBookingsByModification($from, $to, $listing->external_id);
+            $updatedRecords = $this->client->findBookingsByModification($from, $to, $listing->external_id);
+            $createdRecords = $this->client->findBookingsByCreation($from, $to, $listing->external_id);
+
+            $records = collect($updatedRecords)
+                ->merge($createdRecords)
+                ->unique(fn ($record) => $record['code'] ?? json_encode($record))
+                ->values()
+                ->all();
+
+            \Illuminate\Support\Facades\Log::info('Parkos sync records merged', [
+                'listing_id' => $listing->id,
+                'merchant_id' => $listing->external_id,
+                'from' => $from->toDateString(),
+                'to' => $to->toDateString(),
+                'updated_count' => count($updatedRecords),
+                'created_count' => count($createdRecords),
+                'merged_count' => count($records),
+            ]);
+
+            foreach ($records as $rec) {
+                \Illuminate\Support\Facades\Log::info('Parkos booking received', [
+                    'code' => $rec['code'] ?? null,
+                    'customer' => $rec['name'] ?? null,
+                ]);
+            }
         }
 
         return collect($records)

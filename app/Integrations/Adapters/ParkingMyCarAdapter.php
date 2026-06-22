@@ -27,7 +27,7 @@ class ParkingMyCarAdapter extends AbstractPlatformAdapter
     public function defaultSyncWindow(): array
     {
         return [
-            Carbon::now()->subHours((int) config('services.parking_my_car.sync_lookback_hours', 2)),
+            Carbon::now()->subHours((int) config('services.parking_my_car.sync_lookback_hours', 72)),
             Carbon::now(),
         ];
     }

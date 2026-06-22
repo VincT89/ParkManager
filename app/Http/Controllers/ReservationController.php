@@ -75,9 +75,25 @@ class ReservationController extends Controller
             $query->whereDate($dateColumn, '<=', $request->date_to);
         }
 
-        // Filtro per nome cliente
+        // Filtro di ricerca globale (nome in AND, altri campi in OR)
         if ($request->filled('search')) {
-            $query->where('customer_name', 'like', '%' . $request->search . '%');
+            $search = trim(preg_replace('/\s+/', ' ', $request->search));
+            $terms = collect(explode(' ', $search))->filter()->values();
+
+            $query->where(function ($q) use ($search, $terms) {
+                // AND sui termini del nome
+                $q->where(function ($nameQuery) use ($terms) {
+                    foreach ($terms as $term) {
+                        $nameQuery->where('customer_name', 'like', '%' . $term . '%');
+                    }
+                })
+                // OR sugli altri campi esatti
+                ->orWhere('customer_email', 'like', '%' . $search . '%')
+                ->orWhere('customer_phone', 'like', '%' . $search . '%')
+                ->orWhere('license_plate', 'like', '%' . $search . '%')
+                ->orWhere('flight_reference', 'like', '%' . $search . '%')
+                ->orWhere('external_id', 'like', '%' . $search . '%');
+            });
         }
 
         $reservations = $query->paginate(20)->withQueryString();

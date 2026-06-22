@@ -19,7 +19,7 @@ Artisan::command('inspire', function () {
     foreach ($listings as $listing) {
         \App\Jobs\SyncListingJob::dispatch($listing);
     }
-})->everyFiveMinutes()->name('sync_all_active_listings')->withoutOverlapping(4);
+})->everyMinute()->name('sync_all_active_listings')->withoutOverlapping(10);
 
 \Illuminate\Support\Facades\Schedule::command('app:cancel-expired-pending-reservations')
     ->everyMinute()

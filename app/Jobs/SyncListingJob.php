@@ -16,8 +16,20 @@ class SyncListingJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $timeout = 120;
-    public int $tries = 1;
+    public int $timeout = 300;
+    public int $tries = 3;
+
+    public function backoff(): array
+    {
+        return [60, 180, 300];
+    }
+
+    public function middleware(): array
+    {
+        return [
+            new \Illuminate\Queue\Middleware\WithoutOverlapping('sync-listing-'.$this->listing->id)
+        ];
+    }
 
     /**
      * Create a new job instance.
