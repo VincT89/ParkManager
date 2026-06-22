@@ -38,11 +38,42 @@ class ParkingMyCarAdapter extends AbstractPlatformAdapter
             throw new \RuntimeException("ParkingListing ID {$listing->id} non ha external_id configurato.");
         }
 
-        $apiFrom = $mode === 'stay_period' ? $from->copy()->subMonths(6) : $from;
+        if ($mode === 'stay_period') {
+            $apiFrom = $from->copy()->subMonths(6);
+            $records = $this->client->findBookingsByPeriod($apiFrom, $to);
+        } else {
+            $updatedRecords = $this->client->findBookingsByModification($from, $to);
 
-        $records = $mode === 'stay_period'
-            ? $this->client->findBookingsByPeriod($apiFrom, $to)
-            : $this->client->findBookingsByModification($from, $to);
+            $periodFrom = $from->copy()->subDays(
+                (int) config('services.parking_my_car.operational_past_days', 1)
+            );
+
+            $periodTo = Carbon::now()->addDays(
+                (int) config('services.parking_my_car.operational_future_days', 60)
+            );
+
+            $periodRecords = $this->client->findBookingsByPeriod($periodFrom, $periodTo);
+
+            $records = collect($updatedRecords)
+                ->merge($periodRecords)
+                ->unique(fn ($record) => (string) (
+                    $record['id']
+                    ?? $record['booking_id']
+                    ?? $record['reservation_id']
+                    ?? json_encode($record)
+                ))
+                ->values()
+                ->all();
+
+            \Illuminate\Support\Facades\Log::info('PMC sync merged records', [
+                'listing_id' => $listing->id,
+                'parking_id' => $listing->external_id,
+                'updated_count' => count($updatedRecords),
+                'period_count' => count($periodRecords),
+                'merged_count' => count($records),
+                'ids' => collect($records)->pluck('id')->take(50)->values()->all(),
+            ]);
+        }
 
         \Log::info('PMC bookings_resource ids after API', [
             'ids' => collect($records)->pluck('id')->values()->all(),

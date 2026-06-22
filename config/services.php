@@ -104,6 +104,8 @@ return [
         'default_product_ref' => env('PARKING_MY_CAR_DEFAULT_PRODUCT_REF', 'DEFAULT'),
 
         'sync_lookback_hours' => env('PARKING_MY_CAR_SYNC_LOOKBACK_HOURS', 72),
+        'operational_past_days' => env('PARKING_MY_CAR_OPERATIONAL_PAST_DAYS', 1),
+        'operational_future_days' => env('PARKING_MY_CAR_OPERATIONAL_FUTURE_DAYS', 60),
     ],
 
 ];
