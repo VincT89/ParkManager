@@ -99,6 +99,7 @@ class PublicBookingController extends Controller
             'customer_phone' => 'required|string|max:50',
             'license_plate' => 'required|string|max:20',
             'flight_reference' => ['nullable', 'string', 'max:20'],
+            'passengers_count' => ['required', 'integer', 'min:1', 'max:9'],
         ]);
 
         // Website Platform (deve già esistere, configurata via seeder, altrimenti fallisce esplicitamente 404)
@@ -154,6 +155,7 @@ class PublicBookingController extends Controller
             'price' => $assignment['price'],
             'status' => ReservationStatus::Pending->value, // Stato iniziale
             'expires_at' => now()->addMinutes(15),
+            'passengers_count' => max(1, (int) $validated['passengers_count']),
             'raw_data' => ['source' => 'website']
         ];
 

@@ -98,6 +98,7 @@
                         <th>Arrivo</th>
                         <th>Partenza</th>
                         <th>Posti</th>
+                        <th title="Clienti Navetta">Pax</th>
                         <th>Prezzo</th>
                         <th>Stato</th>
                         <th>Azioni</th>
@@ -127,6 +128,7 @@
                             <td class="pm-mono">{{ $reservation->starts_at->format('d-m-Y H:i') }}</td>
                             <td class="pm-mono">{{ $reservation->ends_at->format('d-m-Y H:i') }}</td>
                             <td class="pm-mono">{{ $reservation->spots }}</td>
+                            <td class="pm-mono">{{ $reservation->passengers_count ?? 1 }}</td>
                             <td class="pm-mono">
                                 {{ $reservation->price ? '€ ' . number_format($reservation->price * $reservation->spots, 2) : '—' }}
                             </td>
@@ -180,7 +182,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" style="text-align:center;padding:32px 0;color:var(--pm-text-muted)">
+                            <td colspan="10" style="text-align:center;padding:32px 0;color:var(--pm-text-muted)">
                                 Nessuna prenotazione trovata.
                             </td>
                         </tr>

@@ -77,11 +77,17 @@
                 </div>
             </div>
 
-            <div class="pm-form-grid-3">
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;">
                 <div class="pm-form-group">
                     <label class="pm-label pm-label-required">Posti</label>
                     <input type="number" name="spots" min="1" required
                            value="{{ old('spots', $reservation->spots) }}"
+                           class="pm-input" />
+                </div>
+                <div class="pm-form-group">
+                    <label class="pm-label pm-label-required">Clienti Navetta</label>
+                    <input type="number" name="passengers_count" min="1" max="9" required
+                           value="{{ old('passengers_count', $reservation->passengers_count ?? 1) }}"
                            class="pm-input" />
                 </div>
                 <div class="pm-form-group">

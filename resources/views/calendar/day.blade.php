@@ -38,8 +38,13 @@
 
     <div class="calendar-summary-row pm-animate">
         <div class="calendar-summary-card">
-            <div class="calendar-summary-title">Clienti in {{ $type === 'entries' ? 'entrata' : 'uscita' }}</div>
+            <div class="calendar-summary-title">Macchine in {{ $type === 'entries' ? 'entrata' : 'uscita' }}</div>
             <div class="calendar-summary-value">{{ $reservationsCount }}</div>
+            <div class="calendar-summary-label">Macchine</div>
+        </div>
+        <div class="calendar-summary-card">
+            <div class="calendar-summary-title">Clienti in {{ $type === 'entries' ? 'entrata' : 'uscita' }}</div>
+            <div class="calendar-summary-value">{{ $reservations->sum(fn ($reservation) => $reservation->passengers_count ?? 1) }}</div>
             <div class="calendar-summary-label">Clienti</div>
         </div>
     </div>
@@ -62,6 +67,7 @@
                             <th>Telefono</th>
                             <th>Prodotto</th>
                             <th>Posti</th>
+                            <th title="Clienti Navetta">Pax</th>
                             <th>Stato</th>
                         </tr>
                     </thead>
@@ -107,6 +113,9 @@
                                 </td>
                                 <td class="pm-mono">
                                     {{ $reservation->spots }}
+                                </td>
+                                <td class="pm-mono">
+                                    {{ $reservation->passengers_count ?? 1 }}
                                 </td>
                                 <td>
                                     <div style="display: flex; align-items: center; gap: 8px;">

@@ -130,7 +130,7 @@ class CalendarController extends Controller
             "Expires"             => "0"
         ];
 
-        $columns = ['Ora', 'Targa', 'Volo', 'Cliente', 'Telefono', 'Prodotto', 'Parcheggio', 'Posti', 'Note'];
+        $columns = ['Ora', 'Targa', 'Volo', 'Cliente', 'Telefono', 'Clienti', 'Prodotto', 'Parcheggio', 'Posti/Macchine', 'Note'];
 
         $callback = function() use($reservations, $columns, $type) {
             $file = fopen('php://output', 'w');
@@ -153,6 +153,7 @@ class CalendarController extends Controller
                     $res->flight_reference ?? '-',
                     $res->customer_name,
                     $res->customer_phone ?? '-',
+                    $res->passengers_count ?? 1,
                     $res->parkingProduct->name ?? 'N/D',
                     $res->parking->name ?? 'N/D',
                     $res->spots,

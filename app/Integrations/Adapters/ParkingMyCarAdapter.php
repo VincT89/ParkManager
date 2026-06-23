@@ -121,6 +121,15 @@ class ParkingMyCarAdapter extends AbstractPlatformAdapter
             ->all();
     }
 
+    private function passengersCount(array $record): int
+    {
+        $value = $record['seats'] ?? null;
+
+        return is_numeric($value) && (int) $value > 0
+            ? (int) $value
+            : 1;
+    }
+
     protected function normalizeRecord(array $record): NormalizedReservation
     {
         $externalId = $record['id'] ?? $record['booking_id'] ?? $record['reservation_id'] ?? null;
@@ -208,7 +217,8 @@ class ParkingMyCarAdapter extends AbstractPlatformAdapter
             notes: $record['notes'] ?? $record['note'] ?? null,
             raw_data: $record,
             status: $this->mapStatus($record['status'] ?? null),
-            flight_reference: $flightReference
+            flight_reference: $flightReference,
+            passengers_count: $this->passengersCount($record)
         );
     }
 

@@ -74,6 +74,7 @@ class ReservationsExport implements
             'Arrivo',
             'Partenza',
             'Posti',
+            'Clienti',
             'Prezzo (€)',
             'Stato',
             'Codice esterno',
@@ -96,6 +97,7 @@ class ReservationsExport implements
             $reservation->starts_at->format('d/m/Y H:i'),
             $reservation->ends_at->format('d/m/Y H:i'),
             $reservation->spots,
+            $reservation->passengers_count ?? 1,
             $reservation->price ? number_format($reservation->price, 2, ',', '.') : '',
             $reservation->status->label(),
             $reservation->external_id ?? '',
@@ -134,11 +136,12 @@ class ReservationsExport implements
             'I' => 16,
             'J' => 16,
             'K' => 8,
-            'L' => 12,
-            'M' => 14,
-            'N' => 18,
-            'O' => 30,
-            'P' => 16,
+            'L' => 8,
+            'M' => 12,
+            'N' => 14,
+            'O' => 18,
+            'P' => 30,
+            'Q' => 16,
         ];
     }
 

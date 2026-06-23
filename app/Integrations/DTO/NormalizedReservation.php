@@ -22,6 +22,7 @@ class NormalizedReservation
         public readonly ?string $notes = null,
         public readonly array $raw_data = [],
         public readonly ?string $status = null,
-        public readonly ?string $flight_reference = null
+        public readonly ?string $flight_reference = null,
+        public readonly ?int $passengers_count = null
     ) {}
 }

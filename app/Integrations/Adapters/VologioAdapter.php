@@ -83,6 +83,15 @@ class VologioAdapter extends AbstractPlatformAdapter
             ->all();
     }
 
+    private function passengersCount(array $record): int
+    {
+        $value = $record['journey']['travelers'] ?? null;
+
+        return is_numeric($value) && (int) $value > 0
+            ? (int) $value
+            : 1;
+    }
+
     protected function normalizeRecord(array $record): NormalizedReservation
     {
         if (empty($record['id'])) {
@@ -152,7 +161,8 @@ class VologioAdapter extends AbstractPlatformAdapter
             notes: $record['remarks'] ?? null,
             raw_data: $record,
             status: $mappedStatus,
-            flight_reference: $flightReference
+            flight_reference: $flightReference,
+            passengers_count: $this->passengersCount($record)
         );
     }
 }

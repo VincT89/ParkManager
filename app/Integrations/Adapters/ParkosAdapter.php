@@ -119,6 +119,15 @@ class ParkosAdapter extends AbstractPlatformAdapter
             ->all();
     }
 
+    private function passengersCount(array $record): int
+    {
+        $value = $record['persons'] ?? null;
+
+        return is_numeric($value) && (int) $value > 0
+            ? (int) $value
+            : 1;
+    }
+
     protected function normalizeRecord(array $record): NormalizedReservation
     {
         if (empty($record['code'])) {
@@ -171,7 +180,8 @@ class ParkosAdapter extends AbstractPlatformAdapter
             currency: $currency,
             notes: $record['notes'] ?? null,
             raw_data: $record,
-            status: $status
+            status: $status,
+            passengers_count: $this->passengersCount($record)
         );
     }
 }

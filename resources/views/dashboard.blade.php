@@ -127,6 +127,7 @@
                                         <th>Telefono</th>
                                         <th>Prodotto</th>
                                         <th>Posti</th>
+                                        <th title="Clienti Navetta">Pax</th>
                                         <th>Stato</th>
                                     </tr>
                                 </thead>
@@ -169,6 +170,7 @@
                                                 <div class="pm-td-sub">{{ $reservation->parking->name ?? 'N/D' }}</div>
                                             </td>
                                             <td class="pm-mono">{{ $reservation->spots }}</td>
+                                            <td class="pm-mono">{{ $reservation->passengers_count ?? 1 }}</td>
                                             <td>
                                                 <div style="display: flex; align-items: center; gap: 8px;">
                                                     <input type="checkbox" id="check_in_{{ $reservation->id }}" {{ $reservation->has_entered ? 'checked' : '' }} onchange="toggleMovement({{ $reservation->id }}, 'entered', this.checked)" style="width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--pm-border); cursor: pointer;">
@@ -203,6 +205,7 @@
                                         <th>Telefono</th>
                                         <th>Prodotto</th>
                                         <th>Posti</th>
+                                        <th title="Clienti Navetta">Pax</th>
                                         <th>Stato</th>
                                     </tr>
                                 </thead>
@@ -245,6 +248,7 @@
                                                 <div class="pm-td-sub">{{ $reservation->parking->name ?? 'N/D' }}</div>
                                             </td>
                                             <td class="pm-mono">{{ $reservation->spots }}</td>
+                                            <td class="pm-mono">{{ $reservation->passengers_count ?? 1 }}</td>
                                             <td>
                                                 <div style="display: flex; align-items: center; gap: 8px;">
                                                     <input type="checkbox" id="check_out_{{ $reservation->id }}" {{ $reservation->has_exited ? 'checked' : '' }} onchange="toggleMovement({{ $reservation->id }}, 'exited', this.checked)" style="width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--pm-border); cursor: pointer;">

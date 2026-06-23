@@ -132,6 +132,7 @@ class ReservationController extends Controller
             'starts_at'          => ['required', 'date', 'before:ends_at'],
             'ends_at'            => ['required', 'date', 'after:starts_at'],
             'spots'              => ['required', 'integer', 'min:1'],
+            'passengers_count'   => ['required', 'integer', 'min:1', 'max:9'],
             'price'              => ['nullable', 'numeric', 'min:0'],
             'notes'              => ['nullable', 'string'],
         ]);
@@ -189,6 +190,7 @@ class ReservationController extends Controller
             'starts_at'      => ['required', 'date', 'before:ends_at'],
             'ends_at'        => ['required', 'date', 'after:starts_at'],
             'spots'          => ['required', 'integer', 'min:1'],
+            'passengers_count' => ['required', 'integer', 'min:1', 'max:9'],
             'status'         => ['required', 'string'],
             'price'          => ['nullable', 'numeric', 'min:0'],
             'notes'          => ['nullable', 'string'],

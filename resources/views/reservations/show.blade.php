@@ -77,7 +77,7 @@
             </div>
         </div>
 
-        <div class="pm-form-grid-3" style="margin-bottom: 32px;">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 32px;">
             <div>
                 <div class="pm-label">Veicolo / Targa</div>
                 @if($reservation->license_plate)
@@ -102,6 +102,12 @@
                 <div class="pm-label">Posti occupati</div>
                 <div style="font-weight: 600; font-size: 18px; color: var(--pm-text);">
                     {{ $reservation->spots }}
+                </div>
+            </div>
+            <div>
+                <div class="pm-label">Clienti navetta</div>
+                <div style="font-weight: 600; font-size: 18px; color: var(--pm-text);">
+                    {{ $reservation->passengers_count ?? 1 }}
                 </div>
             </div>
         </div>

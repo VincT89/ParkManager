@@ -55,7 +55,7 @@
                 </div>
 
 
-                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px;">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 24px; margin-bottom: 24px;">
                     <div class="pm-form-group" style="margin-bottom: 0;">
                         <label class="pm-label">Prodotto / Tipo Veicolo</label>
                         <select name="product_code" id="product_code" class="pm-select" required>
@@ -68,9 +68,14 @@
                         @error('product_code') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                     </div>
                         <div class="pm-form-group" style="margin-bottom: 0;">
-                            <label class="pm-label">Numero Posti</label>
+                            <label class="pm-label">Numero Posti Auto</label>
                             <input type="number" name="spots" id="spots" class="pm-input" min="1" max="10" value="{{ old('spots', 1) }}" required>
                             @error('spots') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
+                        </div>
+                        <div class="pm-form-group" style="margin-bottom: 0;">
+                            <label for="passengers_count" class="pm-label">Clienti Navetta</label>
+                            <input type="number" name="passengers_count" id="passengers_count" class="pm-input" min="1" max="9" value="{{ old('passengers_count', 1) }}" required>
+                            @error('passengers_count') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                         </div>
                     </div>
 
