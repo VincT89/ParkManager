@@ -11,7 +11,7 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
         <div style="font-size: 15px; line-height: 1.5; width: 100%;">
             <div style="font-size: 16px; font-weight: 700; margin-bottom: 6px;">Avviso alla Clientela:</div>
-            <div>Ricordiamo che è necessario presentarsi in struttura con almeno <strong style="text-decoration: underline;">2 ore di anticipo</strong> rispetto all'orario del proprio volo.</div>
+            <div>Ricordiamo che è necessario presentarsi in struttura con almeno <strong style="text-decoration: underline;">2 ore di anticipo</strong> rispetto all'orario di partenza del proprio volo.</div>
             <div style="margin-top: 12px;">
                 Invitiamo inoltre a leggere attentamente i nostri <a href="/termini-e-condizioni.pdf" target="_blank" style="color: #92400e; text-decoration: underline; font-weight: 600;">Termini e Condizioni</a>.
             </div>
