@@ -40,7 +40,7 @@ class PublicBookingTest extends TestCase
         $response->assertStatus(200);
         $response->assertJson([
             'available' => true,
-            'total_price' => 80 // 2 spots * 2 days * 20 price
+            'total_price' => 120 // 2 spots * 3 days * 20 price
         ]);
     }
 
@@ -68,7 +68,7 @@ class PublicBookingTest extends TestCase
             'customer_name' => 'Mario Rossi',
             'spots' => 2,
             'status' => 'pending',
-            'price' => 80,
+            'price' => 120,
         ]);
         
         $reservation = Reservation::first();
@@ -193,7 +193,7 @@ class PublicBookingTest extends TestCase
             'spots' => 1,
             'status' => 'pending',
             'expires_at' => Carbon::now()->addMinutes(30),
-            'price' => 20
+            'price' => 60
         ]);
 
         // 3. Cliente 1 fa il submit del form. Il controller deve ri-verificare la capacità, che ora è 1 (product capacity 2 - 1 prenotato = 1 disponibile).

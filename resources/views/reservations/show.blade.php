@@ -114,15 +114,9 @@
 
         <div class="pm-form-grid-2" style="margin-bottom: 32px;">
             <div>
-                <div class="pm-label">Prezzo Unitario</div>
-                <div style="font-weight: 500; font-size: 15px; color: var(--pm-text);">
-                    € {{ number_format($reservation->price, 2) }}
-                </div>
-            </div>
-            <div>
                 <div class="pm-label">Totale Pratica</div>
                 <div style="font-weight: 700; font-size: 20px; color: var(--pm-green);">
-                    € {{ number_format($reservation->price * $reservation->spots, 2) }}
+                    € {{ number_format($reservation->price, 2) }}
                 </div>
             </div>
         </div>

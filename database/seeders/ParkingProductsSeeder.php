@@ -22,7 +22,7 @@ class ParkingProductsSeeder extends Seeder
                 'code' => 'auto_open',
                 'name' => 'Auto/Moto scoperto',
                 'capacity' => 1000,
-                'price' => 4.80,
+                'price' => 5.00,
                 'sort_order' => 10,
             ],
             [

@@ -30,7 +30,7 @@ class ParkingAssignmentServiceTest extends TestCase
 
         // Deve assegnare P1 perché è il primo nell'ordine (id minore)
         $this->assertEquals($parking1->id, $assignment['parking']->id);
-        $this->assertEquals(10, $assignment['price']); // 1 day * 10 eur
+        $this->assertEquals(20, $assignment['price']); // 2 days * 10 eur
     }
 
     public function test_skips_saturated_parking_and_assigns_second()

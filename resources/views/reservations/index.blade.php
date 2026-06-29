@@ -130,7 +130,7 @@
                             <td class="pm-mono">{{ $reservation->spots }}</td>
                             <td class="pm-mono">{{ $reservation->passengers_count ?? 1 }}</td>
                             <td class="pm-mono">
-                                {{ $reservation->price ? '€ ' . number_format($reservation->price * $reservation->spots, 2) : '—' }}
+                                {{ $reservation->price ? '€ ' . number_format($reservation->price, 2) : '—' }}
                             </td>
                             <td>
                                 @php

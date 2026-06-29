@@ -9,10 +9,12 @@ use Exception;
 class ParkingAssignmentService
 {
     protected AvailabilityService $availabilityService;
+    protected PricingService $pricingService;
 
-    public function __construct(AvailabilityService $availabilityService)
+    public function __construct(AvailabilityService $availabilityService, PricingService $pricingService)
     {
         $this->availabilityService = $availabilityService;
+        $this->pricingService = $pricingService;
     }
 
     /**
@@ -42,9 +44,13 @@ class ParkingAssignmentService
             );
 
             if ($availability->available) {
-                // Calcola il prezzo base. In futuro si può estendere con logiche di pricing dinamico (es PricingService)
-                $days = max(1, $startsAt->copy()->startOfDay()->diffInDays($endsAt->copy()->startOfDay()));
-                $totalPrice = $product->price * $days * $spots;
+                // Calcola il prezzo base usando PricingService
+                $totalPrice = $this->pricingService->totalForProduct(
+                    $product,
+                    $startsAt,
+                    $endsAt,
+                    $spots
+                );
 
                 return [
                     'parking' => $parking,
