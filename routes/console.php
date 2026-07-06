@@ -8,7 +8,7 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 \Illuminate\Support\Facades\Schedule::command('sync:automatic')
-    ->everyMinute()
+    ->everyFiveMinutes()
     ->name('sync_all_active_listings')
     ->withoutOverlapping(10);
 
