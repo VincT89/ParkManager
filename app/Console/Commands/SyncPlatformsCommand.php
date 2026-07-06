@@ -81,6 +81,8 @@ class SyncPlatformsCommand extends Command
 
             $status = empty($stats['errors']) ? 'success' : 'failed';
 
+            $notes = array_merge($stats['errors'] ?? [], $stats['skipped_reasons'] ?? []);
+
             \App\Models\SyncLog::create([
                 'platform_id'          => $listing->platform_id,
                 'parking_listing_id'   => $listing->id,
@@ -91,7 +93,7 @@ class SyncPlatformsCommand extends Command
                 'reservations_updated' => $stats['updated'],
                 'reservations_failed'  => $stats['failed'],
                 'reservations_skipped' => $stats['skipped'],
-                'notes'                => empty($stats['errors']) ? null : substr(implode("\n", $stats['errors']), 0, 1000),
+                'notes'                => empty($notes) ? null : substr(implode("\n", $notes), 0, 1000),
             ]);
 
             $this->table(

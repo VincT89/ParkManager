@@ -82,4 +82,54 @@ class SyncListingJobTest extends TestCase
             'reservations_failed' => 1,
         ]);
     }
+
+    public function test_sync_log_notes_include_skipped_reasons_without_failed_status(): void
+    {
+        $platform = Platform::create([
+            'name' => 'Parkos',
+            'slug' => 'parkos',
+            'is_active' => true,
+        ]);
+
+        $parking = Parking::create([
+            'name' => 'Test Parking',
+            'total_spots' => 100,
+            'is_active' => true,
+        ]);
+
+        $listing = ParkingListing::create([
+            'platform_id' => $platform->id,
+            'parking_id' => $parking->id,
+            'external_id' => '1895',
+            'is_active' => true,
+        ]);
+
+        $actionMock = \Mockery::mock(SyncListingAction::class);
+        $actionMock->shouldReceive('execute')
+            ->once()
+            ->andReturn([
+                'created' => 0,
+                'updated' => 0,
+                'failed' => 0,
+                'skipped' => 1,
+                'errors' => [],
+                'warnings' => [],
+                'skipped_reasons' => ['Prenotazione cancellata in origine e non presente a sistema.'],
+            ]);
+
+        $job = new SyncListingJob($listing);
+        $job->handle($actionMock);
+
+        $this->assertDatabaseHas('sync_logs', [
+            'parking_listing_id' => $listing->id,
+            'source' => 'job',
+            'status' => 'success',
+            'reservations_skipped' => 1,
+            'reservations_failed' => 0,
+        ]);
+
+        $log = \App\Models\SyncLog::where('parking_listing_id', $listing->id)->first();
+        $this->assertNotNull($log->notes);
+        $this->assertStringContainsString('Prenotazione cancellata in origine e non presente a sistema.', $log->notes);
+    }
 }

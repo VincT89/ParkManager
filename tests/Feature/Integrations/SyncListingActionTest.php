@@ -181,4 +181,20 @@ class SyncListingActionTest extends TestCase
         $this->assertEquals('2026-06-15 12:30:00', $reservation->platform_cancelled_at->toDateTimeString());
         $this->assertNotNull($reservation->last_seen_at);
     }
+
+    public function test_missing_local_cancelled_reservation_is_skipped_without_marking_sync_as_failed()
+    {
+        // Don't create the reservation locally
+        Config::set('services.parkos.fixture_file', 'reservations_cancelled.json');
+
+        $stats = $this->action->execute($this->listing, Carbon::today(), Carbon::tomorrow(), false);
+
+        $this->assertEquals(0, $stats['created']);
+        $this->assertEquals(0, $stats['updated']);
+        $this->assertEquals(0, $stats['failed']);
+        $this->assertEquals(1, $stats['skipped']);
+        $this->assertEmpty($stats['errors']);
+        $this->assertCount(1, $stats['skipped_reasons']);
+        $this->assertStringContainsString('Prenotazione cancellata in origine e non presente a sistema.', $stats['skipped_reasons'][0]);
+    }
 }

@@ -137,4 +137,92 @@ class ParkingMyCarAdapterTest extends TestCase
         $this->assertCount(1, $reservations);
         $this->assertEquals('DEFAULT', $reservations[0]->external_product_ref);
     }
+
+    public function test_parking_my_car_maps_cancellato_to_cancelled()
+    {
+        $platform = new Platform(['id' => 1, 'slug' => 'parking-my-car']);
+        $listing = new ParkingListing(['id' => 1, 'platform_id' => $platform->id, 'external_id' => '123']);
+        $listing->setRelation('platform', $platform);
+
+        $this->clientMock->method('findBookingsByModification')->willReturn([
+            [
+                'id' => 'BOOK_5',
+                'parking_id' => '123',
+                'start_dtm' => '2026-06-10 10:00:00',
+                'end_dtm' => '2026-06-15 10:00:00',
+                'customer' => ['first_name' => 'Gino', 'last_name' => 'Gini'],
+                'status' => 'cancellato',
+            ]
+        ]);
+
+        $reservations = $this->adapter->fetchReservations($listing, Carbon::now(), Carbon::now());
+        $this->assertEquals('cancelled', $reservations[0]->status);
+    }
+
+    public function test_parking_my_car_maps_cancellata_to_cancelled()
+    {
+        $platform = new Platform(['id' => 1, 'slug' => 'parking-my-car']);
+        $listing = new ParkingListing(['id' => 1, 'platform_id' => $platform->id, 'external_id' => '123']);
+        $listing->setRelation('platform', $platform);
+
+        $this->clientMock->method('findBookingsByModification')->willReturn([
+            [
+                'id' => 'BOOK_6',
+                'parking_id' => '123',
+                'start_dtm' => '2026-06-10 10:00:00',
+                'end_dtm' => '2026-06-15 10:00:00',
+                'customer' => ['first_name' => 'Gina', 'last_name' => 'Gini'],
+                'status' => 'cancellata',
+            ]
+        ]);
+
+        $reservations = $this->adapter->fetchReservations($listing, Carbon::now(), Carbon::now());
+        $this->assertEquals('cancelled', $reservations[0]->status);
+    }
+
+    public function test_parking_my_car_cancelled_false_does_not_force_cancelled_status()
+    {
+        $platform = new Platform(['id' => 1, 'slug' => 'parking-my-car']);
+        $listing = new ParkingListing(['id' => 1, 'platform_id' => $platform->id, 'external_id' => '123']);
+        $listing->setRelation('platform', $platform);
+
+        $this->clientMock->method('findBookingsByModification')->willReturn([
+            [
+                'id' => 'BOOK_7',
+                'parking_id' => '123',
+                'start_dtm' => '2026-06-10 10:00:00',
+                'end_dtm' => '2026-06-15 10:00:00',
+                'customer' => ['first_name' => 'Pino', 'last_name' => 'Pini'],
+                'status' => 'confermata',
+                'cancelled' => false,
+            ]
+        ]);
+
+        $reservations = $this->adapter->fetchReservations($listing, Carbon::now(), Carbon::now());
+        $this->assertEquals('confirmed', $reservations[0]->status);
+        $this->assertNull($reservations[0]->platform_cancelled_at);
+    }
+
+    public function test_parking_my_car_cancelled_zero_does_not_force_cancelled_status()
+    {
+        $platform = new Platform(['id' => 1, 'slug' => 'parking-my-car']);
+        $listing = new ParkingListing(['id' => 1, 'platform_id' => $platform->id, 'external_id' => '123']);
+        $listing->setRelation('platform', $platform);
+
+        $this->clientMock->method('findBookingsByModification')->willReturn([
+            [
+                'id' => 'BOOK_8',
+                'parking_id' => '123',
+                'start_dtm' => '2026-06-10 10:00:00',
+                'end_dtm' => '2026-06-15 10:00:00',
+                'customer' => ['first_name' => 'Pino', 'last_name' => 'Pini'],
+                'status' => 'confermata',
+                'cancelled' => 0,
+            ]
+        ]);
+
+        $reservations = $this->adapter->fetchReservations($listing, Carbon::now(), Carbon::now());
+        $this->assertEquals('confirmed', $reservations[0]->status);
+        $this->assertNull($reservations[0]->platform_cancelled_at);
+    }
 }

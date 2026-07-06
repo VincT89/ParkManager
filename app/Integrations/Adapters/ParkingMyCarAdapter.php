@@ -147,6 +147,27 @@ class ParkingMyCarAdapter extends AbstractPlatformAdapter
         return null;
     }
 
+    private function parseOptionalPlatformTimestamp(array $record, array $keys): ?Carbon
+    {
+        foreach ($keys as $key) {
+            if (! array_key_exists($key, $record)) {
+                continue;
+            }
+
+            $value = $record[$key];
+
+            if ($value === null || $value === '' || $value === false || $value === 0 || $value === '0') {
+                continue;
+            }
+
+            return is_numeric($value)
+                ? Carbon::createFromTimestamp((int) $value, 'Europe/Rome')
+                : Carbon::parse((string) $value, 'Europe/Rome');
+        }
+
+        return null;
+    }
+
     protected function normalizeRecord(array $record): NormalizedReservation
     {
         $externalId = $record['id'] ?? $record['booking_id'] ?? $record['reservation_id'] ?? null;
@@ -218,6 +239,21 @@ class ParkingMyCarAdapter extends AbstractPlatformAdapter
             $record['flight_number'] ?? null,
         ])->filter()->unique()->join(' / ') ?: null;
 
+        $platformCancelledAt = $this->parseOptionalPlatformTimestamp($record, [
+            'cancelled',
+            'cancelled_dttm',
+            'cancelled_at',
+            'canceled',
+            'canceled_dttm',
+            'canceled_at',
+        ]);
+
+        $status = $this->mapStatus($record['status'] ?? null);
+
+        if ($platformCancelledAt !== null) {
+            $status = 'cancelled';
+        }
+
         return new NormalizedReservation(
             external_id: (string) $externalId,
             external_product_ref: (string) $externalProductRef,
@@ -233,7 +269,7 @@ class ParkingMyCarAdapter extends AbstractPlatformAdapter
             currency: $record['currency'] ?? 'EUR',
             notes: $record['notes'] ?? $record['note'] ?? null,
             raw_data: $record,
-            status: $this->mapStatus($record['status'] ?? null),
+            status: $status,
             flight_reference: $flightReference,
             passengers_count: $this->passengersCount($record),
             platform_created_at: $this->parsePlatformTimestamp($record, [
@@ -246,22 +282,35 @@ class ParkingMyCarAdapter extends AbstractPlatformAdapter
                 'updated_dttm',
                 'updated_at',
             ]),
-            platform_cancelled_at: $this->parsePlatformTimestamp($record, [
-                'cancelled',
-                'cancelled_dttm',
-                'cancelled_at',
-                'canceled',
-                'canceled_dttm',
-                'canceled_at',
-            ])
+            platform_cancelled_at: $platformCancelledAt
         );
     }
 
     protected function mapStatus(?string $status): string
     {
         return match (strtolower(trim((string) $status))) {
-            'cancelled', 'canceled', 'annullata', 'annullato' => 'cancelled',
-            'pending', 'waiting', 'in_attesa', 'attesa' => 'pending',
+            'cancelled',
+            'canceled',
+            'annullata',
+            'annullato',
+            'cancellata',
+            'cancellato' => 'cancelled',
+
+            'pending',
+            'waiting',
+            'in_attesa',
+            'attesa' => 'pending',
+
+            'approvata',
+            'approvato',
+            'confermata',
+            'confermato',
+            'completata',
+            'completato',
+            'completed',
+            'approved',
+            'confirmed' => 'confirmed',
+
             default => 'confirmed',
         };
     }

@@ -144,7 +144,7 @@ class SyncListingJob implements ShouldQueue, ShouldBeUnique
             'reservations_updated' => $stats['updated'],
             'reservations_failed'  => $stats['failed'],
             'reservations_skipped' => $stats['skipped'],
-            'notes'                => empty($stats['errors']) ? null : substr(implode("\n", $stats['errors']), 0, 1000),
+            'notes'                => empty($stats['errors']) && empty($stats['skipped_reasons']) ? null : substr(implode("\n", array_merge($stats['errors'] ?? [], $stats['skipped_reasons'] ?? [])), 0, 1000),
             'window_from'          => $from,
             'window_to'            => $to,
         ]);

@@ -33,6 +33,8 @@ class SyncListingAction
             'failed'  => 0,
             'skipped' => 0,
             'errors'  => [],
+            'warnings' => [],
+            'skipped_reasons' => [],
         ];
 
         try {
@@ -46,7 +48,11 @@ class SyncListingAction
             foreach ($normalizedReservations as $normalized) {
                 try {
                     // Intercept cancellation before resolving product
-                    if ($normalized->status === ReservationStatus::Cancelled->value) {
+                    $isCancellation =
+                        $normalized->status === ReservationStatus::Cancelled->value
+                        || $normalized->platform_cancelled_at !== null;
+
+                    if ($isCancellation) {
                         $payload = $this->payloadFactory->makeCancellationPayload($normalized);
                     
                         if ($dryRun) {
@@ -96,6 +102,9 @@ class SyncListingAction
                             }
                         } else {
                             $stats['skipped']++;
+                            if ($result->action === ImportAction::Skipped && $result->error) {
+                                $stats['skipped_reasons'][] = "External ID {$normalized->external_id}: " . $result->error;
+                            }
                         }
                     } else {
                         $stats['failed']++;

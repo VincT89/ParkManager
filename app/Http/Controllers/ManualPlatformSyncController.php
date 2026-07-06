@@ -34,6 +34,7 @@ class ManualPlatformSyncController extends Controller
                 'failed'  => 0,
                 'skipped' => 0,
                 'errors'  => [],
+                'skipped_reasons' => [],
             ];
 
             foreach ($listings as $listing) {
@@ -56,6 +57,12 @@ class ManualPlatformSyncController extends Controller
                     }
 
                     $totals['errors'] = array_merge($totals['errors'], $stats['errors']);
+                    $totals['skipped_reasons'] = array_merge(
+                        $totals['skipped_reasons'],
+                        $stats['skipped_reasons'] ?? []
+                    );
+
+                    $notes = array_merge($stats['errors'] ?? [], $stats['skipped_reasons'] ?? []);
 
                     SyncLog::create([
                         'platform_id' => $listing->platform_id,
@@ -67,7 +74,7 @@ class ManualPlatformSyncController extends Controller
                         'reservations_updated' => $stats['updated'],
                         'reservations_failed' => $stats['failed'],
                         'reservations_skipped' => $stats['skipped'],
-                        'notes' => empty($stats['errors']) ? null : substr(implode("\n", $stats['errors']), 0, 1000),
+                        'notes' => empty($notes) ? null : substr(implode("\n", $notes), 0, 1000),
                         'window_from' => $from,
                         'window_to' => $to,
                     ]);

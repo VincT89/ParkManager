@@ -91,4 +91,55 @@ class ParkosAdapterTest extends TestCase
         
         $this->adapter->fetchReservations($this->listing, Carbon::today(), Carbon::tomorrow());
     }
+
+    public function test_parkos_cancellation_query_uses_period_type_canceled_at()
+    {
+        Config::set('services.parkos.fixture_mode', false);
+
+        $clientMock = $this->createMock(\App\Integrations\Support\ParkosClient::class);
+        $clientMock->expects($this->once())
+            ->method('findBookingsByCancellation')
+            ->willReturn([]);
+
+        $clientMock->method('findBookingsByModification')->willReturn([]);
+        $clientMock->method('findBookingsByCreation')->willReturn([]);
+
+        $readerMock = $this->createMock(\App\Integrations\Support\FixturePayloadReader::class);
+
+        $adapter = new ParkosAdapter($clientMock, $readerMock);
+        
+        $adapter->fetchReservations($this->listing, Carbon::today(), Carbon::tomorrow());
+    }
+
+    public function test_parkos_cancelled_at_field_sets_cancelled_status()
+    {
+        Config::set('services.parkos.fixture_mode', false);
+
+        $clientMock = $this->createMock(\App\Integrations\Support\ParkosClient::class);
+        $clientMock->method('findBookingsByCancellation')->willReturn([
+            [
+                'code' => 'TEST-CANCELLED',
+                'merchant_id' => '15325',
+                'arrival_date' => '2026-06-10',
+                'arrival_time' => '10:00:00',
+                'departure_date' => '2026-06-15',
+                'departure_time' => '10:00:00',
+                'name' => 'Mario',
+                'cancelled_at' => '2026-06-09 15:00:00'
+            ]
+        ]);
+        
+        $clientMock->method('findBookingsByModification')->willReturn([]);
+        $clientMock->method('findBookingsByCreation')->willReturn([]);
+
+        $readerMock = $this->createMock(\App\Integrations\Support\FixturePayloadReader::class);
+
+        $adapter = new ParkosAdapter($clientMock, $readerMock);
+
+        $reservations = $adapter->fetchReservations($this->listing, Carbon::today(), Carbon::tomorrow());
+
+        $this->assertCount(1, $reservations);
+        $this->assertEquals('cancelled', $reservations[0]->status);
+        $this->assertEquals('2026-06-09 15:00:00', $reservations[0]->platform_cancelled_at->toDateTimeString());
+    }
 }
