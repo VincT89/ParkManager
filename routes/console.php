@@ -16,6 +16,14 @@ Artisan::command('inspire', function () {
     ->everyMinute()
     ->withoutOverlapping();
 
+\Illuminate\Support\Facades\Schedule::command(
+    'queue:work database --queue=default --stop-when-empty --tries=3 --timeout=360'
+)
+    ->everyMinute()
+    ->name('queue_worker_drain_default')
+    ->withoutOverlapping(10)
+    ->appendOutputTo(storage_path('logs/queue-worker.log'));
+
 Artisan::command('parkos:auth-test', function () {
     $client = app(\App\Integrations\Support\ParkosClient::class);
 
