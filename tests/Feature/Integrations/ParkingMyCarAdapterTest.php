@@ -59,6 +59,8 @@ class ParkingMyCarAdapterTest extends TestCase
                 'status' => 'confirmed',
                 'product_id' => 'PROD_1',
                 'spots' => 1,
+                'created' => 1624505000,
+                'updated' => 1624505000,
             ],
             [
                 'id' => 'BOOK_2',
@@ -81,6 +83,12 @@ class ParkingMyCarAdapterTest extends TestCase
         $this->assertEquals('AB123CD', $res->license_plate);
         $this->assertEquals(50.00, $res->price);
         $this->assertEquals('confirmed', $res->status);
+        $this->assertNotNull($res->platform_created_at);
+        $this->assertNotNull($res->platform_updated_at);
+        $this->assertEquals(
+            Carbon::createFromTimestamp(1624505000, 'Europe/Rome')->toDateTimeString(),
+            $res->platform_created_at->toDateTimeString()
+        );
     }
 
     public function test_normalizes_cancelled_reservation()

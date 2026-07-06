@@ -61,16 +61,18 @@ class ParkosAdapter extends AbstractPlatformAdapter
 
             $records = collect($arrival)
                 ->merge($departure)
-                ->unique(fn ($record) => $record['code'] ?? json_encode($record))
+                ->keyBy(fn ($record) => $record['code'] ?? json_encode($record))
                 ->values()
                 ->all();
         } else {
             $updatedRecords = $this->client->findBookingsByModification($from, $to, $listing->external_id);
             $createdRecords = $this->client->findBookingsByCreation($from, $to, $listing->external_id);
+            $cancelledRecords = $this->client->findBookingsByCancellation($from, $to, $listing->external_id);
 
             $records = collect($updatedRecords)
                 ->merge($createdRecords)
-                ->unique(fn ($record) => $record['code'] ?? json_encode($record))
+                ->merge($cancelledRecords)
+                ->keyBy(fn ($record) => $record['code'] ?? json_encode($record))
                 ->values()
                 ->all();
 
@@ -82,6 +84,7 @@ class ParkosAdapter extends AbstractPlatformAdapter
                     'to' => $to->toDateString(),
                     'updated_count' => count($updatedRecords),
                     'created_count' => count($createdRecords),
+                    'cancelled_count' => count($cancelledRecords),
                     'merged_count' => count($records),
                 ]);
 
@@ -126,6 +129,15 @@ class ParkosAdapter extends AbstractPlatformAdapter
         return is_numeric($value) && (int) $value > 0
             ? (int) $value
             : 1;
+    }
+
+    private function parsePlatformDateTime(array $record, string $key): ?Carbon
+    {
+        if (! array_key_exists($key, $record) || $record[$key] === null || $record[$key] === '') {
+            return null;
+        }
+
+        return Carbon::parse((string) $record[$key], 'Europe/Rome');
     }
 
     protected function normalizeRecord(array $record): NormalizedReservation
@@ -181,7 +193,10 @@ class ParkosAdapter extends AbstractPlatformAdapter
             notes: $record['notes'] ?? null,
             raw_data: $record,
             status: $status,
-            passengers_count: $this->passengersCount($record)
+            passengers_count: $this->passengersCount($record),
+            platform_created_at: $this->parsePlatformDateTime($record, 'created_at'),
+            platform_updated_at: $this->parsePlatformDateTime($record, 'updated_at'),
+            platform_cancelled_at: $this->parsePlatformDateTime($record, 'cancelled_at')
         );
     }
 }

@@ -30,7 +30,7 @@ class PlatformProductMappingTest extends TestCase
         $adapter = new class extends \App\Integrations\AbstractPlatformAdapter {
             public function getName(): string { return 'test'; }
             public function getPlatformSlug(): string { return 'test'; }
-            public function fetchReservations(\App\Models\ParkingListing $l, \Carbon\Carbon $f, \Carbon\Carbon $t): array { return []; }
+            public function fetchReservations(\App\Models\ParkingListing $l, \Carbon\Carbon $f, \Carbon\Carbon $t, string $mode = 'modified'): array { return []; }
         };
 
         $resolved = $adapter->resolveProduct($listing, 'EXT_1');
@@ -62,7 +62,7 @@ class PlatformProductMappingTest extends TestCase
         $adapter = new class extends \App\Integrations\AbstractPlatformAdapter {
             public function getName(): string { return 'test'; }
             public function getPlatformSlug(): string { return 'test'; }
-            public function fetchReservations(\App\Models\ParkingListing $l, \Carbon\Carbon $f, \Carbon\Carbon $t): array { return []; }
+            public function fetchReservations(\App\Models\ParkingListing $l, \Carbon\Carbon $f, \Carbon\Carbon $t, string $mode = 'modified'): array { return []; }
         };
 
         $this->expectException(\Exception::class);
@@ -80,7 +80,7 @@ class PlatformProductMappingTest extends TestCase
         $adapter = new class extends \App\Integrations\AbstractPlatformAdapter {
             public function getName(): string { return 'test'; }
             public function getPlatformSlug(): string { return 'test'; }
-            public function fetchReservations(\App\Models\ParkingListing $l, \Carbon\Carbon $f, \Carbon\Carbon $t): array { return []; }
+            public function fetchReservations(\App\Models\ParkingListing $l, \Carbon\Carbon $f, \Carbon\Carbon $t, string $mode = 'modified'): array { return []; }
         };
 
         $this->expectException(\Exception::class);

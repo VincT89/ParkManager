@@ -47,20 +47,14 @@ beforeEach(function () {
     ]);
 });
 
-test('test_manual_sync_dispatches_jobs', function () {
+test('test_manual_sync_does_not_dispatch_jobs', function () {
     Queue::fake();
 
     actingAs($this->admin)
         ->post(route('platforms.sync'))
-        ->assertRedirect()
-        ->assertSessionHas('success');
+        ->assertRedirect();
 
-    Queue::assertPushed(SyncListingJob::class, function ($job) {
-        return $job->listing->id === $this->listing->id;
-    });
-
-    // Assicurati che non vengano inviati job per i listing inattivi
-    Queue::assertPushed(SyncListingJob::class, 1);
+    Queue::assertNotPushed(SyncListingJob::class);
 });
 
 test('test_historical_sync_rejects_range_over_six_months', function () {

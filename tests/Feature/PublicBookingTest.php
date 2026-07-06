@@ -32,8 +32,11 @@ class PublicBookingTest extends TestCase
 
         $response = $this->postJson(route('public.booking.check'), [
             'product_code' => 'std',
-            'starts_at' => Carbon::tomorrow()->toDateTimeString(),
-            'ends_at' => Carbon::tomorrow()->addDays(2)->toDateTimeString(),
+            'arrival_date' => Carbon::tomorrow()->format('Y-m-d'),
+            'arrival_time' => '10:00',
+            'departure_date' => Carbon::tomorrow()->addDays(2)->format('Y-m-d'),
+            'departure_time' => '10:00',
+            'passengers_count' => 1,
             'spots' => 2,
         ]);
 
@@ -53,8 +56,11 @@ class PublicBookingTest extends TestCase
 
         $response = $this->post(route('public.booking.store'), [
             'product_code' => 'std',
-            'starts_at' => Carbon::tomorrow()->toDateTimeString(),
-            'ends_at' => Carbon::tomorrow()->addDays(2)->toDateTimeString(),
+            'arrival_date' => Carbon::tomorrow()->format('Y-m-d'),
+            'arrival_time' => '10:00',
+            'departure_date' => Carbon::tomorrow()->addDays(2)->format('Y-m-d'),
+            'departure_time' => '10:00',
+            'passengers_count' => 1,
             'spots' => 2,
             'customer_name' => 'Mario Rossi',
             'customer_email' => 'mario@example.com',
@@ -87,8 +93,11 @@ class PublicBookingTest extends TestCase
         \App\Models\ParkingListing::create(['parking_id' => $parking->id, 'platform_id' => $platform->id, 'is_active' => true]);
         $baseData = [
             'product_code' => 'std',
-            'starts_at' => Carbon::tomorrow()->toDateTimeString(),
-            'ends_at' => Carbon::tomorrow()->addDays(2)->toDateTimeString(),
+            'arrival_date' => Carbon::tomorrow()->format('Y-m-d'),
+            'arrival_time' => '10:00',
+            'departure_date' => Carbon::tomorrow()->addDays(2)->format('Y-m-d'),
+            'departure_time' => '10:00',
+            'passengers_count' => 1,
             'customer_name' => 'Mario Rossi',
             'customer_email' => 'mario@example.com',
             'customer_phone' => '1234567890',
@@ -115,8 +124,11 @@ class PublicBookingTest extends TestCase
         \App\Models\ParkingListing::create(['parking_id' => $parking->id, 'platform_id' => $platform->id, 'is_active' => true]);
         $response = $this->post(route('public.booking.store'), [
             'product_code' => 'std',
-            'starts_at' => Carbon::tomorrow()->toDateTimeString(),
-            'ends_at' => Carbon::tomorrow()->addDays(2)->toDateTimeString(),
+            'arrival_date' => Carbon::tomorrow()->format('Y-m-d'),
+            'arrival_time' => '10:00',
+            'departure_date' => Carbon::tomorrow()->addDays(2)->format('Y-m-d'),
+            'departure_time' => '10:00',
+            'passengers_count' => 1,
             'spots' => 3, // Requires 3, capacity is 2
             'customer_name' => 'Mario Rossi',
             'customer_email' => 'mario@example.com',
@@ -149,8 +161,11 @@ class PublicBookingTest extends TestCase
         // Provo a prenotare 5 posti (capacity 10 - 6 allocati = 4 disponibili)
         $response = $this->post(route('public.booking.store'), [
             'product_code' => 'std',
-            'starts_at' => Carbon::tomorrow()->toDateTimeString(),
-            'ends_at' => Carbon::tomorrow()->addDays(2)->toDateTimeString(),
+            'arrival_date' => Carbon::tomorrow()->format('Y-m-d'),
+            'arrival_time' => '10:00',
+            'departure_date' => Carbon::tomorrow()->addDays(2)->format('Y-m-d'),
+            'departure_time' => '10:00',
+            'passengers_count' => 1,
             'spots' => 5, // Requires 5, available is 4
             'customer_name' => 'Mario Rossi',
             'customer_email' => 'mario@example.com',
@@ -172,8 +187,11 @@ class PublicBookingTest extends TestCase
         // 1. Cliente 1 fa il check per 2 posti -> esito positivo (ajax check non prenota)
         $responseCheck = $this->postJson(route('public.booking.check'), [
             'product_code' => 'std',
-            'starts_at' => Carbon::tomorrow()->toDateTimeString(),
-            'ends_at' => Carbon::tomorrow()->addDays(2)->toDateTimeString(),
+            'arrival_date' => Carbon::tomorrow()->format('Y-m-d'),
+            'arrival_time' => '10:00',
+            'departure_date' => Carbon::tomorrow()->addDays(2)->format('Y-m-d'),
+            'departure_time' => '10:00',
+            'passengers_count' => 1,
             'spots' => 2,
         ]);
         $responseCheck->assertJson(['available' => true]);
@@ -200,8 +218,11 @@ class PublicBookingTest extends TestCase
         // Il controller proverà ad assegnare ma il ParkingAssignmentService lancerà un'eccezione perché servono 2 posti.
         $responseStore = $this->post(route('public.booking.store'), [
             'product_code' => 'std',
-            'starts_at' => Carbon::tomorrow()->toDateTimeString(),
-            'ends_at' => Carbon::tomorrow()->addDays(2)->toDateTimeString(),
+            'arrival_date' => Carbon::tomorrow()->format('Y-m-d'),
+            'arrival_time' => '10:00',
+            'departure_date' => Carbon::tomorrow()->addDays(2)->format('Y-m-d'),
+            'departure_time' => '10:00',
+            'passengers_count' => 1,
             'spots' => 2,
             'customer_name' => 'Cliente 1',
             'customer_email' => 'c1@test.com',
@@ -222,8 +243,11 @@ class PublicBookingTest extends TestCase
 
         $response = $this->post(route('public.booking.store'), [
             'product_code' => 'std',
-            'starts_at' => Carbon::tomorrow()->toDateTimeString(),
-            'ends_at' => Carbon::tomorrow()->addDays(2)->toDateTimeString(),
+            'arrival_date' => Carbon::tomorrow()->format('Y-m-d'),
+            'arrival_time' => '10:00',
+            'departure_date' => Carbon::tomorrow()->addDays(2)->format('Y-m-d'),
+            'departure_time' => '10:00',
+            'passengers_count' => 1,
             'spots' => 2,
             'customer_name' => 'Mario Rossi',
             'customer_email' => 'mario@example.com',

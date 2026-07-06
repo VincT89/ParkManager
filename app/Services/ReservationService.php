@@ -16,6 +16,15 @@ class ReservationService
         private AvailabilityService $availabilityService
     ) {}
 
+    private function incomingTimestampOrCurrent(array $data, string $key, mixed $current): mixed
+    {
+        return array_key_exists($key, $data)
+            && $data[$key] !== null
+            && $data[$key] !== ''
+                ? $data[$key]
+                : $current;
+    }
+
     public function create(ParkingListing $listing, array $data): ReservationResult
     {
         $startsAt = Carbon::parse($data['starts_at']);
@@ -71,6 +80,11 @@ class ReservationService
                     'parking_product_id' => $data['parking_product_id'] ?? null,
                     'parking_listing_id' => $listing->id,
                     'external_id'        => $data['external_id'] ?? null,
+                    'platform_created_at' => $data['platform_created_at'] ?? null,
+                    'platform_updated_at' => $data['platform_updated_at'] ?? null,
+                    'platform_cancelled_at' => $data['platform_cancelled_at'] ?? null,
+                    'first_seen_at'      => $data['first_seen_at'] ?? now(),
+                    'last_seen_at'       => $data['last_seen_at'] ?? now(),
                     'customer_name'      => $data['customer_name'],
                     'customer_email'     => $data['customer_email'] ?? null,
                     'customer_phone'     => $data['customer_phone'] ?? null,
@@ -161,6 +175,26 @@ class ReservationService
                     'parking_product_id' => isset($data['parking_product_id']) && $data['parking_product_id'] !== null 
                                         ? $data['parking_product_id'] 
                                         : $reservation->parking_product_id,
+                    'platform_created_at' => $this->incomingTimestampOrCurrent(
+                        $data,
+                        'platform_created_at',
+                        $reservation->platform_created_at
+                    ),
+                    'platform_updated_at' => $this->incomingTimestampOrCurrent(
+                        $data,
+                        'platform_updated_at',
+                        $reservation->platform_updated_at
+                    ),
+                    'platform_cancelled_at' => $this->incomingTimestampOrCurrent(
+                        $data,
+                        'platform_cancelled_at',
+                        $reservation->platform_cancelled_at
+                    ),
+                    'first_seen_at' => $reservation->first_seen_at
+                        ?? ($data['first_seen_at'] ?? $reservation->created_at ?? now()),
+                    'last_seen_at'   => array_key_exists('last_seen_at', $data)
+                        ? $data['last_seen_at']
+                        : now(),
                     'customer_name'  => array_key_exists('customer_name', $data) ? $data['customer_name'] : $reservation->customer_name,
                     'customer_email' => array_key_exists('customer_email', $data) ? $data['customer_email'] : $reservation->customer_email,
                     'customer_phone' => array_key_exists('customer_phone', $data) ? $data['customer_phone'] : $reservation->customer_phone,
@@ -228,8 +262,42 @@ class ReservationService
             ->where('external_id', $data['external_id'])
             ->first();
 
+        $data['last_seen_at'] = now();
+        if (! $existing) {
+            $data['first_seen_at'] = now();
+        }
+
         if (isset($data['status']) && $data['status'] === ReservationStatus::Cancelled->value) {
             if ($existing) {
+                $existing->update([
+                    'platform_created_at' => $this->incomingTimestampOrCurrent(
+                        $data,
+                        'platform_created_at',
+                        $existing->platform_created_at
+                    ),
+                    'platform_updated_at' => $this->incomingTimestampOrCurrent(
+                        $data,
+                        'platform_updated_at',
+                        $existing->platform_updated_at
+                    ),
+                    'platform_cancelled_at' => $this->incomingTimestampOrCurrent(
+                        $data,
+                        'platform_cancelled_at',
+                        $existing->platform_cancelled_at
+                    ),
+                    'first_seen_at' => $existing->first_seen_at ?? $existing->created_at ?? now(),
+                    'last_seen_at' => $data['last_seen_at'] ?? now(),
+                    'raw_data' => array_key_exists('raw_data', $data)
+                        ? $data['raw_data']
+                        : $existing->raw_data,
+                ]);
+
+                $existing->refresh();
+
+                if ($existing->status === ReservationStatus::Cancelled) {
+                    return \App\Services\Results\ReservationImportResult::updated($existing);
+                }
+
                 $result = $this->cancel($existing);
                 if ($result->success) {
                     return \App\Services\Results\ReservationImportResult::updated($result->reservation);

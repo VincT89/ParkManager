@@ -47,11 +47,18 @@ class ParkosClientTest extends TestCase
                             'next_page_url' => 'https://api.parkos.com/v1/reservations?page=2'
                         ]
                     ], 200);
-                } else {
+                } elseif ($calls === 2) {
                     return Http::response([
                         'data' => [
                             3 => ['code' => 'PAGE2_RES1'],
                         ],
+                        'paginator' => [
+                            'next_page_url' => null
+                        ]
+                    ], 200);
+                } else {
+                    return Http::response([
+                        'data' => [],
                         'paginator' => [
                             'next_page_url' => null
                         ]

@@ -42,7 +42,7 @@ class SyncPlatformsCommandTest extends TestCase
         PlatformProductMapping::create([
             'platform_id' => $platform->id,
             'parking_product_id' => $product->id,
-            'external_ref' => 'OPEN_AIR',
+            'external_ref' => '15325:shuttle:outdoor',
             'is_active' => true
         ]);
 
@@ -53,7 +53,7 @@ class SyncPlatformsCommandTest extends TestCase
     {
         Config::set('services.parkos.fixture_file', 'reservations_success.json');
 
-        $this->artisan('sync:platforms', [
+        $this->artisan('platforms:sync', [
             '--platform' => 'parkos',
             '--dry-run' => true,
         ])
@@ -79,7 +79,7 @@ class SyncPlatformsCommandTest extends TestCase
     {
         Config::set('services.parkos.fixture_file', 'reservations_success.json');
 
-        $this->artisan('sync:platforms', [
+        $this->artisan('platforms:sync', [
             '--platform' => 'parkos'
         ])
              ->assertSuccessful();

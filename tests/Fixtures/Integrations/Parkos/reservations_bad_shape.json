@@ -5,6 +5,8 @@
   },
   "unexpected_root_key": "some value",
   "data": [
-    "this is not a valid reservations array"
+    {
+      "wrong": 1
+    }
   ]
 }

@@ -16,6 +16,10 @@ class ReservationImportPayloadFactory
         return [
             'external_id'        => $dto->external_id,
             'parking_product_id' => $product->id,
+
+            'platform_created_at' => $dto->platform_created_at?->format('Y-m-d H:i:s'),
+            'platform_updated_at' => $dto->platform_updated_at?->format('Y-m-d H:i:s'),
+            'platform_cancelled_at' => $dto->platform_cancelled_at?->format('Y-m-d H:i:s'),
             'customer_name'      => $dto->customer_name,
             'customer_email'     => $dto->customer_email,
             'customer_phone'     => $dto->customer_phone,
@@ -41,6 +45,10 @@ class ReservationImportPayloadFactory
         return [
             'external_id' => $dto->external_id,
             'status'      => 'cancelled',
+
+            'platform_created_at' => $dto->platform_created_at?->format('Y-m-d H:i:s'),
+            'platform_updated_at' => $dto->platform_updated_at?->format('Y-m-d H:i:s'),
+            'platform_cancelled_at' => $dto->platform_cancelled_at?->format('Y-m-d H:i:s'),
             'raw_data'    => $dto->raw_data,
         ];
     }

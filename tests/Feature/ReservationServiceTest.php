@@ -255,3 +255,75 @@ test('importFromExternal fallisce se manca parking_product_id', function () {
     expect($result->action)->toBe(\App\Services\Results\ImportAction::Failed);
     expect($result->error)->toContain('non risolto');
 });
+
+test('update non sovrascrive timestamp esistente con null', function () {
+    [$parking, $listing, $product] = createTestSetupForReservation(10);
+    $service = makeService();
+
+    $existing = \App\Models\Reservation::create([
+        'parking_id' => $parking->id,
+        'parking_product_id' => $product->id,
+        'parking_listing_id' => $listing->id,
+        'customer_name' => 'Mario',
+        'customer_email' => 'mario@example.com',
+        'starts_at' => \Carbon\Carbon::tomorrow(),
+        'ends_at' => \Carbon\Carbon::tomorrow()->addDays(2),
+        'status' => \App\Enums\ReservationStatus::Confirmed->value,
+        'spots' => 1,
+        'price' => 10,
+        'external_id' => 'EXT_TEST_99',
+        'platform_created_at' => \Carbon\Carbon::parse('2026-01-01 10:00:00'),
+    ]);
+
+    $result = $service->update($existing, [
+        'platform_created_at' => null, // Should not overwrite
+        'customer_name' => 'Luigi', // Should update
+    ]);
+
+    expect($result->reservation->customer_name)->toBe('Luigi');
+    expect($result->reservation->platform_created_at->format('Y-m-d H:i:s'))->toBe('2026-01-01 10:00:00');
+});
+
+test('importFromExternal su reservation gia cancellata e idempotente', function () {
+    [$parking, $listing, $product] = createTestSetupForReservation(10);
+    $service = makeService();
+
+    // Create a confirmed reservation first
+    $existing = \App\Models\Reservation::create([
+        'parking_id' => $parking->id,
+        'parking_product_id' => $product->id,
+        'parking_listing_id' => $listing->id,
+        'customer_name' => 'Mario',
+        'customer_email' => 'mario@example.com',
+        'starts_at' => \Carbon\Carbon::tomorrow(),
+        'ends_at' => \Carbon\Carbon::tomorrow()->addDays(2),
+        'status' => \App\Enums\ReservationStatus::Confirmed->value,
+        'spots' => 1,
+        'price' => 10,
+        'external_id' => 'EXT_CANCEL_TEST',
+    ]);
+
+    // First import: cancels it
+    $result1 = $service->importFromExternal($listing, [
+        'external_id' => 'EXT_CANCEL_TEST',
+        'status' => \App\Enums\ReservationStatus::Cancelled->value,
+        'platform_cancelled_at' => \Carbon\Carbon::parse('2026-02-01 10:00:00')->format('Y-m-d H:i:s'),
+    ]);
+    expect($result1->isSuccess())->toBeTrue();
+    expect($result1->action)->toBe(\App\Services\Results\ImportAction::Updated);
+    $existing->refresh();
+    expect($existing->status)->toBe(\App\Enums\ReservationStatus::Cancelled);
+    expect($existing->platform_cancelled_at->format('Y-m-d H:i:s'))->toBe('2026-02-01 10:00:00');
+
+    // Second import: already cancelled
+    $result2 = $service->importFromExternal($listing, [
+        'external_id' => 'EXT_CANCEL_TEST',
+        'status' => \App\Enums\ReservationStatus::Cancelled->value,
+        'platform_cancelled_at' => null,
+    ]);
+    expect($result2->isSuccess())->toBeTrue();
+    expect($result2->action)->toBe(\App\Services\Results\ImportAction::Updated); // Should be updated, not failed
+    $existing->refresh();
+    // platform_cancelled_at should not be overwritten by null
+    expect($existing->platform_cancelled_at->format('Y-m-d H:i:s'))->toBe('2026-02-01 10:00:00');
+});

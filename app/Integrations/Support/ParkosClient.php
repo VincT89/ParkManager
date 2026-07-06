@@ -78,6 +78,18 @@ class ParkosClient
 
             $records = array_merge($records, $items);
 
+            $paginator = $data['paginator'] ?? [];
+            $totalPages = (int) ($paginator['total_pages'] ?? 0);
+            $nextPageUrl = $paginator['next_page_url'] ?? null;
+
+            if ($totalPages > 0 && $page >= $totalPages) {
+                break;
+            }
+
+            if ($nextPageUrl === null && array_key_exists('next_page_url', $paginator)) {
+                break;
+            }
+
             if (count($items) === 0) {
                 break;
             }
@@ -133,6 +145,11 @@ class ParkosClient
     public function findBookingsByModification(Carbon $from, Carbon $to, ?string $merchantId = null): array
     {
         return $this->findBookingsByPeriodType($from, $to, 'updated_at', $merchantId);
+    }
+
+    public function findBookingsByCancellation(Carbon $from, Carbon $to, ?string $merchantId = null): array
+    {
+        return $this->findBookingsByPeriodType($from, $to, 'canceled_at', $merchantId);
     }
 
     private function ensureConfigured(): void
