@@ -12,6 +12,7 @@ Route::get('/', function () {
     return redirect()->route('dashboard');
 });
 
+Route::middleware(['booking.context', 'throttle:120,1'])->group(function () {
 // Public Booking Form (Laravel)
 Route::get('/booking', [\App\Http\Controllers\PublicBookingController::class, 'showForm'])->name('public.booking.form');
 Route::post('/booking/check-availability', [\App\Http\Controllers\PublicBookingController::class, 'checkAvailability'])->name('public.booking.check');
@@ -23,10 +24,17 @@ Route::post('/booking/{externalId}/stripe/checkout', [\App\Http\Controllers\Stri
 Route::post('/booking/{externalId}/paypal/order', [\App\Http\Controllers\PayPalPaymentController::class, 'createOrder'])->name('public.booking.paypal.order');
 Route::post('/booking/{externalId}/paypal/capture', [\App\Http\Controllers\PayPalPaymentController::class, 'capture'])->name('public.booking.paypal.capture');
 Route::post('/booking/{externalId}/onsite/confirm', [\App\Http\Controllers\PublicPaymentController::class, 'confirmOnsite'])->name('public.booking.onsite.confirm');
+});
+
+Route::post('/webhooks/{managementKey}/stripe', [\App\Http\Controllers\StripeWebhookController::class, 'handle'])->name('management.webhooks.stripe');
+Route::post('/webhooks/{managementKey}/paypal', [\App\Http\Controllers\PayPalWebhookController::class, 'handle'])->name('management.webhooks.paypal');
 Route::post('/webhooks/stripe', [\App\Http\Controllers\StripeWebhookController::class, 'handle'])->name('webhooks.stripe');
 Route::post('/webhooks/paypal', [\App\Http\Controllers\PayPalWebhookController::class, 'handle'])->name('webhooks.paypal');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::post('/parking/switch', \App\Http\Controllers\ParkingSwitchController::class)
+    ->middleware('auth')->name('parking.switch');
+
+Route::middleware(['auth', 'verified', 'parking.context'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])
@@ -76,6 +84,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/platforms/future-sync', \App\Http\Controllers\FuturePlatformSyncController::class)
         ->name('platforms.future-sync');
         
+        Route::put('platforms/{platform}/connection', [\App\Http\Controllers\PlatformConnectionController::class, 'update'])->name('platforms.connection');
+        Route::put('platforms/{platform}/listings/{listing}', [\App\Http\Controllers\PlatformConnectionController::class, 'updateListing'])->name('platforms.listing.update');
+
         Route::post('platforms/{platform}/mappings', [PlatformController::class, 'storeMapping'])
             ->name('platforms.mappings.store');
         Route::delete('platforms/mappings/{mapping}', [PlatformController::class, 'destroyMapping'])
@@ -86,6 +97,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Parcheggio & Inventario — solo admin
     Route::middleware('can:manage-parkings')->group(function () {
+        Route::get('/management/users', [\App\Http\Controllers\ManagementUserController::class, 'index'])->name('management.users.index');
+        Route::post('/management/users', [\App\Http\Controllers\ManagementUserController::class, 'store'])->name('management.users.store');
+        Route::put('/management/users/{userId}', [\App\Http\Controllers\ManagementUserController::class, 'update'])->name('management.users.update');
+        Route::delete('/management/users/{userId}', [\App\Http\Controllers\ManagementUserController::class, 'destroy'])->name('management.users.destroy');
+        Route::get('/management/activity', [\App\Http\Controllers\ActivityLogController::class, 'index'])->name('management.activity');
         Route::resource('admin/parkings', \App\Http\Controllers\ParkingController::class)
             ->except(['show'])
             ->names([

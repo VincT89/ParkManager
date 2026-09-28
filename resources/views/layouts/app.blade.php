@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="parking-context" content="{{ $activeParking?->id ?? 0 }}">
     <title>{{ config('app.name', 'ParkManager') }}</title>
     <link rel="icon" type="image/png" href="{{ asset('img/logo.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -13,21 +14,24 @@
 <body>
 
     <div class="pm-layout" id="pm-layout">
-        <div class="pm-sidebar-overlay" id="pm-sidebar-overlay" onclick="toggleSidebarMobile()"></div>
+        <div class="pm-sidebar-overlay" id="pm-sidebar-overlay" aria-hidden="true"></div>
 
         {{-- SIDEBAR --}}
         <aside class="pm-sidebar" id="pm-sidebar">
 
             <div class="pm-sidebar-header">
                 <a href="{{ route('dashboard') }}" class="pm-sidebar-logo">
+                    @if($activeManagement?->is_initial ?? true)
                     <img src="{{ asset('img/logo.png') }}" alt="Logo" style="height: 48px; width: auto; object-fit: contain; flex-shrink: 0;" />
-                    <span class="pm-sidebar-logo-text">MODAUTO</span>
+                    @endif
+                    <span class="pm-sidebar-logo-text">{{ ($activeManagement?->is_initial ?? true) ? 'MODAUTO' : $activeManagement->name }}</span>
                 </a>
-                <button class="pm-sidebar-toggle" onclick="toggleSidebar()" title="Comprimi sidebar">
+                <button type="button" class="pm-sidebar-toggle" title="Riduci menu" aria-label="Riduci menu" aria-controls="pm-sidebar" aria-expanded="true">
                     <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5">
                         <polyline points="9,3 4,7.5 9,12" />
                     </svg>
                 </button>
+                <button type="button" class="pm-sidebar-close pm-btn pm-btn-secondary">Chiudi menu</button>
             </div>
 
             <nav class="pm-sidebar-nav">
@@ -122,7 +126,7 @@
                 </a>
 
                 @if (auth()->user()->isAdmin())
-                    <div class="pm-sidebar-section">Admin</div>
+                    <div class="pm-sidebar-section">Amministrazione</div>
                     <a href="{{ route('platforms.index') }}"
                         class="pm-sidebar-link {{ request()->routeIs('platforms.*') ? 'active' : '' }}"
                         title="Piattaforme">
@@ -152,6 +156,14 @@
                         </span>
                         <span class="pm-sidebar-link-label">Parcheggi</span>
                     </a>
+                    <a href="{{ route('management.users.index') }}" class="pm-sidebar-link {{ request()->routeIs('management.users.*') ? 'active' : '' }}" title="Utenti">
+                        <span class="pm-sidebar-link-icon" aria-hidden="true"><svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="7.5" cy="4" r="2.5"/><path d="M2 14v-2a5.5 5.5 0 0111 0v2"/></svg></span>
+                        <span class="pm-sidebar-link-label">Utenti</span>
+                    </a>
+                    <a href="{{ route('management.activity') }}" class="pm-sidebar-link {{ request()->routeIs('management.activity') ? 'active' : '' }}" title="Registro attività">
+                        <span class="pm-sidebar-link-icon" aria-hidden="true"><svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="1" width="11" height="13" rx="1"/><path d="M5 5h5M5 8h5M5 11h3"/></svg></span>
+                        <span class="pm-sidebar-link-label">Registro attività</span>
+                    </a>
                 @endcan
             </nav>
 
@@ -166,12 +178,13 @@
 
                         <div class="pm-sidebar-user-info">
                             <div class="pm-sidebar-user-name">{{ auth()->user()->name }}</div>
-                            <div class="pm-sidebar-user-role">{{ auth()->user()->role->label() }}</div>
+                            <div class="pm-sidebar-user-role">{{ ['admin' => 'Amministratore', 'staff' => 'Operatore'][auth()->user()->currentRole()?->value] ?? '' }}</div>
                         </div>
                     </a>
 
                     <form method="POST" action="{{ route('logout') }}" style="flex-shrink:0">
                         @csrf
+            @parkingContext
                         <button type="submit" class="pm-sidebar-logout" title="Esci">
                             Esci
                         </button>
@@ -184,52 +197,46 @@
         {{-- CONTENUTO --}}
         <div class="pm-content" id="pm-content">
 
+            @if(isset($activeManagement))
+                <div class="pm-parking-context">
+                    @if($accessibleParkings->count() > 1)
+                        <form method="POST" action="{{ route('parking.switch') }}" class="pm-parking-switch">
+                            @csrf
+            @parkingContext
+                            <label for="active-parking">Parcheggio attivo</label>
+                            <select id="active-parking" name="parking_id" class="pm-select">
+                                @foreach($accessibleParkings as $selectableParking)
+                                    <option value="{{ $selectableParking->id }}" @selected($activeParking?->id === $selectableParking->id)>{{ $selectableParking->name }}{{ $selectableParking->is_active ? '' : ' (disattivato)' }}</option>
+                                @endforeach
+                            </select>
+                            <button class="pm-btn pm-btn-secondary" type="submit">Cambia</button>
+                        </form>
+                    @else
+                        <span>Parcheggio attivo: <strong>{{ $activeParking?->name ?? $activeManagement->name }}</strong></span>
+                    @endif
+                </div>
+            @endif
             @if (isset($header))
-                <div class="pm-topbar">
-                    <button class="pm-mobile-menu-btn" onclick="toggleSidebarMobile()" title="Menu">
+                <div class="pm-topbar {{ request()->routeIs('parkings.*', 'platforms.*', 'management.*') ? 'pm-settings-topbar' : '' }}">
+                    <button type="button" class="pm-mobile-menu-btn" title="Apri menu" aria-label="Apri menu" aria-controls="pm-sidebar" aria-expanded="false">
                         <svg viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5">
                             <line x1="2" y1="4" x2="13" y2="4"/>
                             <line x1="2" y1="7.5" x2="13" y2="7.5"/>
                             <line x1="2" y1="11" x2="13" y2="11"/>
                         </svg>
                     </button>
-                    {{ $header }}
+                    <div class="pm-topbar-content">{{ $header }}</div>
                 </div>
             @endif
 
-            <main class="pm-main">
+            <main class="pm-main {{ request()->routeIs('parkings.*', 'platforms.*', 'management.*') ? 'pm-settings-page' : '' }}">
+                <div id="pm-request-error" class="pm-flash-error" role="alert" hidden></div>
                 {{ $slot }}
             </main>
 
         </div>
 
     </div>
-
-    <script>
-        function toggleSidebar() {
-            const sidebar = document.getElementById('pm-sidebar');
-            const content = document.getElementById('pm-content');
-            sidebar.classList.toggle('collapsed');
-            content.classList.toggle('collapsed');
-            localStorage.setItem('pm-sidebar-collapsed', sidebar.classList.contains('collapsed'));
-        }
-
-        function toggleSidebarMobile() {
-            const sidebar = document.getElementById('pm-sidebar');
-            const overlay = document.getElementById('pm-sidebar-overlay');
-            sidebar.classList.toggle('mobile-open');
-            overlay.classList.toggle('active');
-        }
-
-        // Ripristina stato al caricamento
-        (function() {
-            const collapsed = localStorage.getItem('pm-sidebar-collapsed') === 'true';
-            if (collapsed && window.innerWidth > 1024) {
-                document.getElementById('pm-sidebar').classList.add('collapsed');
-                document.getElementById('pm-content').classList.add('collapsed');
-            }
-        })();
-    </script>
 
 </body>
 

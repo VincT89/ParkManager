@@ -62,6 +62,7 @@
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
+            @parkingContext
 
                             <x-dropdown-link :href="route('logout')"
                                 onclick="event.preventDefault();
@@ -128,6 +129,7 @@
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
+            @parkingContext
 
                     <x-responsive-nav-link :href="route('logout')"
                         onclick="event.preventDefault();

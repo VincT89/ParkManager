@@ -22,6 +22,8 @@ class StoreParkingRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'separate_management' => ['boolean'],
+            'management_name' => ['required_if:separate_management,1', 'nullable', 'string', 'max:255'],
             'name' => ['required', 'string', 'max:255'],
             'total_spots' => ['required', 'integer', 'min:1'],
             'capacity_mode' => ['required', 'string', 'in:shared,per_product'],

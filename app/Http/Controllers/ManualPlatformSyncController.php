@@ -13,7 +13,7 @@ class ManualPlatformSyncController extends Controller
 {
     public function __invoke(SyncListingAction $action): RedirectResponse
     {
-        $lock = Cache::lock('manual-platform-sync', 300);
+        $lock = Cache::lock('manual-platform-sync' . '_parking_' . app(\App\Tenancy\ParkingContext::class)->parking?->id, 300);
 
         if (! $lock->get()) {
             return back()->with('warning', 'Sincronizzazione già in corso.');

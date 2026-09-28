@@ -14,9 +14,10 @@
         </div>
     </x-slot>
 
-    <div class="pm-card pm-animate" style="max-width:800px; padding: 32px;">
+    <x-flash-message />
+    <div class="pm-card pm-animate pm-reservation-details">
         
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 1px solid var(--pm-border-color);">
+        <div class="pm-reservation-heading">
             <div>
                 <h2 style="font-size: 20px; font-weight: 600; color: var(--pm-text); margin-bottom: 8px;">{{ $reservation->customer_name }}</h2>
                 @if ($reservation->customer_email)
@@ -62,7 +63,7 @@
             </div>
         </div>
 
-        <div class="pm-form-grid-2" style="margin-bottom: 32px; background: var(--pm-bg-soft); padding: 16px; border-radius: 8px; border: 1px solid var(--pm-border-color);">
+        <div class="pm-form-grid-2" style="margin-bottom: 32px; background: var(--pm-bg); padding: 16px; border-radius: 8px; border: 1px solid var(--pm-border);">
             <div>
                 <div class="pm-label">Arrivo previsto</div>
                 <div style="font-weight: 600; font-size: 16px; color: var(--pm-text);">
@@ -77,11 +78,11 @@
             </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 32px;">
+        <div class="pm-reservation-facts">
             <div>
                 <div class="pm-label">Veicolo / Targa</div>
                 @if($reservation->license_plate)
-                    <div style="font-family: var(--pm-mono); font-weight: 600; font-size: 15px; color: var(--pm-text); background: var(--pm-bg-soft); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--pm-border-color); display: inline-block;">
+                    <div style="font-family: var(--pm-mono); font-weight: 600; font-size: 15px; color: var(--pm-text); background: var(--pm-bg); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--pm-border); display: inline-block;">
                         {{ $reservation->license_plate }}
                     </div>
                 @else
@@ -127,7 +128,7 @@
         @endphp
 
         @if($platformSlug === 'website')
-            <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--pm-border-color);">
+            <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--pm-border);">
                 <div class="pm-label" style="font-size: 16px; font-weight: 600; color: var(--pm-text); margin-bottom: 16px;">Stato Pagamento</div>
                 
                 @if($payment?->status === \App\Enums\PaymentStatus::Paid->value)
@@ -143,6 +144,7 @@
 
                     <form method="POST" action="{{ route('reservations.mark-paid', $reservation) }}" style="margin-top: 16px;">
                         @csrf
+            @parkingContext
                         <button type="submit" class="pm-btn pm-btn-primary" style="background-color: var(--pm-green); border-color: var(--pm-green);"
                                 onclick="return confirm('Confermi che il cliente ha pagato in struttura?')">
                             Segna come pagato
@@ -151,14 +153,14 @@
                 @endif
 
                 <div style="margin-top: 16px; font-size: 14px; color: var(--pm-text-muted);">
-                    Metodo: <strong style="color: var(--pm-text);">{{ ucfirst($payment?->provider ?? 'onsite') }}</strong><br>
+                    Metodo: <strong style="color: var(--pm-text);">{{ ['onsite' => 'In struttura', 'stripe' => 'Carta', 'paypal' => 'PayPal'][$payment?->provider ?? 'onsite'] ?? $payment?->provider }}</strong><br>
                     Importo: <strong style="color: var(--pm-text);">€ {{ number_format($payment?->amount ?? $reservation->price, 2, ',', '.') }}</strong>
                 </div>
             </div>
         @endif
 
         @if ($reservation->notes)
-            <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--pm-border-color);">
+            <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--pm-border);">
                 <div class="pm-label">Note Operative</div>
                 <div style="background: #fffbea; border: 1px solid #fef08a; padding: 16px; border-radius: 8px; color: #854d0e; font-size: 14px; line-height: 1.5; white-space: pre-wrap;">{{ $reservation->notes }}</div>
             </div>

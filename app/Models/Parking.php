@@ -7,6 +7,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Parking extends Model 
 {
+  use \App\Models\Concerns\BelongsToParkingContext;
+
+  protected static function booted(): void
+  {
+      static::creating(fn (self $parking) => $parking->public_booking_key ??= (string) \Illuminate\Support\Str::uuid());
+  }
+
+  public function management()
+  {
+      return $this->belongsTo(Management::class);
+  }
+
   protected $fillable = [
     'name',
     'address',

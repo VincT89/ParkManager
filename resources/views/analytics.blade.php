@@ -44,7 +44,7 @@
     <div class="pm-gap">
         @foreach ($channelStats as $stat)
             <div class="pm-card pm-analytics-card pm-animate-2">
-                <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:24px;align-items:start">
+                <div class="pm-analytics-grid">
 
                     {{-- Nome canale --}}
                     <div>

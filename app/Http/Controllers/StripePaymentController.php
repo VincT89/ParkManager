@@ -14,19 +14,20 @@ class StripePaymentController extends Controller
 {
     public function checkout(string $externalId, PricingService $pricing)
     {
+        $settings = app(\App\Services\PaymentConfiguration::class)->requireProvider('stripe');
         $reservation = Reservation::where('external_id', $externalId)->firstOrFail();
 
         abort_if($reservation->status !== ReservationStatus::Pending, 404);
         abort_if($reservation->expires_at && $reservation->expires_at->isPast(), 410);
 
-        Stripe::setApiKey(config('payments.stripe.secret_key'));
+        Stripe::setApiKey($settings['stripe']['secret_key']);
 
         $payment = Payment::create([
             'reservation_id' => $reservation->id,
             'provider' => 'stripe',
             'status' => PaymentStatus::Pending->value,
             'amount' => $reservation->price,
-            'currency' => config('payments.currency', 'EUR'),
+            'currency' => ($settings['currency'] ?? 'EUR'),
         ]);
 
         $session = Session::create([
@@ -46,7 +47,7 @@ class StripePaymentController extends Controller
             'line_items' => [[
                 'quantity' => 1,
                 'price_data' => [
-                    'currency' => strtolower(config('payments.currency', 'EUR')),
+                    'currency' => strtolower(($settings['currency'] ?? 'EUR')),
                     'unit_amount' => $pricing->amountForReservation($reservation),
                     'product_data' => [
                         'name' => 'Prenotazione parcheggio #' . $reservation->external_id,

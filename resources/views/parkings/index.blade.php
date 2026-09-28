@@ -3,10 +3,10 @@
         <div style="display:flex; justify-content:space-between; align-items:center; width:100%">
             <div>
                 <div class="pm-page-title">Parcheggi</div>
-                <div class="pm-page-subtitle">Gestione sedi e configurazioni globali</div>
+                <div class="pm-page-subtitle">Configura il parcheggio selezionato o aggiungine uno nuovo.</div>
             </div>
             <a href="{{ route('parkings.create') }}" class="pm-btn pm-btn-primary">
-                Nuovo Parcheggio
+                Nuovo parcheggio
             </a>
         </div>
     </x-slot>
@@ -43,12 +43,13 @@
                             <td>
                                 <div style="display:flex; gap:8px;">
                                     <a href="{{ route('parkings.edit', $parking) }}" class="pm-btn pm-btn-secondary pm-btn-sm">
-                                        Modifica / Configura
+                                        Configura parcheggio
                                     </a>
                                     
                                     @if ($parking->is_active)
                                         <form method="POST" action="{{ route('parkings.destroy', $parking) }}" onsubmit="return confirm('Sei sicuro di voler disattivare questo parcheggio?');">
                                             @csrf
+            @parkingContext
                                             @method('DELETE')
                                             <button type="submit" class="pm-btn pm-btn-danger pm-btn-sm">
                                                 Disattiva
@@ -61,7 +62,7 @@
                     @empty
                         <tr>
                             <td colspan="4" class="pm-text-muted" style="text-align:center; padding:32px;">
-                                Nessun parcheggio presente nel sistema.
+                                Nessun parcheggio disponibile in questa gestione.
                             </td>
                         </tr>
                     @endforelse

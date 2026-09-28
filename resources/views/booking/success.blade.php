@@ -26,16 +26,16 @@
             </div>
         </div>
 
-        <div style="padding: 32px;">
+        <div class="pm-booking-summary-body">
             
             <!-- Reservation Code -->
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 32px; padding: 20px; background: #f0fdf4; border: 1px dashed #bbf7d0; border-radius: 12px;">
                 <span style="font-size: 13px; font-weight: 600; color: #166534; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">Codice Prenotazione</span>
-                <span style="font-family: monospace; font-size: 28px; font-weight: 700; color: #14532d; letter-spacing: 2px;">{{ $reservation->external_id }}</span>
+                <span class="pm-booking-reference" style="font-family: monospace; font-weight: 700; color: #14532d; letter-spacing: 2px;">{{ $reservation->external_id }}</span>
             </div>
 
             <!-- Summary Details -->
-            <div style="display: grid; grid-template-columns: 1fr; gap: 24px; margin-bottom: 32px;">
+            <div class="pm-booking-summary-details">
                 
                 <!-- Itinerary -->
                 <div>
@@ -50,7 +50,7 @@
 
                     <div style="display: flex; align-items: flex-start; margin-bottom: 12px;">
                         <svg style="width: 20px; height: 20px; color: var(--pm-text-muted); margin-right: 12px; margin-top: 2px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%;">
+                        <div class="pm-booking-summary-dates">
                             <div>
                                 <div style="font-size: 12px; color: var(--pm-text-muted); text-transform: uppercase;">Arrivo</div>
                                 <div style="font-weight: 500; color: #334155;">{{ $reservation->starts_at->format('d/m/Y H:i') }}</div>
@@ -74,7 +74,7 @@
                             <div style="font-size: 14px; color: var(--pm-text-muted);">{{ $reservation->customer_phone }}</div>
                         </div>
                     </div>
-                    <div style="display: flex; align-items: center; margin-top: 8px; margin-left: 32px;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; margin-left: 32px;">
                         <span style="font-size: 12px; color: var(--pm-text-muted); text-transform: uppercase; margin-right: 8px; font-weight: 600;">Targa:</span>
                         <div style="font-family: monospace; font-weight: 700; font-size: 16px; background: #f8fafc; border: 1px solid #cbd5e1; padding: 4px 12px; border-radius: 6px; color: #0f172a; letter-spacing: 1px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                             {{ strtoupper($reservation->license_plate) }}
@@ -94,7 +94,7 @@
             </div>
 
             <!-- Total Paid -->
-            <div style="background: var(--pm-bg-soft); border: 1px solid var(--pm-border); border-radius: 8px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+            <div style="background: var(--pm-public-bg); border: 1px solid var(--pm-border); border-radius: 8px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
                 <div>
                     <div style="color: var(--pm-text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase;">Importo da pagare in struttura</div>
                 </div>
@@ -104,14 +104,14 @@
             </div>
 
             <!-- CTAs -->
-            <div class="no-print" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="no-print pm-booking-summary-actions">
                 <button onclick="window.print()" class="pm-btn pm-btn-secondary" style="display: flex; justify-content: center; align-items: center; width: 100%;">
                     <svg style="width: 20px; height: 20px; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                     Stampa Ricevuta
                 </button>
-                <a href="https://modautobari.it/" class="pm-btn pm-btn-primary" style="display: flex; justify-content: center; align-items: center; width: 100%; text-decoration: none;">
+                <a href="{{ $bookingManagement?->is_initial ? 'https://modautobari.it/' : route('public.booking.form', ['parking' => $bookingParking->public_booking_key]) }}" class="pm-btn pm-btn-primary" style="display: flex; justify-content: center; align-items: center; width: 100%; text-decoration: none;">
                     <svg style="width: 20px; height: 20px; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                    Torna alla Home
+                    {{ $bookingManagement?->is_initial ? 'Torna alla Home' : 'Nuova prenotazione' }}
                 </a>
             </div>
 

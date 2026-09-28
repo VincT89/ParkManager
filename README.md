@@ -1,17 +1,19 @@
 # Parking Management System (Laravel)
 
-Sistema gestionale multi-parcheggio sviluppato in Laravel, progettato per supportare sia operatività interne (staff/admin) sia prenotazioni pubbliche con assegnazione automatica del parcheggio.
+Sistema gestionale multi-parcheggio sviluppato in Laravel, con accessi e dati separati per gestione, un parcheggio attivo alla volta e prenotazioni pubbliche dedicate.
+
+Le istruzioni di migrazione e configurazione sono in [Doppia gestione](docs/doppia-gestione.md).
 
 ---
 
 ## Caratteristiche principali
 
 - Supporto multi-parcheggio
-- Booking pubblico senza selezione parcheggio
+- Booking pubblico tramite link dedicato al parcheggio
 - Gestione prodotti per parcheggio
 - Sistema avanzato di disponibilità (prenotazioni + blocchi + allocazioni)
 - Architettura scalabile per integrazioni API (Parkos, MyParking, ecc.)
-- Gestione ruoli: admin / staff
+- Gestione ruoli: admin / staff per gestione
 - Archiviazione logica tramite `is_active`
 - Gestione concorrenza e prevenzione overbooking
 - Test suite completa
@@ -36,9 +38,9 @@ Il sistema è costruito attorno a servizi applicativi:
 ## Multi-parcheggio
 
 - Il sistema supporta più parcheggi attivi
-- Dashboard e analytics sono aggregati
+- Dashboard e analytics mostrano il parcheggio selezionato
 - Le operazioni admin lavorano su contesto parcheggio esplicito
-- Il booking pubblico assegna automaticamente il parcheggio disponibile
+- Il booking pubblico verifica la disponibilità del parcheggio associato al link
 
 ---
 
@@ -127,7 +129,7 @@ Endpoint: `/booking`
 ### Caratteristiche
 
 - L'utente non sceglie il parcheggio
-- Il sistema assegna automaticamente il primo disponibile
+- Il link determina il parcheggio; categorie e disponibilità sono limitate a quel parcheggio
 - Validazione completa lato backend
 - Controllo disponibilità:
   - Informativo via AJAX
@@ -137,7 +139,7 @@ Endpoint: `/booking`
 
 Formato delle prenotazioni da sito web:
 ```text
-WEB-XXXXXXX
+WEB-<32 caratteri casuali>
 ```
 
 ---

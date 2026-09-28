@@ -10,16 +10,22 @@ use Exception;
 
 class StripeWebhookController extends Controller
 {
-    public function handle(Request $request, PaymentConfirmationService $confirmation)
+    public function handle(Request $request, PaymentConfirmationService $confirmation, ?string $managementKey = null)
     {
+        $configuration = app(\App\Services\PaymentConfiguration::class);
+        $management = $configuration->webhookManagement($managementKey);
+        $settings = $configuration->forManagement($management);
         $payload = $request->getContent();
         $signature = $request->header('Stripe-Signature');
 
+        if (blank($settings['stripe']['webhook_secret'] ?? null)) {
+            return response()->json(['error' => 'Webhook non configurato.'], 503);
+        }
         try {
             $event = Webhook::constructEvent(
                 $payload,
                 $signature,
-                config('payments.stripe.webhook_secret')
+                ($settings['stripe']['webhook_secret'] ?? '')
             );
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);
@@ -28,7 +34,7 @@ class StripeWebhookController extends Controller
         if ($event->type === 'checkout.session.completed') {
             $session = $event->data->object;
 
-            $payment = Payment::where('provider', 'stripe')
+            $payment = Payment::whereHas('reservation.parking', fn ($query) => $query->where('management_id', $management->id))->where('provider', 'stripe')
                 ->where('provider_session_id', $session->id)
                 ->first();
 
@@ -53,12 +59,12 @@ class StripeWebhookController extends Controller
         } elseif ($event->type === 'payment_intent.succeeded') {
             $intent = $event->data->object;
 
-            $payment = Payment::where('provider', 'stripe')
+            $payment = Payment::whereHas('reservation.parking', fn ($query) => $query->where('management_id', $management->id))->where('provider', 'stripe')
                 ->where('provider_payment_id', $intent->id)
                 ->first();
 
             if (!$payment && isset($intent->metadata->payment_id)) {
-                $payment = Payment::where('provider', 'stripe')
+                $payment = Payment::whereHas('reservation.parking', fn ($query) => $query->where('management_id', $management->id))->where('provider', 'stripe')
                     ->where('id', $intent->metadata->payment_id)
                     ->first();
             }

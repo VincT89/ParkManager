@@ -26,7 +26,7 @@
         <div class="pm-card-header" style="text-align: center; border-bottom: 1px solid var(--pm-border); padding-bottom: 20px;">
             <h2 class="pm-card-title">Completa il tuo ordine</h2>
             <div style="font-size: 14px; color: var(--pm-text-muted); margin-top: 6px;">
-                Prenotazione <span style="background: var(--pm-bg-soft); color: var(--pm-text-dark); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: 600;">{{ $reservation->external_id }}</span>
+                Prenotazione <span style="background: var(--pm-public-bg); color: var(--pm-text); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: 600;"><span class="pm-reference-inline">{{ $reservation->external_id }}</span></span>
             </div>
         </div>
 
@@ -48,17 +48,17 @@
                 </div>
                 <p style="font-size: 14px; margin-bottom: 16px; opacity: 0.9;">Questa prenotazione è stata annullata automaticamente.</p>
                 
-                <a href="{{ route('public.booking.form', ['fresh' => time()]) }}" style="display: inline-flex; align-items: center; background: white; color: #334155; border: 1px solid #cbd5e1; padding: 10px 16px; border-radius: 6px; font-weight: 500; font-size: 14px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                <a href="{{ route('public.booking.form', ['parking' => $bookingParking->public_booking_key, 'fresh' => time()]) }}" style="display: inline-flex; align-items: center; background: white; color: #334155; border: 1px solid #cbd5e1; padding: 10px 16px; border-radius: 6px; font-weight: 500; font-size: 14px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: all 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
                     <svg style="width: 16px; height: 16px; margin-right: 8px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     Rifai la prenotazione
                 </a>
             </div>
 
             <!-- Summary -->
-            <div style="background: var(--pm-bg-soft); border: 1px solid var(--pm-border); border-radius: 8px; padding: 20px; margin-bottom: 32px;">
+            <div style="background: var(--pm-public-bg); border: 1px solid var(--pm-border); border-radius: 8px; padding: 20px; margin-bottom: 32px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--pm-border); padding-bottom: 16px; margin-bottom: 16px;">
                     <span style="color: var(--pm-text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Totale da pagare</span>
-                    <span style="font-size: 28px; font-weight: 700; color: var(--pm-text-dark);">€ {{ number_format($reservation->price, 2, ',', '.') }}</span>
+                    <span style="font-size: 28px; font-weight: 700; color: var(--pm-text);">€ {{ number_format($reservation->price, 2, ',', '.') }}</span>
                 </div>
                 <div style="font-size: 13px; color: var(--pm-text-muted); text-align: center; display: flex; align-items: center; justify-content: center;">
                     <svg style="width: 16px; height: 16px; color: #16a34a; margin-right: 6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -122,7 +122,7 @@
             </div>
         </div>
         
-        <div style="background: var(--pm-bg-soft); border-top: 1px solid var(--pm-border); padding: 16px; text-align: center;">
+        <div style="background: var(--pm-public-bg); border-top: 1px solid var(--pm-border); padding: 16px; text-align: center;">
             <a href="#" style="font-size: 13px; font-weight: 500; color: var(--pm-text-muted); text-decoration: none;">Hai bisogno di assistenza?</a>
         </div>
     </div>
@@ -130,7 +130,7 @@
     {{--
     <!-- JS SDKs temporaneamente disabilitati -->
     @if($paypalClientId)
-        <script src="https://www.paypal.com/sdk/js?client-id={{ $paypalClientId }}&currency={{ config('payments.paypal.currency', 'EUR') }}&disable-funding=card"></script>
+        <script src="https://www.paypal.com/sdk/js?client-id={{ $paypalClientId }}&currency={{ $paypalCurrency }}&disable-funding=card"></script>
     @endif
     --}}
 

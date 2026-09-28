@@ -16,9 +16,10 @@
 
             <form method="POST" action="{{ route('admin.account.email.update') }}" class="pm-form">
                 @csrf
+            @parkingContext
                 @method('PUT')
 
-                <div class="pm-field">
+                <div class="pm-form-group">
                     <label class="pm-label" for="email">Email</label>
                     <input
                         id="email"
@@ -30,7 +31,7 @@
                     >
 
                     @error('email')
-                        <div class="pm-error">{{ $message }}</div>
+                        <div class="pm-form-error">{{ $message }}</div>
                     @enderror
                 </div>
 
@@ -47,9 +48,10 @@
 
             <form method="POST" action="{{ route('admin.account.password.update') }}" class="pm-form">
                 @csrf
+            @parkingContext
                 @method('PUT')
 
-                <div class="pm-field">
+                <div class="pm-form-group">
                     <label class="pm-label" for="current_password">Password attuale</label>
                     <input
                         id="current_password"
@@ -60,11 +62,11 @@
                     >
 
                     @error('current_password')
-                        <div class="pm-error">{{ $message }}</div>
+                        <div class="pm-form-error">{{ $message }}</div>
                     @enderror
                 </div>
 
-                <div class="pm-field">
+                <div class="pm-form-group">
                     <label class="pm-label" for="password">Nuova password</label>
                     <input
                         id="password"
@@ -75,11 +77,11 @@
                     >
 
                     @error('password')
-                        <div class="pm-error">{{ $message }}</div>
+                        <div class="pm-form-error">{{ $message }}</div>
                     @enderror
                 </div>
 
-                <div class="pm-field">
+                <div class="pm-form-group">
                     <label class="pm-label" for="password_confirmation">Conferma nuova password</label>
                     <input
                         id="password_confirmation"

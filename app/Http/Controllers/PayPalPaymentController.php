@@ -14,6 +14,7 @@ class PayPalPaymentController extends Controller
 {
     public function createOrder(string $externalId, PayPalService $paypal)
     {
+        $settings = app(\App\Services\PaymentConfiguration::class)->requireProvider('paypal');
         $reservation = Reservation::where('external_id', $externalId)->firstOrFail();
 
         abort_if($reservation->status !== ReservationStatus::Pending, 404);
@@ -26,7 +27,7 @@ class PayPalPaymentController extends Controller
             'provider' => 'paypal',
             'status' => PaymentStatus::Pending->value,
             'amount' => $reservation->price,
-            'currency' => config('payments.paypal.currency', 'EUR'),
+            'currency' => ($settings['paypal']['currency'] ?? 'EUR'),
             'provider_order_id' => $order['id'],
             'raw_data' => $order,
         ]);

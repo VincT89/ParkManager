@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Reservation extends Model
 {
+    use \App\Models\Concerns\BelongsToParkingContext;
+
     protected $fillable = [
         'parking_id',
         'parking_product_id',

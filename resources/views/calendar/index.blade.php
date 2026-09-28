@@ -12,15 +12,15 @@
                     @endforeach
                 </select>
             @endif
-            <button onclick="prevMonth()" class="pm-btn pm-btn-secondary pm-btn-sm">&#8249;</button>
-            <button onclick="nextMonth()" class="pm-btn pm-btn-secondary pm-btn-sm">&#8250;</button>
+            <button onclick="prevMonth()" aria-label="Mese precedente" class="pm-btn pm-btn-secondary pm-btn-sm">&#8249;</button>
+            <button onclick="nextMonth()" aria-label="Mese successivo" class="pm-btn pm-btn-secondary pm-btn-sm">&#8250;</button>
             <a href="{{ route('reservations.create', ['parking_id' => $parking->id]) }}" class="pm-btn pm-btn-primary">
                 Nuova prenotazione
             </a>
         </div>
     </x-slot>
 
-    <div style="display:flex;gap:8px;margin-bottom:24px" class="pm-animate">
+    <div style="margin-bottom:24px" class="pm-animate calendar-actions">
         <a href="{{ route('calendar', ['parking_id' => $parking->id ?? '']) }}" class="pm-btn pm-btn-primary">
             Vista calendario
         </a>
@@ -41,6 +41,8 @@
             class="pm-btn pm-btn-secondary pm-btn-sm">Mensile</button>
     </div>
 
+    <div id="calendar-error" class="pm-flash-error" role="alert" hidden><p></p><button type="button" class="pm-btn pm-btn-secondary" onclick="loadData()">Riprova</button><a href="{{ route('calendar') }}" class="pm-btn pm-btn-secondary" hidden>Ricarica calendario</a></div>
+
     <div id="view-timeline" class="pm-animate-2">
         <div class="pm-card" style="padding-top: 0; max-height: calc(100vh - 220px); overflow-y: auto; position: relative;">
             <div id="timeline-container"></div>
@@ -49,7 +51,7 @@
 
     <div id="view-monthly" style="display:none" class="pm-animate-2">
         <div class="pm-card">
-            <div id="monthly-container"></div>
+            <p class="pm-mobile-table-hint pm-form-note">Scorri il calendario orizzontalmente per vedere tutti i giorni.</p><div class="pm-table-wrapper" tabindex="0" aria-label="Calendario mensile"><div id="monthly-container"></div></div>
         </div>
     </div>
 
@@ -92,13 +94,11 @@ const LABEL = {
 };
 
 // Genera snippet di configurazione injectati da Blade
-const PRODUCTS = {};
-@foreach($products as $prod)
-PRODUCTS['{{ $prod->code }}'] = {
-    name: '{{ $prod->name }}',
-    capacity: {{ $prod->capacity }},
-};
-@endforeach
+const PRODUCTS = {{ Illuminate\Support\Js::from($products->mapWithKeys(fn ($prod) => [$prod->code => ['name' => $prod->name, 'capacity' => (int) $prod->capacity]])) }};
+
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[char]));
+}
 
 // Colori dinamici per i prodotti - o fissi se vogliamo
 const PRODUCT_COLORS = {
@@ -161,16 +161,44 @@ function switchTab(tab) {
     if (data) render();
 }
 
+let calendarRequest;
 async function loadData() {
-    document.getElementById('calendar-subtitle').textContent = LABEL.loading;
-    const res = await fetch(`{{ route('calendar.data') }}?month=${currentMonth}&year=${currentYear}&parking_id={{ $parking->id }}`);
-    data = await res.json();
-    document.getElementById('calendar-subtitle').textContent =
-        MONTHS[currentMonth - 1] + ' ' + currentYear;
-
-    timelineStartDay = null;
-    currentDailyDay  = null;
-    render();
+    calendarRequest?.abort();
+    const controller = new AbortController();
+    calendarRequest = controller;
+    const errorBox = document.getElementById('calendar-error');
+    const subtitle = document.getElementById('calendar-subtitle');
+    errorBox.hidden = true;
+    data = null;
+    ['timeline', 'monthly', 'daily'].forEach(view => document.getElementById(view + '-container').replaceChildren());
+    subtitle.textContent = LABEL.loading;
+    try {
+        const response = await fetch(`{{ route('calendar.data') }}?month=${currentMonth}&year=${currentYear}&parking_id={{ $parking->id }}`, {
+            signal: controller.signal,
+            headers: { 'Accept': 'application/json', 'X-Parking-Context': document.querySelector('meta[name="parking-context"]').content },
+        });
+        if (!response.ok) {
+            const changed = response.status === 409;
+            errorBox.querySelector('button').hidden = changed;
+            errorBox.querySelector('a').hidden = !changed;
+            throw new Error(changed
+                ? 'Il parcheggio attivo è cambiato in un’altra scheda. Ricarica il calendario.'
+                : 'Non è stato possibile caricare il calendario. Riprova.');
+        }
+        const result = await response.json();
+        if (controller.signal.aborted) return;
+        data = result;
+        subtitle.textContent = MONTHS[currentMonth - 1] + ' ' + currentYear;
+        timelineStartDay = null;
+        currentDailyDay = null;
+        render();
+    } catch (error) {
+        if (controller.signal.aborted) return;
+        subtitle.textContent = 'Calendario non disponibile';
+        errorBox.querySelector('p').textContent = error instanceof TypeError
+            ? 'Connessione interrotta. Riprova a caricare il calendario.' : error.message;
+        errorBox.hidden = false;
+    }
 }
 
 function render() {
@@ -270,7 +298,7 @@ function renderDaily() {
     const dowStr = DAYS[dow === 0 ? 6 : dow - 1];
     
     let html = `
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--pm-border); padding-bottom:16px; margin-bottom:24px;">
+        <div class="calendar-day-toolbar">
             <div style="display:flex; align-items:baseline; gap:12px;">
                 <div style="font-size:24px; font-weight:600; color:var(--pm-text); font-family:var(--pm-mono); line-height:1">${String(currentDailyDay).padStart(2,'0')} / ${String(month).padStart(2,'0')}</div>
                 <div style="font-size:14px; font-weight:500; color:var(--pm-text-muted); text-transform:uppercase;">${dowStr}</div>
@@ -292,9 +320,9 @@ function renderDaily() {
         
         html += `
             <div style="margin-bottom: 32px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; background:rgba(255,255,255,0.02); padding:12px 16px; border-radius:var(--pm-radius-sm); border-left:4px solid ${color};">
+                <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:space-between; align-items:center; margin-bottom:16px; background:rgba(255,255,255,0.02); padding:12px 16px; border-radius:var(--pm-radius-sm); border-left:4px solid ${color};">
                     <div style="display:flex; align-items:center; gap:8px;">
-                        <div style="font-size:18px; font-weight:600; color:var(--pm-text);">${p.name}</div>
+                        <div style="font-size:18px; font-weight:600; color:var(--pm-text);">${escapeHtml(p.name)}</div>
                     </div>
                     <div style="font-size:14px; font-family:var(--pm-mono); color:var(--pm-text-muted);">
                         Occupati: <span style="color:${occupancyColor(p.occupied, p.capacity)}; font-weight:600">${p.occupied} / ${p.capacity}</span>
@@ -308,26 +336,26 @@ function renderDaily() {
                 const timeB = new Date(b.starts_at + 'T' + b.starts_at_time + ':00').getTime();
                 return timeA - timeB;
             });
-            html += `<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">`;
+            html += `<div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 16px;">`;
             p.reservations.forEach(r => {
                 const plateHtml = r.license_plate 
-                    ? `<div style="font-family:var(--pm-mono); font-size:13px; font-weight:600; color:var(--pm-accent); background:rgba(59,130,246,0.1); padding:4px 8px; border-radius:4px; flex-shrink:0;">${r.license_plate}</div>`
+                    ? `<div style="font-family:var(--pm-mono); font-size:13px; font-weight:600; color:var(--pm-accent); background:rgba(59,130,246,0.1); padding:4px 8px; border-radius:4px; flex-shrink:0;">${escapeHtml(r.license_plate)}</div>`
                     : '';
                 const flightHtml = r.flight_reference 
-                    ? `<a href="https://www.flightradar24.com/data/flights/${r.flight_reference.toLowerCase()}" target="_blank" style="font-family:var(--pm-mono); font-size:13px; font-weight:600; color:var(--pm-accent); background:rgba(59,130,246,0.1); padding:4px 8px; border-radius:4px; flex-shrink:0; margin-left: 4px; text-decoration: none;">${r.flight_reference}</a>`
+                    ? `<a href="https://www.flightradar24.com/data/flights/${encodeURIComponent(r.flight_reference.toLowerCase())}" target="_blank" style="font-family:var(--pm-mono); font-size:13px; font-weight:600; color:var(--pm-accent); background:rgba(59,130,246,0.1); padding:4px 8px; border-radius:4px; flex-shrink:0; margin-left: 4px; text-decoration: none;">${escapeHtml(r.flight_reference)}</a>`
                     : '';
 
                 html += `
                     <div style="background:var(--pm-bg); border:1px solid var(--pm-border); padding:16px; border-radius:var(--pm-radius);">
-                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
-                            <div style="font-weight:600; font-size:15px; color:var(--pm-text); line-height:1.2;">${r.customer_name}</div>
+                        <div style="display:flex; flex-wrap:wrap; gap:12px; justify-content:space-between; align-items:flex-start; margin-bottom:12px;">
+                            <div style="font-weight:600; font-size:15px; color:var(--pm-text); line-height:1.2;">${escapeHtml(r.customer_name)}</div>
                             <div style="display:flex;">
                                 ${plateHtml}
                                 ${flightHtml}
                             </div>
                         </div>
                         <div style="display:flex; align-items:center; gap:6px; margin-bottom: 12px; font-size:11px; color:var(--pm-text-muted);">
-                            Canale: <span style="color:var(--pm-text);">${r.platform}</span>
+                            Canale: <span style="color:var(--pm-text);">${escapeHtml(r.platform)}</span>
                         </div>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
                             <div>
@@ -344,7 +372,7 @@ function renderDaily() {
             });
             html += `</div>`;
         } else {
-            html += `<div style="padding: 16px; text-align:center; font-size:13px; color:var(--pm-text-dim); border: 1px dashed var(--pm-border); border-radius:var(--pm-radius);">Nessuna sosta in questa giornata per ${p.name}.</div>`;
+            html += `<div style="padding: 16px; text-align:center; font-size:13px; color:var(--pm-text-dim); border: 1px dashed var(--pm-border); border-radius:var(--pm-radius);">Nessuna sosta in questa giornata per ${escapeHtml(p.name)}.</div>`;
         }
         
         html += `</div>`;
@@ -368,7 +396,7 @@ function renderTimeline() {
         return;
     }
 
-    let html = `<div style="display:flex;flex-direction:column;min-width:100%;">`;
+    let html = `<div style="display:flex;flex-direction:column;min-width:${100 + 160 * productKeys.length}px;">`;
 
     // HEADER ROW (Products) - STICKY
     html += `<div style="
@@ -398,7 +426,7 @@ function renderTimeline() {
         html += `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;">
              <div style="display:flex;align-items:center;gap:6px;">
                  <div style="width:8px;height:8px;border-radius:50%;background:${color};"></div>
-                 <div style="font-size:13px;font-weight:500;color:var(--pm-text);text-align:center;">${prod.name}</div>
+                 <div style="font-size:13px;font-weight:500;color:var(--pm-text);text-align:center;">${escapeHtml(prod.name)}</div>
              </div>
              <div style="font-size:11px;font-family:var(--pm-mono);color:var(--pm-text-muted);margin-top:4px;">
                  Cap: ${prod.capacity}
@@ -457,7 +485,7 @@ function renderTimeline() {
 
             html += `<div
                 data-date="${dateStr}"
-                data-product="${prod.name}"
+                data-product="${escapeHtml(prod.name)}"
                 data-occupied="${pOcc.occupied}"
                 data-capacity="${pOcc.capacity}"
                 data-free="${pOcc.free}"
@@ -564,7 +592,7 @@ function renderMonthly() {
             data-occupied="${totalOccupied}"
             data-capacity="${physicalCapacity}"
             data-free="${totalFree}"
-            onmouseenter="showTooltipDay(event,this,${JSON.stringify(occ).replace(/"/g, '&quot;')})"
+            onmouseenter="showTooltipDay(event,this,calcDayOccupancy(this.dataset.date))"
             onmouseleave="hideTooltip()"
             style="
                 min-height:90px;
@@ -598,7 +626,7 @@ function renderMonthly() {
                 html += `<div style="display:flex;align-items:center;gap:5px;margin-bottom:3px">
                     <div style="width:6px;height:6px;border-radius:50%;background:${color};flex-shrink:0"></div>
                     <div style="font-size:10px;font-family:var(--pm-mono);color:var(--pm-text-muted);text-overflow:ellipsis;overflow:hidden;white-space:nowrap;">
-                        ${p.name.split(' ')[0]}: ${p.occupied}
+                        ${escapeHtml(p.name.split(' ')[0])}: ${p.occupied}
                     </div>
                 </div>`;
             });
@@ -631,7 +659,7 @@ function showTooltipCell(e, el) {
         Object.values(breakdown).forEach(plat => {
             breakdownHtml += `
                 <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-                    <div style="font-size:12px;color:var(--pm-text-muted)">${plat.name}</div>
+                    <div style="font-size:12px;color:var(--pm-text-muted)">${escapeHtml(plat.name)}</div>
                     <div style="font-family:var(--pm-mono);font-size:12px;color:var(--pm-text);font-weight:500">${plat.count}</div>
                 </div>
             `;
@@ -641,7 +669,7 @@ function showTooltipCell(e, el) {
     
     t.innerHTML = `
         <div style="font-weight:500;color:var(--pm-text);margin-bottom:8px">
-            ${el.dataset.product} <span style="color:var(--pm-text-muted);font-weight:normal;font-size:11px;margin-left:4px">${formatDateIT(el.dataset.date)}</span>
+            ${escapeHtml(el.dataset.product)} <span style="color:var(--pm-text-muted);font-weight:normal;font-size:11px;margin-left:4px">${formatDateIT(el.dataset.date)}</span>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;text-align:center;">
             <div>
@@ -667,7 +695,7 @@ function showTooltipDay(e, el, occ) {
         // Costruzione mini-breakdown per il tooltip mensile
         let breakdownStr = '';
         if (p.occupied > 0 && Object.keys(p.platforms).length > 0) {
-            const arr = Object.values(p.platforms).map(pl => `${pl.name}: ${pl.count}`);
+            const arr = Object.values(p.platforms).map(pl => `${escapeHtml(pl.name)}: ${pl.count}`);
             breakdownStr = `<div style="font-size:10px;color:var(--pm-text-dim);margin-left:13px;margin-top:2px;">${arr.join(', ')}</div>`;
         }
 
@@ -676,7 +704,7 @@ function showTooltipDay(e, el, occ) {
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;">
                     <div style="display:flex;align-items:center;gap:6px">
                         <div style="width:7px;height:7px;border-radius:50%;background:${color};flex-shrink:0"></div>
-                        <div style="font-size:12px;color:var(--pm-text-muted)">${p.name}</div>
+                        <div style="font-size:12px;color:var(--pm-text-muted)">${escapeHtml(p.name)}</div>
                     </div>
                     <div style="font-family:var(--pm-mono);font-size:12px;color:${occupancyColor(p.occupied, p.capacity)}">
                         ${p.occupied} / ${p.capacity}
@@ -725,7 +753,7 @@ document.addEventListener('mousemove', function(e) {
     }
 });
 
-loadData();
+document.addEventListener('DOMContentLoaded', loadData);
 </script>
 
 </x-app-layout>

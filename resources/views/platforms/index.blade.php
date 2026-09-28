@@ -2,25 +2,27 @@
     <x-slot name="header">
         <div>
             <div class="pm-page-title">Piattaforme</div>
-            <div class="pm-page-subtitle">gestione canali di vendita e posti assegnati</div>
+            <div class="pm-page-subtitle">Canali di prenotazione del parcheggio selezionato.</div>
         </div>
 
         <div class="pm-platform-actions">
-            <button type="button" class="pm-btn pm-btn-secondary" onclick="document.getElementById('historical-sync-modal').classList.add('pm-modal-open')">
-                Recupera storico
+            <button type="button" class="pm-btn pm-btn-secondary" data-open-dialog="historical-sync-modal">
+                Importa un periodo
             </button>
 
             <form method="POST" action="{{ route('platforms.future-sync') }}" onsubmit="return confirm('Recuperare le prenotazioni da oggi ai prossimi 6 mesi?')">
                 @csrf
+            @parkingContext
                 <button type="submit" class="pm-btn pm-btn-secondary">
-                    Prossimi 6 mesi
+                    Importa prossimi 6 mesi
                 </button>
             </form>
 
-            <form method="POST" action="{{ route('platforms.sync') }}" onsubmit="return confirm('Vuoi avviare il sync manuale?')">
+            <form method="POST" action="{{ route('platforms.sync') }}" onsubmit="return confirm('Aggiornare le prenotazioni dalle piattaforme collegate?')">
                 @csrf
+            @parkingContext
                 <button type="submit" class="pm-btn pm-btn-primary">
-                    Sincronizza Piattaforme
+                    Aggiorna prenotazioni
                 </button>
             </form>
 
@@ -30,11 +32,11 @@
         </div>
     </x-slot>
 
-    <div id="historical-sync-modal" class="pm-modal">
+    <dialog id="historical-sync-modal" class="pm-modal" aria-labelledby="import-period-title">
         <div class="pm-modal-card">
             <div class="pm-card-header">
-                <div class="pm-card-title">Recupera storico</div>
-                <button type="button" onclick="document.getElementById('historical-sync-modal').classList.remove('pm-modal-open')" class="pm-modal-close">&times;</button>
+                <div id="import-period-title" class="pm-card-title">Importa un periodo</div>
+                <button type="button" data-close-dialog class="pm-modal-close" aria-label="Chiudi finestra">&times;</button>
             </div>
             <div class="pm-card-body">
                 <p class="text-sm text-gray-500 mb-4">
@@ -42,22 +44,23 @@
                 </p>
                 <form method="POST" action="{{ route('platforms.historical-sync') }}" class="pm-form">
                     @csrf
-                    <div class="pm-field" style="margin-bottom:12px;">
-                        <label class="pm-label">Data inizio</label>
-                        <input type="date" name="from" class="pm-input" required>
+            @parkingContext
+                    <div class="pm-form-group" style="margin-bottom:12px;">
+                        <label class="pm-label" for="import-from">Data inizio</label>
+                        <input type="date" id="import-from" name="from" class="pm-input" required>
                     </div>
-                    <div class="pm-field" style="margin-bottom:16px;">
-                        <label class="pm-label">Data fine</label>
-                        <input type="date" name="to" class="pm-input" required>
+                    <div class="pm-form-group" style="margin-bottom:16px;">
+                        <label class="pm-label" for="import-to">Data fine</label>
+                        <input type="date" id="import-to" name="to" class="pm-input" required>
                     </div>
                     <div class="pm-modal-actions">
-                        <button type="button" class="pm-btn" onclick="document.getElementById('historical-sync-modal').classList.remove('pm-modal-open')">Annulla</button>
-                        <button type="submit" class="pm-btn pm-btn-primary">Conferma recupero</button>
+                        <button type="button" class="pm-btn" data-close-dialog>Annulla</button>
+                        <button type="submit" class="pm-btn pm-btn-primary">Importa prenotazioni</button>
                     </div>
                 </form>
             </div>
         </div>
-    </div>
+    </dialog>
 
     <x-flash-message />
 
@@ -68,8 +71,8 @@
                     <div class="pm-card-title">Ultima sincronizzazione</div>
                     <div class="pm-text-muted" style="font-size:12px">
                         {{ $lastSyncLog->created_at->timezone('Europe/Rome')->format('d/m/Y H:i') }}
-                        · stato: {{ $lastSyncLog->status }}
-                        · origine: {{ $lastSyncLog->source }}
+                        · stato: {{ ['success' => 'Completata', 'failed' => 'Con errori', 'running' => 'In corso'][$lastSyncLog->status] ?? $lastSyncLog->status }}
+                        · origine: {{ ['job' => 'Automatica', 'manual' => 'Manuale', 'historical' => 'Importazione periodo', 'future' => 'Importazione futura'][$lastSyncLog->source] ?? $lastSyncLog->source }}
                     </div>
                 </div>
             </div>
@@ -117,12 +120,13 @@
                     <div class="pm-platform-actions-sm">
                         <a href="{{ route('platforms.edit', $platform) }}"
                            class="pm-btn pm-btn-secondary pm-btn-sm">
-                            Modifica
+                            Configura
                         </a>
                         <form method="POST"
                               action="{{ route('platforms.destroy', $platform) }}"
                               onsubmit="return confirm('Disattivare la piattaforma?')">
                             @csrf
+            @parkingContext
                             @method('DELETE')
                             <button type="submit" class="pm-btn pm-btn-danger pm-btn-sm">
                                 Disattiva
@@ -135,7 +139,7 @@
                     <div style="font-size:12px;font-weight:500;color:var(--pm-text-muted);
                                 text-transform:uppercase;letter-spacing:0.08em;
                                 font-family:var(--pm-mono);margin-bottom:12px">
-                        Parcheggi Connessi
+                        Parcheggio collegato
                     </div>
                     @if ($platform->listings->isNotEmpty())
                         <div style="display:flex;flex-wrap:wrap;gap:8px;">
@@ -147,7 +151,7 @@
                         </div>
                     @else
                         <div style="font-size:13px;color:var(--pm-text-muted)">
-                            Nessun parcheggio associato a questa piattaforma. Entra in Modifica per collegarne uno.
+                            Il parcheggio selezionato non è collegato. Apri Configura per associarlo alla piattaforma.
                         </div>
                     @endif
                 </div>

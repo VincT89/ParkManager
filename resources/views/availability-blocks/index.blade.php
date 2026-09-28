@@ -53,6 +53,7 @@
                                       action="{{ route('availability-blocks.destroy', $block) }}"
                                       onsubmit="return confirm('Eliminare il blocco?')">
                                     @csrf
+            @parkingContext
                                     @method('DELETE')
                                     <button type="submit" class="pm-btn pm-btn-danger pm-btn-sm">
                                         Elimina

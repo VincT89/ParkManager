@@ -7,6 +7,7 @@
         </div>
     @endif
 
+    @if($bookingManagement?->is_initial)
     <div style="background: #fffbeb; border-left: 4px solid #f59e0b; color: #b45309; padding: 16px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
         <div style="font-size: 15px; line-height: 1.5; width: 100%;">
@@ -18,6 +19,8 @@
         </div>
     </div>
 
+    @endif
+
     <div class="pm-card">
         <div class="pm-card-header">
             <h2 class="pm-card-title">Inserisci i Dati della Prenotazione</h2>
@@ -26,28 +29,29 @@
         <div style="padding: 24px;">
             <form id="booking-form" action="{{ route('public.booking.store') }}" method="POST">
                 @csrf
+            <input type="hidden" name="parking" value="{{ $publicParkingKey }}">
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
-                    <div class="pm-form-group" style="margin-bottom: 0; display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+                <div class="pm-booking-dates">
+                    <div class="pm-form-group pm-booking-date-time">
                         <div>
-                            <label class="pm-label">Data arrivo</label>
+                            <label class="pm-label" for="arrival_date">Data arrivo</label>
                             <input type="date" name="arrival_date" id="arrival_date" class="pm-input" value="{{ old('arrival_date') }}" required>
                             @error('arrival_date') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                         </div>
                         <div>
-                            <label class="pm-label">Ora arrivo</label>
+                            <label class="pm-label" for="arrival_time">Ora arrivo</label>
                             <input type="time" name="arrival_time" id="arrival_time" class="pm-input" value="{{ old('arrival_time') }}" required>
                             @error('arrival_time') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                         </div>
                     </div>
-                    <div class="pm-form-group" style="margin-bottom: 0; display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+                    <div class="pm-form-group pm-booking-date-time">
                         <div>
-                            <label class="pm-label">Data partenza</label>
+                            <label class="pm-label" for="departure_date">Data partenza</label>
                             <input type="date" name="departure_date" id="departure_date" class="pm-input" value="{{ old('departure_date') }}" required>
                             @error('departure_date') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                         </div>
                         <div>
-                            <label class="pm-label">Ora partenza</label>
+                            <label class="pm-label" for="departure_time">Ora partenza</label>
                             <input type="time" name="departure_time" id="departure_time" class="pm-input" value="{{ old('departure_time') }}" required>
                             @error('departure_time') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                         </div>
@@ -55,9 +59,9 @@
                 </div>
 
 
-                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                    <div class="pm-booking-options">
                     <div class="pm-form-group" style="margin-bottom: 0;">
-                        <label class="pm-label">Prodotto / Tipo Veicolo</label>
+                        <label class="pm-label" for="product_code">Prodotto / Tipo Veicolo</label>
                         <select name="product_code" id="product_code" class="pm-select" required>
                             @foreach($products as $prod)
                                 <option value="{{ $prod->code }}" {{ old('product_code') == $prod->code ? 'selected' : '' }}>
@@ -68,12 +72,12 @@
                         @error('product_code') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                     </div>
                         <div class="pm-form-group" style="margin-bottom: 0;">
-                            <label class="pm-label">Numero Posti Auto</label>
+                            <label class="pm-label" for="spots">Numero Posti Auto</label>
                             <input type="number" name="spots" id="spots" class="pm-input" min="1" max="10" value="{{ old('spots', 1) }}" required>
                             @error('spots') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                         </div>
                         <div class="pm-form-group" style="margin-bottom: 0;">
-                            <label for="passengers_count" class="pm-label">Clienti Navetta</label>
+                            <label for="passengers_count" class="pm-label">{{ $bookingManagement?->is_initial ? 'Clienti Navetta' : 'Numero persone' }}</label>
                             <input type="number" name="passengers_count" id="passengers_count" class="pm-input" min="1" max="9" value="{{ old('passengers_count', 1) }}" required>
                             @error('passengers_count') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                         </div>
@@ -98,7 +102,7 @@
                             @error('customer_name') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <div class="pm-booking-customer-fields">
                             <div class="pm-form-group">
                                 <label class="pm-label">Email</label>
                                 <input type="email" name="customer_email" class="pm-input" value="{{ old('customer_email') }}" required>
@@ -111,7 +115,7 @@
                             </div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                        <div class="pm-booking-customer-fields">
                             <div class="pm-form-group">
                                 <label class="pm-label">Targa Veicolo</label>
                                 <input type="text" name="license_plate" class="pm-input" value="{{ old('license_plate') }}" required style="text-transform: uppercase;">
@@ -142,7 +146,7 @@
             btn.textContent = 'Controllo in corso...';
             
             try {
-                const response = await fetch('{{ route('public.booking.check') }}', {
+                const response = await fetch('{{ route('public.booking.check', ['parking' => $publicParkingKey]) }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
