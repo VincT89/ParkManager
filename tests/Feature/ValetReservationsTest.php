@@ -57,6 +57,44 @@ class ValetReservationsTest extends TestCase
             ->assertViewHas('reservations', fn ($rows) => $rows->pluck('id')->contains($ordinary->id) && $rows->pluck('id')->contains($unknown->id));
     }
 
+    public function test_daily_calendar_marks_only_valet_reservations_on_arrival_and_departure(): void
+    {
+        $arrival = now()->addDays(10)->startOfDay();
+        $departure = $arrival->copy()->addDays(2);
+        foreach ([false, true, null] as $index => $isValet) {
+            $this->booking('B', [
+                'customer_name' => "Cliente calendario {$index}", 'is_valet' => $isValet,
+                'starts_at' => $arrival->copy()->setHour(10 + $index),
+                'ends_at' => $departure->copy()->setHour(10 + $index),
+            ]);
+        }
+
+        $this->actingAs($this->fixtures['partner']);
+        foreach (['entries' => $arrival, 'exits' => $departure] as $type => $date) {
+            $response = $this->get(route('calendar.day', ['type' => $type, 'date' => $date->toDateString()]));
+            $response->assertOk()->assertSeeTextInOrder(['Cliente calendario 0', 'Cliente calendario 1', 'Car valet', 'Cliente calendario 2']);
+            $this->assertSame(1, substr_count($response->getContent(), 'Car valet'));
+        }
+    }
+
+    public function test_entry_summary_counts_valet_arrivals_for_the_day_and_active_parking(): void
+    {
+        $arrival = now()->addWeek()->startOfDay();
+        $stay = ['starts_at' => $arrival, 'ends_at' => $arrival->copy()->addDays(2)];
+        $this->booking('B', $stay + ['is_valet' => true, 'spots' => 2, 'passengers_count' => 3]);
+        $this->booking('B', $stay + ['is_valet' => true]);
+        $this->booking('B', $stay + ['is_valet' => false]);
+        $this->booking('B', $stay);
+        $this->booking('B', $stay + ['is_valet' => true, 'status' => 'cancelled']);
+        $this->booking('A', $stay + ['is_valet' => true]);
+
+        $this->actingAs($this->fixtures['partner']);
+        $this->get(route('calendar.day', ['type' => 'entries', 'date' => $arrival->toDateString()]))
+            ->assertOk()->assertViewHas('reservationsCount', 4)->assertSeeText('di cui 2 con car valet');
+        $this->get(route('calendar.day', ['type' => 'entries', 'date' => $arrival->copy()->addDay()->toDateString()]))
+            ->assertOk()->assertViewHas('reservationsCount', 0)->assertSeeText('di cui 0 con car valet');
+    }
+
     public function test_valet_filter_combines_with_search_dates_status_and_platform(): void
     {
         $park = $this->fixtures['parks']['B'];

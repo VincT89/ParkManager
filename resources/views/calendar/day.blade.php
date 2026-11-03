@@ -40,7 +40,13 @@
         <div class="calendar-summary-card">
             <div class="calendar-summary-title">Macchine in {{ $type === 'entries' ? 'entrata' : 'uscita' }}</div>
             <div class="calendar-summary-value">{{ $reservationsCount }}</div>
-            <div class="calendar-summary-label">Macchine</div>
+            <div class="calendar-summary-label">
+                @if ($type === 'entries')
+                    <strong class="pm-valet-label">di cui {{ $reservations->whereStrict('is_valet', true)->count() }} con car valet</strong>
+                @else
+                    Macchine
+                @endif
+            </div>
         </div>
         <div class="calendar-summary-card">
             <div class="calendar-summary-title">Clienti in {{ $type === 'entries' ? 'entrata' : 'uscita' }}</div>
@@ -73,7 +79,7 @@
                     </thead>
                     <tbody>
                         @foreach($reservations as $reservation)
-                            <tr>
+                            <tr @class(['pm-valet-row' => $reservation->is_valet])>
                                 <td class="pm-mono">
                                     {{ $type === 'entries' ? $reservation->starts_at->format('H:i') : $reservation->ends_at->format('H:i') }}
                                 </td>
@@ -109,6 +115,9 @@
                                 </td>
                                 <td>
                                     <div class="pm-td-main">{{ $reservation->parkingProduct->name ?? 'N/D' }}</div>
+                                    @if ($reservation->is_valet)
+                                        <strong class="pm-valet-label">Car valet</strong>
+                                    @endif
                                     <div class="pm-td-sub">{{ $reservation->parking->name ?? 'N/D' }}</div>
                                 </td>
                                 <td class="pm-mono">
