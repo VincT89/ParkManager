@@ -35,6 +35,7 @@ class ParkosAdapterTest extends TestCase
         
         $this->assertEquals('AA11BB22', $res->external_id);
         $this->assertEquals('15325:shuttle:outdoor', $res->external_product_ref);
+        $this->assertFalse($res->is_valet);
         $this->assertEquals('Mario Rossi', $res->customer_name);
         $this->assertEquals(1, $res->spots);
         $this->assertEquals(99.0, $res->price);

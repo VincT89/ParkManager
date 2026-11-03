@@ -61,6 +61,27 @@ Il menu di amministrazione contiene **Piattaforme, Parcheggi, Utenti, Registro a
 - Prenotazioni pubbliche tramite un collegamento dedicato al parcheggio.
 - Interfaccia adattata a desktop e smartphone, con scorrimento interno delle tabelle più larghe.
 
+### Filtro delle prenotazioni valet
+
+In **Prenotazioni**, selezionare **Solo valet** per vedere le prenotazioni riconosciute come valet. Il filtro si combina con canale, stato, ricerca e date; resta attivo nella paginazione e nell'esportazione Excel. Disattivandolo tornano visibili anche le prenotazioni ordinarie e quelle con servizio non identificato, sempre nel parcheggio selezionato.
+
+Il modulo pubblico del sito e l'inserimento manuale permettono di scegliere **Parcheggio standard** oppure **Car valet**, con Parcheggio standard preselezionato. La scelta compare nel riepilogo pubblico e nel dettaglio della prenotazione ed è modificabile dal gestionale. Indica soltanto il servizio: non cambia prezzi, posti occupati o regole di disponibilità. In modifica, **Non specificato** conserva lo stato delle vecchie prenotazioni prive di classificazione. Per le prenotazioni importate, una successiva sincronizzazione aggiorna il servizio secondo i dati della piattaforma.
+
+Il servizio è salvato in `reservations.is_valet`: `true` indica valet, `false` un servizio ordinario riconosciuto, `null` un valore mancante o non riconosciuto. Parkos documenta `parking_type` con valori `shuttle` o `valet`. La [documentazione ParkingMyCar](https://documenter.getpostman.com/view/15764785/TzRX9ReF) usa `carvalet: "Parcheggio + Car Valet"` per il valet e `carvalet: "Parcheggio"` per il servizio ordinario; sono riconosciute anche le etichette esplicite `Valet` e `Car Valet`. Per Roosh il riconoscimento associa `service_id` al catalogo delle sedi. Non ricava il servizio da note, nomi dei clienti o categorie coperto/scoperto. Le modifiche agli altri campi conservano la classificazione; una successiva risposta API non riconoscibile la riporta a `null`.
+
+La migrazione `2026_10_26_000001_add_is_valet_to_reservations` recupera i dati riconoscibili dai JSON Parkos/ParkingMyCar già salvati, senza chiamare API. Per riclassificare lo storico ancora sconosciuto di un singolo parcheggio, incluso Roosh, sostituire `ID_PARCHEGGIO` con l'ID reale e verificare prima la simulazione:
+
+```bash
+php artisan reservations:backfill-valet ID_PARCHEGGIO --with-catalog --dry-run
+php artisan reservations:backfill-valet ID_PARCHEGGIO --with-catalog
+```
+
+Il comando non modifica prezzi, date, note o classificazioni già note. `--with-catalog` consulta il catalogo Roosh usando le credenziali della gestione selezionata; omettendolo vengono letti soltanto i JSON salvati.
+
+Quando Roosh usa una sede esterna distinta per il valet, associare esplicitamente il relativo **codice servizio** a una categoria del parcheggio in **Piattaforme**. L'importazione include soltanto i servizi valet associati a quel parcheggio, anche negli import per periodo di sosta. La sola presenza nel catalogo non concede accesso ad altre sedi. Un servizio disabilitato nel catalogo può identificare prenotazioni storiche: il gestionale non lo attiva sulla piattaforma.
+
+Le ricerche Roosh per codice servizio vengono eseguite separatamente, mantenendo la paginazione e rimuovendo i duplicati: nell'API verificata, una richiesta con più codici separati da virgole restituiva un elenco vuoto anche in presenza di prenotazioni. Il recupero per periodo di sosta include lo storico; la sincronizzazione live riguarda invece la finestra delle ultime modifiche.
+
 ## Capienza e disponibilità
 
 | Modalità nell'interfaccia | Valore interno | Comportamento |

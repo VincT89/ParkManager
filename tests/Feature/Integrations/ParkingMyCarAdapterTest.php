@@ -58,6 +58,8 @@ class ParkingMyCarAdapterTest extends TestCase
                 'price' => 50.00,
                 'status' => 'confirmed',
                 'product_id' => 'PROD_1',
+                'carvalet' => 'Parcheggio + Car Valet',
+                'parking_type' => 'airport',
                 'spots' => 1,
                 'created' => 1624505000,
                 'updated' => 1624505000,
@@ -78,6 +80,8 @@ class ParkingMyCarAdapterTest extends TestCase
 
         $this->assertEquals('BOOK_1', $res->external_id);
         $this->assertEquals('PROD_1', $res->external_product_ref);
+        $this->assertTrue($res->is_valet);
+        $this->assertSame('Parcheggio + Car Valet', $res->raw_data['carvalet']);
         $this->assertEquals('Mario Rossi', $res->customer_name);
         $this->assertEquals('mario@example.com', $res->customer_email);
         $this->assertEquals('AB123CD', $res->license_plate);

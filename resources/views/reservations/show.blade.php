@@ -61,6 +61,12 @@
                     {{ $reservation->parkingProduct?->name ?? 'Nessuna categoria' }}
                 </div>
             </div>
+            <div>
+                <div class="pm-label">Tipo di servizio</div>
+                <div style="font-weight: 500; font-size: 15px; color: var(--pm-text);">
+                    {{ $reservation->is_valet === null ? 'Non specificato' : ($reservation->is_valet ? 'Car valet' : 'Parcheggio standard') }}
+                </div>
+            </div>
         </div>
 
         <div class="pm-form-grid-2" style="margin-bottom: 32px; background: var(--pm-bg); padding: 16px; border-radius: 8px; border: 1px solid var(--pm-border);">
@@ -106,7 +112,7 @@
                 </div>
             </div>
             <div>
-                <div class="pm-label">Clienti navetta</div>
+                <div class="pm-label">Numero persone</div>
                 <div style="font-weight: 600; font-size: 18px; color: var(--pm-text);">
                     {{ $reservation->passengers_count ?? 1 }}
                 </div>

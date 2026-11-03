@@ -43,6 +43,11 @@
 
             <!-- Seconda riga: Date e bottoni -->
             <div class="pm-filters" style="align-items: center;">
+                <label class="pm-checkbox-group pm-checkbox-label pm-valet-filter" for="only-valet">
+                    <input id="only-valet" type="checkbox" name="only_valet" value="1"
+                        class="pm-checkbox" @checked(request()->boolean('only_valet')) onchange="this.form.submit()">
+                    Solo valet
+                </label>
                 <select name="date_filter_type" class="pm-select" onchange="this.form.submit()" style="max-width: 160px; flex: unset;">
                     <option value="starts_at" {{ request('date_filter_type', 'starts_at') === 'starts_at' ? 'selected' : '' }}>
                         Filtra per: Arrivo

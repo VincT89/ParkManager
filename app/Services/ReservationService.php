@@ -99,6 +99,7 @@ class ReservationService
                     'price'              => $data['price'] ?? null,
                     'notes'              => $data['notes'] ?? null,
                     'raw_data'           => $data['raw_data'] ?? null,
+                    'is_valet'           => $data['is_valet'] ?? null,
                 ]);
             });
 
@@ -209,6 +210,8 @@ class ReservationService
                     'price'          => array_key_exists('price', $data) ? $data['price'] : $reservation->price,
                     'notes'          => array_key_exists('notes', $data) ? $data['notes'] : $reservation->notes,
                     'raw_data'       => array_key_exists('raw_data', $data) ? $data['raw_data'] : $reservation->raw_data,
+                    /** Preserve the classification unless a service choice or a provider value is explicitly supplied. */
+                    'is_valet'       => array_key_exists('is_valet', $data) ? $data['is_valet'] : $reservation->is_valet,
                 ]);
             });
 
@@ -290,6 +293,7 @@ class ReservationService
                     'raw_data' => array_key_exists('raw_data', $data)
                         ? $data['raw_data']
                         : $existing->raw_data,
+                    'is_valet' => array_key_exists('is_valet', $data) ? $data['is_valet'] : $existing->is_valet,
                 ]);
 
                 $existing->refresh();

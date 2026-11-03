@@ -77,13 +77,22 @@
                             @error('spots') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                         </div>
                         <div class="pm-form-group" style="margin-bottom: 0;">
-                            <label for="passengers_count" class="pm-label">{{ $bookingManagement?->is_initial ? 'Clienti Navetta' : 'Numero persone' }}</label>
+                            <label for="passengers_count" class="pm-label">Numero persone</label>
                             <input type="number" name="passengers_count" id="passengers_count" class="pm-input" min="1" max="9" value="{{ old('passengers_count', 1) }}" required>
                             @error('passengers_count') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                         </div>
                     </div>
 
-                    <div style="margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; padding: 16px; background: #f8fafc; border: 1px solid var(--pm-border); border-radius: 8px;">
+                    <div class="pm-form-group" style="margin-bottom: 24px;">
+                        <label class="pm-label" for="is_valet">Tipo di servizio</label>
+                        <select name="is_valet" id="is_valet" class="pm-select" required>
+                            <option value="0" @selected(in_array(old('is_valet', 0), [0, '0', false], true))>Parcheggio standard</option>
+                            <option value="1" @selected(in_array(old('is_valet', 0), [1, '1', true], true))>Car valet</option>
+                        </select>
+                        @error('is_valet') <span class="pm-form-error">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div style="margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 16px; background: #f8fafc; border: 1px solid var(--pm-border); border-radius: 8px;">
                         <div>
                             <div style="font-weight: 500; margin-bottom: 4px;">Verifica Disponibilità</div>
                             <div style="font-size: 13px; color: var(--pm-text-muted);">Controlla se c'è posto per le date selezionate.</div>

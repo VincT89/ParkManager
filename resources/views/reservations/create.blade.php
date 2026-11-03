@@ -44,6 +44,15 @@
                 </div>
             </div>
 
+            <div class="pm-form-group">
+                <label class="pm-label" for="reservation-is_valet">Tipo di servizio</label>
+                <select id="reservation-is_valet" name="is_valet" class="pm-select" required>
+                    <option value="0" @selected(in_array(old('is_valet', 0), [0, '0', false], true))>Parcheggio standard</option>
+                    <option value="1" @selected(in_array(old('is_valet', 0), [1, '1', true], true))>Car valet</option>
+                </select>
+                @error('is_valet') <span class="pm-form-error">{{ $message }}</span> @enderror
+            </div>
+
             <div class="pm-form-grid-3">
                 <div class="pm-form-group">
                     <label class="pm-label pm-label-required" for="reservation-customer_name">Nome cliente</label>
@@ -92,7 +101,7 @@
                            value="{{ old('spots', 1) }}" required class="pm-input" />
                 </div>
                 <div class="pm-form-group">
-                    <label class="pm-label pm-label-required" for="reservation-passengers_count">Clienti Navetta</label>
+                    <label class="pm-label pm-label-required" for="reservation-passengers_count">Numero persone</label>
                     <input type="number" id="reservation-passengers_count" name="passengers_count" min="1" max="9"
                            value="{{ old('passengers_count', 1) }}" required class="pm-input" />
                 </div>

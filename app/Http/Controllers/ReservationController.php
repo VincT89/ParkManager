@@ -41,6 +41,10 @@ class ReservationController extends Controller
         $query = Reservation::query()
             ->with(['parkingListing.platform', 'parkingListing.parking', 'latestPayment']);
 
+        if ($request->boolean('only_valet')) {
+            $query->where('is_valet', true);
+        }
+
         match ($request->sort_by) {
             'starts_at_asc'   => $query->orderBy('starts_at', 'asc'),
             'starts_at_desc'  => $query->orderBy('starts_at', 'desc'),
@@ -135,7 +139,10 @@ class ReservationController extends Controller
             'passengers_count'   => ['required', 'integer', 'min:1', 'max:9'],
             'price'              => ['nullable', 'numeric', 'min:0'],
             'notes'              => ['nullable', 'string'],
-        ]);
+            'is_valet'           => ['sometimes', 'boolean'],
+        ], ['is_valet.boolean' => 'Seleziona Parcheggio standard oppure Car valet.']);
+
+        $validated['is_valet'] ??= false;
 
         if (!empty($validated['flight_reference'])) {
             $validated['flight_reference'] = strtoupper(trim($validated['flight_reference']));
@@ -194,7 +201,8 @@ class ReservationController extends Controller
             'status'         => ['required', 'string'],
             'price'          => ['nullable', 'numeric', 'min:0'],
             'notes'          => ['nullable', 'string'],
-        ]);
+            'is_valet'       => ['sometimes', 'nullable', 'boolean'],
+        ], ['is_valet.boolean' => 'Seleziona Parcheggio standard oppure Car valet.']);
 
         if (!empty($validated['flight_reference'])) {
             $validated['flight_reference'] = strtoupper(trim($validated['flight_reference']));
@@ -238,6 +246,7 @@ class ReservationController extends Controller
                 dateFrom:   $request->input('date_from'),
                 dateTo:     $request->input('date_to'),
                 dateFilterType: $request->input('date_filter_type', 'starts_at'),
+                onlyValet: $request->boolean('only_valet'),
             ),
             $filename
         );

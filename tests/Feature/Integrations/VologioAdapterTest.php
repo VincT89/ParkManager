@@ -36,6 +36,9 @@ beforeEach(function () {
 
 it('fetches and normalizes reservations from vologio api', function () {
     Http::fake([
+        'https://api.vologio.test/v1/service-locations/' => Http::response(['serviceLocations' => [[
+            'id' => 'loc_123', 'parking_type_name' => 'Shuttle', 'services' => [['id' => 'srv_999']],
+        ]]]),
         'https://api.vologio.test/v1/bookings/findByModification*' => Http::response([
             'bookingsByModification' => [
                 [
@@ -86,6 +89,7 @@ it('fetches and normalizes reservations from vologio api', function () {
     
     expect($normalized->external_id)->toBe('booking_1')
         ->and($normalized->external_product_ref)->toBe('srv_999')
+        ->and($normalized->is_valet)->toBeFalse()
         ->and($normalized->customer_name)->toBe('Mario Rossi')
         ->and($normalized->license_plate)->toBe('AB123CD')
         ->and($normalized->price)->toBe(45.0)

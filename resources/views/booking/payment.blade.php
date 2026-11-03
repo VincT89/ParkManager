@@ -60,6 +60,12 @@
                     <span style="color: var(--pm-text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Totale da pagare</span>
                     <span style="font-size: 28px; font-weight: 700; color: var(--pm-text);">€ {{ number_format($reservation->price, 2, ',', '.') }}</span>
                 </div>
+                @if($reservation->is_valet !== null)
+                    <div style="margin-bottom: 16px;">
+                        <div class="pm-label">Tipo di servizio</div>
+                        <div>{{ $reservation->is_valet ? 'Car valet' : 'Parcheggio standard' }}</div>
+                    </div>
+                @endif
                 <div style="font-size: 13px; color: var(--pm-text-muted); text-align: center; display: flex; align-items: center; justify-content: center;">
                     <svg style="width: 16px; height: 16px; color: #16a34a; margin-right: 6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     I pagamenti sono sicuri e criptati

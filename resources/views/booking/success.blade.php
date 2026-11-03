@@ -40,6 +40,12 @@
                 <!-- Itinerary -->
                 <div>
                     <h3 style="font-size: 16px; font-weight: 600; color: #1e293b; margin-bottom: 16px; border-bottom: 1px solid var(--pm-border); padding-bottom: 8px;">Dettagli Sosta</h3>
+                    @if($reservation->is_valet !== null)
+                        <div style="margin-bottom: 12px;">
+                            <div class="pm-label">Tipo di servizio</div>
+                            <div>{{ $reservation->is_valet ? 'Car valet' : 'Parcheggio standard' }}</div>
+                        </div>
+                    @endif
                     <div style="display: flex; align-items: flex-start; margin-bottom: 12px;">
                         <svg style="width: 20px; height: 20px; color: var(--pm-text-muted); margin-right: 12px; margin-top: 2px; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                         <div>

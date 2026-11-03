@@ -99,7 +99,8 @@ class PublicBookingController extends Controller
             'license_plate' => 'required|string|max:20',
             'flight_reference' => ['nullable', 'string', 'max:20'],
             'passengers_count' => ['required', 'integer', 'min:1', 'max:9'],
-        ]);
+            'is_valet' => ['sometimes', 'boolean'],
+        ], ['is_valet.boolean' => 'Seleziona Parcheggio standard oppure Car valet.']);
 
         // Website Platform (deve già esistere, configurata via seeder, altrimenti fallisce esplicitamente 404)
         $platform = Platform::where('slug', 'website')->firstOrFail();
@@ -155,6 +156,7 @@ class PublicBookingController extends Controller
             'status' => ReservationStatus::Pending->value, // Stato iniziale
             'expires_at' => now()->addMinutes(15),
             'passengers_count' => max(1, (int) $validated['passengers_count']),
+            'is_valet' => $validated['is_valet'] ?? false,
             'raw_data' => ['source' => 'website']
         ];
 

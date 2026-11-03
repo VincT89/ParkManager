@@ -28,6 +28,7 @@ class ReservationsExport implements
         private ?string $dateTo     = null,
         private ?string $dateFilterType = 'starts_at',
         private ?int $parkingId = null,
+        private bool $onlyValet = false,
     ) {}
 
     public function query()
@@ -36,6 +37,10 @@ class ReservationsExport implements
             ->where('parking_id', $this->parkingId ?? 0)
             ->with(['parkingListing.platform', 'parkingListing.parking'])
             ->orderByDesc('starts_at');
+
+        if ($this->onlyValet) {
+            $query->where('is_valet', true);
+        }
 
         if ($this->platformId) {
             $query->whereHas('parkingListing', fn($q) =>
