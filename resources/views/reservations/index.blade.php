@@ -111,7 +111,7 @@
                 </thead>
                 <tbody>
                     @forelse ($reservations as $reservation)
-                        <tr>
+                        <tr @class(['pm-valet-row' => $reservation->is_valet])>
                             <td>
                                 <div class="pm-td-main">{{ $reservation->customer_name }}</div>
                             </td>
@@ -129,6 +129,9 @@
                                     <div class="pm-dot blue"></div>
                                     {{ $reservation->parkingListing->platform->name }}
                                 </div>
+                                @if ($reservation->is_valet)
+                                    <strong class="pm-valet-label">Car valet</strong>
+                                @endif
                             </td>
                             <td class="pm-mono">{{ $reservation->starts_at->format('d-m-Y H:i') }}</td>
                             <td class="pm-mono">{{ $reservation->ends_at->format('d-m-Y H:i') }}</td>
