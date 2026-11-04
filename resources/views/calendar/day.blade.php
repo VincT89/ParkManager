@@ -41,8 +41,8 @@
             <div class="calendar-summary-title">Macchine in {{ $type === 'entries' ? 'entrata' : 'uscita' }}</div>
             <div class="calendar-summary-value">{{ $reservationsCount }}</div>
             <div class="calendar-summary-label">
-                @if ($type === 'entries')
-                    <strong class="pm-valet-label">di cui {{ $reservations->whereStrict('is_valet', true)->count() }} con car valet</strong>
+                @if ($valetEntriesCount !== null)
+                    <strong @class(['pm-valet-label', 'calendar-valet-subtotal' => $valetEntriesCount > 0])>di cui {{ $valetEntriesCount }} con car valet</strong>
                 @else
                     Macchine
                 @endif
