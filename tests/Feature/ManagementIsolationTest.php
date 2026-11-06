@@ -87,6 +87,28 @@ class ManagementIsolationTest extends TestCase
         $this->assertTrue($this->a['mapping']->fresh()->is_active);
     }
 
+    public function test_removed_mapping_disappears_and_its_code_can_be_added_again(): void
+    {
+        $mapping = $this->b['mapping'];
+        $mapping->update(['external_name' => 'Associazione originale (test)']);
+        $url = route('platforms.edit', $this->b['apiPlatform']);
+        $this->asPartner()->get($url)->assertOk()->assertSeeText('Associazione originale (test)');
+
+        $this->from($url)->delete(route('platforms.mappings.destroy', $mapping), $this->payload())->assertRedirect($url);
+        $this->assertFalse($mapping->fresh()->is_active);
+        $this->get($url)->assertOk()->assertDontSeeText('Associazione originale (test)')
+            ->assertSeeText('Nessuna associazione presente.');
+
+        $this->from($url)->post(route('platforms.mappings.store', $this->b['apiPlatform']), $this->payload([
+            'parking_product_id' => $this->b['product']->id,
+            'external_ref' => $mapping->external_ref,
+            'external_name' => 'Associazione rifatta (test)',
+        ]))->assertSessionHasNoErrors()->assertRedirect($url);
+        $this->get($url)->assertOk()->assertSeeText('Associazione rifatta (test)')
+            ->assertDontSeeText('Associazione originale (test)')
+            ->assertViewHas('mappings', fn ($mappings) => $mappings->count() === 1 && $mappings->first()->is_active);
+    }
+
     public function test_foreign_product_ids_cannot_be_attached_to_the_current_parking(): void
     {
         $this->asPartner()->post(route('platforms.mappings.store', $this->b['apiPlatform']), $this->payload([

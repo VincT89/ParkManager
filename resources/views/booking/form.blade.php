@@ -87,7 +87,7 @@
                         <label class="pm-label" for="is_valet">Tipo di servizio</label>
                         <select name="is_valet" id="is_valet" class="pm-select" required>
                             <option value="0" @selected(in_array(old('is_valet', 0), [0, '0', false], true))>Parcheggio standard</option>
-                            <option value="1" @selected(in_array(old('is_valet', 0), [1, '1', true], true))>Car valet</option>
+                            <option value="1" @selected(in_array(old('is_valet', 0), [1, '1', true], true))>Car valet (+{{ number_format($valetSurcharge, 2, ',', '.') }} € per prenotazione)</option>
                         </select>
                         @error('is_valet') <span class="pm-form-error">{{ $message }}</span> @enderror
                     </div>
@@ -146,6 +146,9 @@
     </div>
 
     <script>
+        const quoteFields = ['arrival_date', 'arrival_time', 'departure_date', 'departure_time', 'product_code', 'spots', 'is_valet'];
+        const quoteValues = () => Object.fromEntries(quoteFields.map(id => [id, document.getElementById(id).value]));
+
         document.getElementById('btn-check').addEventListener('click', async function() {
             const btn = this;
             const resultBox = document.getElementById('availability-result');
@@ -153,6 +156,7 @@
             
             btn.disabled = true;
             btn.textContent = 'Controllo in corso...';
+            const requestedValues = quoteValues();
             
             try {
                 const response = await fetch('{{ route('public.booking.check', ['parking' => $publicParkingKey]) }}', {
@@ -162,17 +166,15 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Accept': 'application/json'
                     },
-                    body: JSON.stringify({
-                        product_code: document.getElementById('product_code').value,
-                        arrival_date: document.getElementById('arrival_date').value,
-                        arrival_time: document.getElementById('arrival_time').value,
-                        departure_date: document.getElementById('departure_date').value,
-                        departure_time: document.getElementById('departure_time').value,
-                        spots: document.getElementById('spots').value
-                    })
+                    body: JSON.stringify(requestedValues)
                 });
                 
                 const data = await response.json();
+
+                /** Il preventivo vale soltanto per i dati inviati nella richiesta. */
+                if (JSON.stringify(requestedValues) !== JSON.stringify(quoteValues())) {
+                    return;
+                }
                 
                 resultBox.style.display = 'block';
 
@@ -215,8 +217,7 @@
         });
 
         // Hide customer form if inputs change
-        const inputs = ['arrival_date', 'arrival_time', 'departure_date', 'departure_time', 'product_code', 'spots'];
-        inputs.forEach(id => {
+        quoteFields.forEach(id => {
             document.getElementById(id)?.addEventListener('change', () => {
                 document.getElementById('availability-result').style.display = 'none';
                 document.getElementById('customer-details').style.display = 'none';

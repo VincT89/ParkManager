@@ -52,7 +52,7 @@ class WebsiteValetTest extends TestCase
         ];
     }
 
-    public function test_public_choice_is_saved_shown_and_filtered_without_changing_price_or_capacity(): void
+    public function test_public_valet_surcharge_is_quoted_saved_and_charged_once(): void
     {
         $park = $this->fixtures['parks']['B'];
         $park['parking']->update(['total_spots' => 2]);
@@ -62,16 +62,22 @@ class WebsiteValetTest extends TestCase
         $valetId = null;
 
         foreach (['0' => 'Parcheggio standard', '1' => 'Car valet'] as $choice => $label) {
+            $expectedPrice = $quote + ($choice === 1 ? 10 : 0);
+            $this->postJson(route('public.booking.check'), $data + ['is_valet' => (string) $choice])
+                ->assertOk()->assertJson(['available' => true, 'total_price' => $expectedPrice]);
             $response = $this->post(route('public.booking.store'), $data + ['is_valet' => (string) $choice]);
             $response->assertSessionHasNoErrors();
             $reservation = Reservation::where('customer_email', $data['customer_email'])->latest('id')->firstOrFail();
             $response->assertRedirect(route('public.booking.payment', $reservation->external_id));
             $this->assertSame((bool) $choice, $reservation->is_valet);
             $this->assertSame($park['parking']->id, $reservation->parking_id);
-            $this->assertEquals($quote, $reservation->price);
+            $this->assertEquals($expectedPrice, $reservation->price);
             $this->assertSame(1, $reservation->spots);
             $this->get(route('public.booking.payment', $reservation->external_id))->assertOk()->assertSee($label);
-            $reservation->update(['status' => 'confirmed']);
+            $this->post(route('public.booking.onsite.confirm', $reservation->external_id))
+                ->assertRedirect(route('public.booking.success', $reservation->external_id));
+            $this->assertEquals($expectedPrice, $reservation->payments()->sole()->amount);
+            $this->assertEquals($expectedPrice, $reservation->fresh()->price);
             $this->get(route('public.booking.success', $reservation->external_id))->assertOk()->assertSee($label);
             if ($choice === 1) {
                 $valetId = $reservation->id;
@@ -84,14 +90,53 @@ class WebsiteValetTest extends TestCase
             ->assertOk()->assertViewHas('reservations', fn ($rows) => $rows->pluck('id')->all() === [$valetId]);
     }
 
+    public function test_public_surcharge_is_fixed_for_multiple_days_and_spots_and_cannot_be_overridden(): void
+    {
+        $data = array_replace($this->publicData(), ['spots' => 2, 'passengers_count' => 4]);
+        $this->postJson(route('public.booking.check'), $data + ['is_valet' => '0'])
+            ->assertOk()->assertJson(['total_price' => 60, 'valet_surcharge' => 0]);
+        $this->postJson(route('public.booking.check'), $data + ['is_valet' => '1'])
+            ->assertOk()->assertJson(['total_price' => 70, 'valet_surcharge' => 10]);
+        $this->post(route('public.booking.store'), $data + ['is_valet' => '1', 'price' => 1, 'valet_surcharge' => 0])
+            ->assertSessionHasNoErrors();
+        $reservation = Reservation::where('customer_email', $data['customer_email'])->firstOrFail();
+        $this->assertSame('70.00', $reservation->price);
+        $this->assertEquals(10, $reservation->raw_data['valet_surcharge']);
+        $this->assertSame(7000, app(\App\Services\PricingService::class)->amountForReservation($reservation));
+        $this->get(route('public.booking.payment', $reservation->external_id))->assertOk()
+            ->assertSeeText('Supplemento Car valet di 10,00 € incluso nel totale.');
+        $this->get(route('public.booking.payment', $reservation->external_id))->assertOk();
+        $this->assertSame('70.00', $reservation->fresh()->price);
+        $this->post(route('public.booking.onsite.confirm', $reservation->external_id))->assertRedirect();
+        $this->assertEquals(70, $reservation->payments()->sole()->amount);
+        $this->get(route('public.booking.success', $reservation->external_id))->assertOk()
+            ->assertSeeText('Supplemento Car valet di 10,00 € incluso nel totale.');
+    }
+
     public static function invalidChoices(): array
     {
         return [['valet'], [['1']]];
     }
 
+    public function test_loading_an_existing_valet_booking_uses_its_saved_total(): void
+    {
+        $reservation = $this->fixtures['parks']['B']['reservation'];
+        $reservation->update([
+            'starts_at' => now()->addDays(60), 'ends_at' => now()->addDays(62),
+            'is_valet' => true, 'status' => 'pending', 'expires_at' => now()->addMinutes(15),
+            'raw_data' => ['source' => 'website'],
+        ]);
+        $this->get(route('public.booking.payment', $reservation->external_id))->assertOk()
+            ->assertSeeText('€ 30,00')->assertDontSeeText('Supplemento Car valet');
+        $this->assertSame('30.00', $reservation->fresh()->price);
+        $this->assertSame(3000, app(\App\Services\PricingService::class)->amountForReservation($reservation));
+    }
+
     #[DataProvider('invalidChoices')]
     public function test_public_invalid_choice_is_rejected_and_the_form_can_render_validation_errors(mixed $invalid): void
     {
+        $this->postJson(route('public.booking.check'), $this->publicData() + ['is_valet' => $invalid])
+            ->assertUnprocessable()->assertJsonValidationErrors('is_valet');
         $form = route('public.booking.form', ['parking' => $this->publicData()['parking']]);
         $this->from($form)->post(route('public.booking.store'), $this->publicData() + ['is_valet' => $invalid])
             ->assertRedirect($form)->assertSessionHasErrors(['is_valet' => 'Seleziona Parcheggio standard oppure Car valet.']);

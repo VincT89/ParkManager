@@ -64,6 +64,9 @@
                     <div style="margin-bottom: 16px;">
                         <div class="pm-label">Tipo di servizio</div>
                         <div>{{ $reservation->is_valet ? 'Car valet' : 'Parcheggio standard' }}</div>
+                        @if ($reservation->is_valet && ($reservation->raw_data['valet_surcharge'] ?? 0) > 0)
+                            <div class="pm-form-note">Supplemento Car valet di {{ number_format($reservation->raw_data['valet_surcharge'], 2, ',', '.') }} € incluso nel totale.</div>
+                        @endif
                     </div>
                 @endif
                 <div style="font-size: 13px; color: var(--pm-text-muted); text-align: center; display: flex; align-items: center; justify-content: center;">

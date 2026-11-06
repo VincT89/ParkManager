@@ -11,6 +11,7 @@ use App\Models\Reservation;
 use App\Services\AvailabilityService;
 use App\Services\ReservationService;
 use App\Services\ParkingAssignmentService;
+use App\Services\PricingService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Enums\ReservationStatus;
@@ -30,7 +31,11 @@ class PublicBookingController extends Controller
             abort(404, 'Nessun prodotto disponibile per la prenotazione.');
         }
 
-        return view('booking.form', ['products' => $products, 'publicParkingKey' => app(\App\Tenancy\ParkingContext::class)->parking->public_booking_key]);
+        return view('booking.form', [
+            'products' => $products,
+            'publicParkingKey' => app(\App\Tenancy\ParkingContext::class)->parking->public_booking_key,
+            'valetSurcharge' => PricingService::VALET_SURCHARGE,
+        ]);
     }
 
     public function checkAvailability(Request $request, ParkingAssignmentService $assignmentService)
@@ -42,7 +47,8 @@ class PublicBookingController extends Controller
             'departure_date' => ['required', 'date_format:Y-m-d'],
             'departure_time' => ['required', 'date_format:H:i'],
             'spots' => 'integer|min:1|max:10',
-        ]);
+            'is_valet' => ['sometimes', 'boolean'],
+        ], ['is_valet.boolean' => 'Seleziona Parcheggio standard oppure Car valet.']);
 
         $startsAt = Carbon::createFromFormat(
             'Y-m-d H:i',
@@ -68,12 +74,14 @@ class PublicBookingController extends Controller
                 $validated['product_code'],
                 $startsAt,
                 $endsAt,
-                $spots
+                $spots,
+                (bool) ($validated['is_valet'] ?? false)
             );
 
             return response()->json([
                 'available' => true,
                 'total_price' => $result['price'],
+                'valet_surcharge' => $result['valet_surcharge'],
                 'price_formatted' => number_format($result['price'], 2, ',', '.') . ' €'
             ]);
         } catch (\Exception $e) {
@@ -127,7 +135,8 @@ class PublicBookingController extends Controller
                 $validated['product_code'],
                 $startsAt,
                 $endsAt,
-                $validated['spots']
+                $validated['spots'],
+                (bool) ($validated['is_valet'] ?? false)
             );
         } catch (\Exception $e) {
             return back()->withInput()->with('error', $e->getMessage());
@@ -157,7 +166,7 @@ class PublicBookingController extends Controller
             'expires_at' => now()->addMinutes(15),
             'passengers_count' => max(1, (int) $validated['passengers_count']),
             'is_valet' => $validated['is_valet'] ?? false,
-            'raw_data' => ['source' => 'website']
+            'raw_data' => ['source' => 'website', 'valet_surcharge' => $assignment['valet_surcharge']]
         ];
 
         $result = $reservationService->create($listing, $data);

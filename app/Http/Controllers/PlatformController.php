@@ -61,7 +61,7 @@ class PlatformController extends Controller
                         ->whereNotIn('id', $alreadyAttachedIds)
                         ->get();
         
-        $mappings = \App\Models\PlatformProductMapping::where('platform_id', $platform->id)->get();
+        $mappings = \App\Models\PlatformProductMapping::where('platform_id', $platform->id)->active()->get();
                         
         return view('platforms.edit', compact('platform', 'parkings', 'mappings'));
     }

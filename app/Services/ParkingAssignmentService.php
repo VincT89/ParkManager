@@ -19,11 +19,16 @@ class ParkingAssignmentService
 
     /**
      * Trova il primo parcheggio disponibile per i parametri richiesti.
-     * Restituisce un array con ['parking' => Parking, 'product' => ParkingProduct, 'price' => float]
+     * Restituisce un array con ['parking' => Parking, 'product' => ParkingProduct, 'price' => float, 'valet_surcharge' => float]
      * o lancia un'eccezione se nessun parcheggio è disponibile.
      */
-    public function findFirstAvailable(string $productCode, Carbon $startsAt, Carbon $endsAt, int $spots = 1): array
-    {
+    public function findFirstAvailable(
+        string $productCode,
+        Carbon $startsAt,
+        Carbon $endsAt,
+        int $spots = 1,
+        bool $isValet = false
+    ): array {
         // Recupera i parcheggi attivi ordinati (deterministico per id)
         $parkings = Parking::active()->orderBy('id', 'asc')->get();
 
@@ -51,11 +56,13 @@ class ParkingAssignmentService
                     $endsAt,
                     $spots
                 );
+                $valetSurcharge = $isValet ? PricingService::VALET_SURCHARGE : 0.0;
 
                 return [
                     'parking' => $parking,
                     'product' => $product,
-                    'price'   => $totalPrice,
+                    'price'   => $totalPrice + $valetSurcharge,
+                    'valet_surcharge' => $valetSurcharge,
                 ];
             }
         }

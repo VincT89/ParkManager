@@ -63,7 +63,8 @@ function futureDate(days) {
         await page.locator('#is_valet').selectOption('0');
         const standardPrice = await checkAvailability();
         await page.locator('#is_valet').selectOption('1');
-        assert.equal(await checkAvailability(), standardPrice);
+        assert.equal(await page.locator('#customer-details').isVisible(), false);
+        assert.equal(await checkAvailability(), standardPrice + 10);
         await page.locator('[name=customer_name]').fill(publicName);
         await page.locator('[name=customer_email]').fill('servizio-browser@example.test');
         await page.locator('[name=customer_phone]').fill('0000000000');
@@ -124,7 +125,7 @@ function futureDate(days) {
         assert.equal(await page.getByLabel('Tipo di servizio', { exact: true }).inputValue(), '1');
         for (const width of [360, 1440]) await screenshot('edit-form', width);
         assert.deepEqual(errors, []);
-        const report = { results, validationPreservesChoice: true, samePrice: true, publicBooking: true, manualBooking: true, editAndFilter: true, errors };
+        const report = { results, validationPreservesChoice: true, valetSurcharge: 10, publicBooking: true, manualBooking: true, editAndFilter: true, errors };
         fs.writeFileSync(path.join(output, 'report.json'), JSON.stringify(report, null, 2));
         console.log(JSON.stringify(report));
     } finally {
