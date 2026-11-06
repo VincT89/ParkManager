@@ -56,9 +56,9 @@
 
             <!-- Summary -->
             <div style="background: var(--pm-public-bg); border: 1px solid var(--pm-border); border-radius: 8px; padding: 20px; margin-bottom: 32px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--pm-border); padding-bottom: 16px; margin-bottom: 16px;">
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--pm-border); padding-bottom: 16px; margin-bottom: 16px;">
                     <span style="color: var(--pm-text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Totale da pagare</span>
-                    <span style="font-size: 28px; font-weight: 700; color: var(--pm-text);">€ {{ number_format($reservation->price, 2, ',', '.') }}</span>
+                    <span style="font-size: 28px; font-weight: 700; color: var(--pm-text); white-space: nowrap;">€ {{ number_format($reservation->price, 2, ',', '.') }}</span>
                 </div>
                 @if($reservation->is_valet !== null)
                     <div style="margin-bottom: 16px;">
