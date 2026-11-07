@@ -54,6 +54,7 @@ class Reservation extends Model
             'passengers_count' => 'integer',
             'price'     => 'decimal:2',
             'raw_data'  => 'array',
+            'manually_edited_fields' => 'array',
             'is_valet' => 'boolean',
             'expires_at'=> 'datetime',
             'has_entered' => 'boolean',
@@ -74,6 +75,12 @@ class Reservation extends Model
     public function parkingProduct(): BelongsTo
     {
         return $this->belongsTo(ParkingProduct::class);
+    }
+
+    public function occupiesCapacity(): bool
+    {
+        return $this->status->isActive()
+            && ($this->status !== ReservationStatus::Pending || $this->expires_at?->isFuture());
     }
 
     public function scopeActive($query)

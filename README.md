@@ -61,6 +61,10 @@ Il menu di amministrazione contiene **Piattaforme, Parcheggi, Utenti, Registro a
 - Prenotazioni pubbliche tramite un collegamento dedicato al parcheggio.
 - Interfaccia adattata a desktop e smartphone, con scorrimento interno delle tabelle più larghe.
 
+Le correzioni manuali a nominativo, email, telefono, targa, riferimento volo, numero di persone e note hanno precedenza sugli aggiornamenti successivi delle piattaforme. Il gestionale protegge soltanto i campi effettivamente modificati, anche quando vengono svuotati. Gli altri dati continuano a essere aggiornati dalla piattaforma, comprese le cancellazioni della prenotazione.
+
+La modifica dei dati anagrafici può essere salvata anche quando la disponibilità è insufficiente. Cambiamenti a categoria, date o posti di una prenotazione attiva e riattivazioni richiedono la verifica della disponibilità. Questa correzione richiede la migrazione `2026_11_07_000001_add_manually_edited_fields_to_reservations`. Le correzioni già sovrascritte prima dell'aggiornamento devono essere reinserite e salvate.
+
 ### Filtro delle prenotazioni valet
 
 In **Prenotazioni**, selezionare **Solo valet** per vedere le prenotazioni riconosciute come valet. Il filtro si combina con canale, stato, ricerca e date; resta attivo nella paginazione e nell'esportazione Excel. Disattivandolo tornano visibili anche le prenotazioni ordinarie e quelle con servizio non identificato, sempre nel parcheggio selezionato.

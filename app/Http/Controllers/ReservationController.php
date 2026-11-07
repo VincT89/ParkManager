@@ -198,11 +198,18 @@ class ReservationController extends Controller
             'ends_at'        => ['required', 'date', 'after:starts_at'],
             'spots'          => ['required', 'integer', 'min:1'],
             'passengers_count' => ['required', 'integer', 'min:1', 'max:9'],
-            'status'         => ['required', 'string'],
+            'status'         => ['required', \Illuminate\Validation\Rule::enum(ReservationStatus::class)],
             'price'          => ['nullable', 'numeric', 'min:0'],
             'notes'          => ['nullable', 'string'],
             'is_valet'       => ['sometimes', 'nullable', 'boolean'],
         ], ['is_valet.boolean' => 'Seleziona Parcheggio standard oppure Car valet.']);
+
+        /** Conserva i secondi importati quando il modulo invia gli stessi minuti visualizzati. */
+        foreach (['starts_at', 'ends_at'] as $field) {
+            if ($validated[$field] === $reservation->{$field}->format('Y-m-d\TH:i')) {
+                $validated[$field] = $reservation->{$field}->toDateTimeString();
+            }
+        }
 
         if (!empty($validated['flight_reference'])) {
             $validated['flight_reference'] = strtoupper(trim($validated['flight_reference']));

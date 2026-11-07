@@ -12,6 +12,11 @@ use Illuminate\Support\Facades\Cache;
 
 class ReservationService
 {
+    private const MANUAL_FIELDS = [
+        'customer_name', 'customer_email', 'customer_phone', 'license_plate',
+        'flight_reference', 'passengers_count', 'notes',
+    ];
+
     public function __construct(
         private AvailabilityService $availabilityService
     ) {}
@@ -113,17 +118,10 @@ class ReservationService
     /**
      * Aggiorna una prenotazione esistente.
      */
-    public function update(Reservation $reservation, array $data): ReservationResult
+    public function update(Reservation $reservation, array $data, bool $fromExternal = false): ReservationResult
     {
-        $startsAt = Carbon::parse($data['starts_at'] ?? $reservation->starts_at);
-        $endsAt   = Carbon::parse($data['ends_at'] ?? $reservation->ends_at);
-        $spots    = $data['spots'] ?? $reservation->spots;
-
         try {
-            DB::transaction(function () use ($reservation, $data, $startsAt, $endsAt, $spots) {
-                // Recupero il listing per non perdere associazioni
-                $listing = $reservation->parkingListing;
-
+            $updatedReservation = DB::transaction(function () use ($reservation, $data, $fromExternal) {
                 // Guardia sul prodotto per assicurare appartenga allo stesso parcheggio
                 if (empty($data['parking_product_id']) && empty($reservation->parking_product_id)) {
                     throw new \Exception('Il prodotto parcheggio è obbligatorio per salvare questa prenotazione.');
@@ -149,19 +147,20 @@ class ReservationService
                     throw new \Exception('Il prodotto selezionato NON appartiene al parcheggio della prenotazione.');
                 }
 
-                // Controlla disponibilità escludendo la prenotazione corrente (per PRODOTTO)
-                $availability = $this->availabilityService->checkProductCapacityExcluding(
-                    $product,
-                    $startsAt,
-                    $endsAt,
-                    $spots,
-                    $reservation->id
-                );
-
-                if (! $availability->available) {
-                    throw new \Exception($availability->reason);
+                /** Rileggere sotto lock evita che una sincronizzazione in attesa perda le correzioni appena salvate. */
+                $reservation = Reservation::whereKey($reservation->id)->lockForUpdate()->firstOrFail();
+                if (! isset($data['parking_product_id']) && $reservation->parking_product_id !== $product->id) {
+                    throw new \Exception('La categoria della prenotazione è cambiata. Ricarica la pagina e riprova.');
                 }
 
+                $wasOccupyingCapacity = $reservation->occupiesCapacity();
+                if ($fromExternal) {
+                    $data = array_diff_key($data, array_flip($reservation->manually_edited_fields ?? []));
+                }
+
+                $startsAt = Carbon::parse($data['starts_at'] ?? $reservation->starts_at);
+                $endsAt = Carbon::parse($data['ends_at'] ?? $reservation->ends_at);
+                $spots = $data['spots'] ?? $reservation->spots;
                 $status = $data['status'] ?? $reservation->status->value;
                 $expiresAt = $reservation->expires_at;
                 
@@ -172,7 +171,7 @@ class ReservationService
                     $expiresAt = null;
                 }
 
-                $reservation->update([
+                $reservation->fill([
                     'parking_product_id' => isset($data['parking_product_id']) && $data['parking_product_id'] !== null 
                                         ? $data['parking_product_id'] 
                                         : $reservation->parking_product_id,
@@ -213,9 +212,33 @@ class ReservationService
                     /** Preserve the classification unless a service choice or a provider value is explicitly supplied. */
                     'is_valet'       => array_key_exists('is_valet', $data) ? $data['is_valet'] : $reservation->is_valet,
                 ]);
-            });
 
-            return ReservationResult::success($reservation->fresh());
+                /** Verifica i posti quando cambia l'occupazione, comprese le riattivazioni. */
+                $requiresCapacityCheck = $reservation->occupiesCapacity()
+                    && (! $wasOccupyingCapacity || $reservation->isDirty(['parking_product_id', 'starts_at', 'ends_at', 'spots']));
+                if ($requiresCapacityCheck) {
+                    $availability = $this->availabilityService->checkProductCapacityExcluding(
+                        $product, $startsAt, $endsAt, $spots, $reservation->id
+                    );
+                    if (! $availability->available) {
+                        throw new \Exception($availability->reason);
+                    }
+                }
+
+                if (! $fromExternal) {
+                    /** Si ricordano solo i nomi dei campi cambiati, comprese le cancellazioni volontarie dei valori. */
+                    $editedFields = array_intersect(array_keys($reservation->getDirty()), self::MANUAL_FIELDS);
+                    $reservation->manually_edited_fields = array_values(array_unique([
+                        ...($reservation->manually_edited_fields ?? []), ...$editedFields,
+                    ]));
+                }
+
+                $reservation->save();
+
+                return $reservation;
+            }, 3);
+
+            return ReservationResult::success($updatedReservation->fresh());
 
         } catch (\Exception $e) {
             return ReservationResult::failed($e->getMessage());
@@ -321,7 +344,7 @@ class ReservationService
         }
 
         if ($existing) {
-            $result = $this->update($existing, $data);
+            $result = $this->update($existing, $data, fromExternal: true);
             if ($result->success) {
                 return \App\Services\Results\ReservationImportResult::updated($result->reservation);
             }
