@@ -37,7 +37,10 @@ class Reservation extends Model
         'expires_at',
         'has_entered',
         'has_exited',
+        'whatsapp_review_consent',
     ];
+
+    protected $hidden = ['whatsapp_review_consent'];
 
     protected function casts(): array
     {
@@ -59,6 +62,9 @@ class Reservation extends Model
             'expires_at'=> 'datetime',
             'has_entered' => 'boolean',
             'has_exited' => 'boolean',
+            'exited_at' => 'integer',
+            'whatsapp_review_consent' => 'encrypted:array',
+            'whatsapp_review_attempted_at' => 'integer',
         ];
     }
 

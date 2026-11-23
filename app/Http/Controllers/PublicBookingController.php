@@ -12,8 +12,10 @@ use App\Services\AvailabilityService;
 use App\Services\ReservationService;
 use App\Services\ParkingAssignmentService;
 use App\Services\PricingService;
+use App\Services\WhatsAppReviewService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use App\Enums\ReservationStatus;
 
 class PublicBookingController extends Controller
@@ -94,8 +96,9 @@ class PublicBookingController extends Controller
 
     public function store(Request $request, ReservationService $reservationService, ParkingAssignmentService $assignmentService)
     {
+        $parking = app(\App\Tenancy\ParkingContext::class)->parking;
         $validated = $request->validate([
-            'product_code' => ['required', 'string', \Illuminate\Validation\Rule::exists('parking_products', 'code')->where('parking_id', app(\App\Tenancy\ParkingContext::class)->parking->id)->where('is_active', true)],
+            'product_code' => ['required', 'string', \Illuminate\Validation\Rule::exists('parking_products', 'code')->where('parking_id', $parking->id)->where('is_active', true)],
             'arrival_date' => ['required', 'date_format:Y-m-d'],
             'arrival_time' => ['required', 'date_format:H:i'],
             'departure_date' => ['required', 'date_format:Y-m-d'],
@@ -108,7 +111,18 @@ class PublicBookingController extends Controller
             'flight_reference' => ['nullable', 'string', 'max:20'],
             'passengers_count' => ['required', 'integer', 'min:1', 'max:9'],
             'is_valet' => ['sometimes', 'boolean'],
+            'whatsapp_review_opt_in' => ['sometimes', 'boolean'],
         ], ['is_valet.boolean' => 'Seleziona Parcheggio standard oppure Car valet.']);
+
+        $reviewConsent = null;
+        if ($parking->whatsappReviewsEnabled() && ($validated['whatsapp_review_opt_in'] ?? false)) {
+            $number = WhatsAppReviewService::internationalNumber($validated['customer_phone']);
+            if ($number === null) {
+                throw ValidationException::withMessages(['whatsapp_review_opt_in' => 'Per ricevere l’invito su WhatsApp, aggiungi il prefisso internazionale al numero.']);
+            }
+
+            $reviewConsent = WhatsAppReviewService::consent($number, 'website');
+        }
 
         // Website Platform (deve già esistere, configurata via seeder, altrimenti fallisce esplicitamente 404)
         $platform = Platform::where('slug', 'website')->firstOrFail();
@@ -166,6 +180,7 @@ class PublicBookingController extends Controller
             'expires_at' => now()->addMinutes(15),
             'passengers_count' => max(1, (int) $validated['passengers_count']),
             'is_valet' => $validated['is_valet'] ?? false,
+            'whatsapp_review_consent' => $reviewConsent,
             'raw_data' => ['source' => 'website', 'valet_surcharge' => $assignment['valet_surcharge']]
         ];
 

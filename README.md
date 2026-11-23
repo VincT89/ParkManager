@@ -124,6 +124,14 @@ I **pagamenti in struttura** sono disponibili. I pulsanti dei **pagamenti online
 
 La nuova gestione mostra il proprio nome e non eredita automaticamente logo, contenuti commerciali o documenti contrattuali della gestione iniziale. Per pubblicarne il servizio occorrono i contenuti reali del nuovo parcheggio.
 
+## Inviti WhatsApp a recensire su Google
+
+In **Parcheggi > WhatsApp e recensioni** l’amministratore configura il mittente Twilio, il modello approvato e il [link per richiedere recensioni](https://support.google.com/business/answer/16816815?hl=it) del parcheggio. Prima di attivare gli invii prepara su Twilio un [mittente WhatsApp](https://www.twilio.com/docs/whatsapp/self-sign-up), una chiave API con accesso all’invio e un [Messaging Service con Advanced Opt-Out](https://www.twilio.com/docs/messaging/tutorials/advanced-opt-out) per gestire STOP. Aggiungi il mittente al servizio e sottoponi il testo fisso riportato nella pagina come modello WhatsApp con le due variabili del testo. Inserisci il suo Content SID una volta approvato.
+
+Lo scheduler cerca ogni minuto le prenotazioni confermate o modificate con uscita registrata da almeno 24 ore. L’invio riguarda le nuove uscite dopo l’attivazione, con un solo tentativo per prenotazione. Il consenso è facoltativo nel modulo pubblico. Per le altre prenotazioni l’operatore lo registra dal dettaglio dopo averlo ricevuto dal cliente. La revoca nel dettaglio annulla il consenso per quella prenotazione. Una modifica del numero richiede il consenso per il numero attuale. Se la risposta di Twilio è incerta, verifica il registro Twilio prima di qualsiasi invio manuale. Lo stato «Invito affidato a Twilio» indica che Twilio ha accettato il messaggio.
+
+Prima della configurazione esegui la migrazione `2026_11_17_000001_add_whatsapp_review_invitations`. Le credenziali sono cifrate per parcheggio con la chiave dell’applicazione. Gli invii partono solo nei parcheggi in cui vengono attivati.
+
 ## Piattaforme e sincronizzazioni
 
 Sono presenti integrazioni per **Parkos, ParkingMyCar e Vologio**. I prodotti esterni vengono associati alle categorie interne tramite `PlatformProductMapping`.

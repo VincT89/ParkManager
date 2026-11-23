@@ -105,6 +105,7 @@ class ReservationService
                     'notes'              => $data['notes'] ?? null,
                     'raw_data'           => $data['raw_data'] ?? null,
                     'is_valet'           => $data['is_valet'] ?? null,
+                    'whatsapp_review_consent' => $data['whatsapp_review_consent'] ?? null,
                 ]);
             });
 

@@ -41,9 +41,12 @@
                                 <span class="pm-mono">{{ $parking->total_spots }}</span>
                             </td>
                             <td>
-                                <div style="display:flex; gap:8px;">
+                                <div style="display:flex; flex-wrap:wrap; gap:8px;">
                                     <a href="{{ route('parkings.edit', $parking) }}" class="pm-btn pm-btn-secondary pm-btn-sm">
                                         Configura parcheggio
+                                    </a>
+                                    <a href="{{ route('parkings.whatsapp-reviews.edit', $parking) }}" class="pm-btn pm-btn-secondary pm-btn-sm">
+                                        WhatsApp e recensioni
                                     </a>
                                     
                                     @if ($parking->is_active)

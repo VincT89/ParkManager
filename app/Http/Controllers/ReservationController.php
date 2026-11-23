@@ -7,9 +7,11 @@ use App\Models\ParkingListing;
 use App\Models\Platform;
 use App\Services\ReservationService;
 use App\Services\AvailabilityService;
+use App\Services\WhatsAppReviewService;
 use App\Enums\ReservationStatus;
 use App\Enums\PaymentStatus;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Exports\ReservationsExport;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -165,7 +167,12 @@ class ReservationController extends Controller
     public function show(Reservation $reservation)
     {
         $reservation->load(['parkingListing.platform', 'parkingListing.parking', 'parkingProduct', 'latestPayment']);
-        return view('reservations.show', compact('reservation'));
+
+        return view('reservations.show', [
+            'reservation' => $reservation,
+            'reviewConsent' => WhatsAppReviewService::consentedNumber($reservation) !== null,
+            'reviewPhone' => WhatsAppReviewService::internationalNumber($reservation->customer_phone),
+        ]);
     }
 
     public function edit(Reservation $reservation)
@@ -268,8 +275,18 @@ class ReservationController extends Controller
 
         if ($validated['type'] === 'entered') {
             $reservation->update(['has_entered' => $validated['value']]);
-        } elseif ($validated['type'] === 'exited') {
-            $reservation->update(['has_exited' => $validated['value']]);
+        } else {
+            DB::transaction(function () use ($reservation, $validated): void {
+                $current = Reservation::lockForUpdate()->findOrFail($reservation->id);
+                $hasExited = (bool) $validated['value'];
+
+                /** Una ripetizione della richiesta non riavvia il conteggio delle 24 ore. */
+                if ($current->has_exited !== $hasExited) {
+                    $current->has_exited = $hasExited;
+                    $current->exited_at = $hasExited ? now()->timestamp : null;
+                    $current->save();
+                }
+            }, 3);
         }
 
         return response()->json(['success' => true]);

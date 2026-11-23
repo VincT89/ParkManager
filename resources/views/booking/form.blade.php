@@ -7,6 +7,10 @@
         </div>
     @endif
 
+    @error('whatsapp_review_opt_in')
+        <div class="pm-flash-error" role="alert">{{ $message }}</div>
+    @enderror
+
     @if($bookingManagement?->is_initial)
     <div style="background: #fffbeb; border-left: 4px solid #f59e0b; color: #b45309; padding: 16px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
@@ -118,11 +122,23 @@
                                 @error('customer_email') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                             </div>
                             <div class="pm-form-group">
-                                <label class="pm-label">Telefono</label>
-                                <input type="text" name="customer_phone" class="pm-input" value="{{ old('customer_phone') }}" required>
+                                <label for="booking-customer-phone" class="pm-label">Telefono</label>
+                                <input id="booking-customer-phone" type="tel" name="customer_phone" class="pm-input" value="{{ old('customer_phone') }}" autocomplete="tel" required>
                                 @error('customer_phone') <span style="color: #991b1b; font-size: 12px; margin-top: 4px; display: block;">{{ $message }}</span> @enderror
                             </div>
                         </div>
+
+                        @if ($bookingParking?->whatsappReviewsEnabled())
+                            <div class="pm-form-group" style="margin: 12px 0 16px;">
+                                <div class="pm-checkbox-group" style="align-items: flex-start;">
+                                    <input id="whatsapp-review-opt-in" class="pm-checkbox" type="checkbox" name="whatsapp_review_opt_in" value="1"
+                                           style="margin-top: 3px; flex-shrink: 0;" aria-describedby="whatsapp-review-opt-in-help"
+                                           @checked(in_array(old('whatsapp_review_opt_in'), [true, 1, '1'], true))>
+                                    <label for="whatsapp-review-opt-in" class="pm-checkbox-label">Acconsento a ricevere da {{ $bookingParking->name }} un invito su WhatsApp a lasciare una recensione Google, 24 ore dopo l’uscita.</label>
+                                </div>
+                                <p id="whatsapp-review-opt-in-help" class="pm-form-note">Facoltativo. Per ricevere l’invito, aggiungi il prefisso internazionale al telefono. Puoi revocare il consenso contattando il parcheggio.</p>
+                            </div>
+                        @endif
 
                         <div class="pm-booking-customer-fields">
                             <div class="pm-form-group">

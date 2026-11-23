@@ -6,6 +6,7 @@ use App\Http\Controllers\PlatformController;
 use App\Http\Controllers\AvailabilityBlockController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AlertController;
+use App\Http\Controllers\WhatsAppReviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -61,6 +62,7 @@ Route::middleware(['auth', 'verified', 'parking.context'])->group(function () {
 
     // Prenotazioni
     Route::post('/reservations/{reservation}/toggle-movement', [ReservationController::class, 'toggleMovement'])->name('reservations.toggle-movement');
+    Route::put('/reservations/{reservation}/whatsapp-review-consent', [WhatsAppReviewController::class, 'updateConsent'])->name('reservations.whatsapp-review-consent');
     Route::post('/reservations/{reservation}/mark-paid', [ReservationController::class, 'markPaid'])->name('reservations.mark-paid');
     Route::resource('reservations', ReservationController::class);
 
@@ -102,6 +104,8 @@ Route::middleware(['auth', 'verified', 'parking.context'])->group(function () {
         Route::put('/management/users/{userId}', [\App\Http\Controllers\ManagementUserController::class, 'update'])->name('management.users.update');
         Route::delete('/management/users/{userId}', [\App\Http\Controllers\ManagementUserController::class, 'destroy'])->name('management.users.destroy');
         Route::get('/management/activity', [\App\Http\Controllers\ActivityLogController::class, 'index'])->name('management.activity');
+        Route::get('/admin/parkings/{parking}/whatsapp-reviews', [WhatsAppReviewController::class, 'edit'])->name('parkings.whatsapp-reviews.edit');
+        Route::put('/admin/parkings/{parking}/whatsapp-reviews', [WhatsAppReviewController::class, 'update'])->name('parkings.whatsapp-reviews.update');
         Route::resource('admin/parkings', \App\Http\Controllers\ParkingController::class)
             ->except(['show'])
             ->names([

@@ -12,6 +12,7 @@
             'customer_name' => 'Nome cliente', 'customer_email' => 'Email cliente', 'customer_phone' => 'Telefono cliente',
             'starts_at' => 'Data di inizio', 'ends_at' => 'Data di fine', 'expires_at' => 'Scadenza', 'paid_at' => 'Data del pagamento',
             'entered_at' => 'Ingresso', 'exited_at' => 'Uscita', 'has_entered' => 'Ingresso', 'has_exited' => 'Uscita',
+            'whatsapp_reviews_enabled_at' => 'Inviti WhatsApp', 'whatsapp_review_settings' => 'Impostazioni WhatsApp', 'whatsapp_review_consent' => 'Consenso WhatsApp',
             'license_plate' => 'Targa', 'flight_reference' => 'Volo', 'passengers_count' => 'Numero persone',
             'parking_id' => 'Parcheggio', 'management_id' => 'Gestione', 'parking_product_id' => 'Categoria', 'parking_listing_id' => 'Canale di prenotazione',
             'platform_id' => 'Piattaforma', 'reservation_id' => 'Prenotazione', 'provider' => 'Metodo di pagamento',

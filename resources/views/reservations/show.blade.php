@@ -165,6 +165,42 @@
             </div>
         @endif
 
+        @if ($activeParking?->whatsappReviewsEnabled() || $reservation->whatsapp_review_consent || $reservation->whatsapp_review_status)
+            <div class="pm-settings-section pm-settings-page">
+                <h2 class="pm-card-title">Invito a recensire su Google</h2>
+                <p class="pm-form-note">{{ $reviewConsent ? 'Consenso WhatsApp registrato per il numero attuale.' : 'Consenso WhatsApp assente per il numero attuale.' }}</p>
+
+                @if ($reservation->whatsapp_review_status)
+                    <p class="pm-form-note">{{ match ($reservation->whatsapp_review_status) {
+                        'accepted' => 'Invito affidato a Twilio.',
+                        'failed' => 'Invio fallito. Verifica il registro messaggi di Twilio.',
+                        default => 'Invio da verificare nel registro messaggi di Twilio.',
+                    } }}</p>
+                @endif
+
+                @if ($reservation->whatsapp_review_consent || ($activeParking?->whatsappReviewsEnabled() && $reviewPhone))
+                    <form method="POST" action="{{ route('reservations.whatsapp-review-consent', $reservation) }}" class="pm-form">
+                        @csrf
+                        @parkingContext
+                        @method('PUT')
+                        @if (! $reviewConsent && $activeParking?->whatsappReviewsEnabled() && $reviewPhone)
+                            <p class="pm-form-note">Registra il consenso solo dopo che il cliente ha accettato l’invito per il numero {{ $reviewPhone }}.</p>
+                        @endif
+                        <div class="pm-form-actions">
+                            @if (! $reviewConsent && $activeParking?->whatsappReviewsEnabled() && $reviewPhone)
+                                <button type="submit" name="consent" value="1" class="pm-btn pm-btn-secondary pm-btn-sm">Registra consenso</button>
+                            @endif
+                            @if ($reservation->whatsapp_review_consent)
+                                <button type="submit" name="consent" value="0" class="pm-btn pm-btn-secondary pm-btn-sm">Revoca consenso</button>
+                            @endif
+                        </div>
+                    </form>
+                @elseif ($activeParking?->whatsappReviewsEnabled())
+                    <p class="pm-form-note">Inserisci un numero con prefisso internazionale per registrare il consenso.</p>
+                @endif
+            </div>
+        @endif
+
         @if ($reservation->notes)
             <div style="margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--pm-border);">
                 <div class="pm-label">Note Operative</div>
