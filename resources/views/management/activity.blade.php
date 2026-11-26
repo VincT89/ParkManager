@@ -14,6 +14,8 @@
             'entered_at' => 'Ingresso', 'exited_at' => 'Uscita', 'has_entered' => 'Ingresso', 'has_exited' => 'Uscita',
             'whatsapp_reviews_enabled_at' => 'Inviti WhatsApp', 'whatsapp_review_settings' => 'Impostazioni WhatsApp', 'whatsapp_review_consent' => 'Consenso WhatsApp',
             'license_plate' => 'Targa', 'flight_reference' => 'Volo', 'passengers_count' => 'Numero persone',
+            'car_wash' => 'Lavaggio', 'car_wash_surcharge' => 'Supplemento lavaggio',
+            'car_wash_interior_price' => 'Prezzo lavaggio interno', 'car_wash_exterior_price' => 'Prezzo lavaggio esterno', 'car_wash_both_price' => 'Prezzo lavaggio interno + esterno',
             'parking_id' => 'Parcheggio', 'management_id' => 'Gestione', 'parking_product_id' => 'Categoria', 'parking_listing_id' => 'Canale di prenotazione',
             'platform_id' => 'Piattaforma', 'reservation_id' => 'Prenotazione', 'provider' => 'Metodo di pagamento',
             'external_id' => 'Codice esterno', 'external_ref' => 'Codice sulla piattaforma', 'external_name' => 'Nome sulla piattaforma',

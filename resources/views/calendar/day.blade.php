@@ -118,6 +118,9 @@
                                     @if ($reservation->is_valet)
                                         <strong class="pm-valet-label">Car valet</strong>
                                     @endif
+                                    @if ($type === 'exits')
+                                        <x-car-wash-label :type="$reservation->car_wash" />
+                                    @endif
                                     <div class="pm-td-sub">{{ $reservation->parking->name ?? 'N/D' }}</div>
                                 </td>
                                 <td class="pm-mono">

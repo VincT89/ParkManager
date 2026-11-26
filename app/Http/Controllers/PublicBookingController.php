@@ -17,6 +17,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use App\Enums\ReservationStatus;
+use App\Enums\CarWashType;
+use Illuminate\Validation\Rule;
 
 class PublicBookingController extends Controller
 {
@@ -37,6 +39,7 @@ class PublicBookingController extends Controller
             'products' => $products,
             'publicParkingKey' => app(\App\Tenancy\ParkingContext::class)->parking->public_booking_key,
             'valetSurcharge' => PricingService::VALET_SURCHARGE,
+            'carWashTypes' => CarWashType::cases(),
         ]);
     }
 
@@ -50,6 +53,7 @@ class PublicBookingController extends Controller
             'departure_time' => ['required', 'date_format:H:i'],
             'spots' => 'integer|min:1|max:10',
             'is_valet' => ['sometimes', 'boolean'],
+            'car_wash' => ['nullable', Rule::enum(CarWashType::class)],
         ], ['is_valet.boolean' => 'Seleziona Parcheggio standard oppure Car valet.']);
 
         $startsAt = Carbon::createFromFormat(
@@ -77,13 +81,15 @@ class PublicBookingController extends Controller
                 $startsAt,
                 $endsAt,
                 $spots,
-                (bool) ($validated['is_valet'] ?? false)
+                (bool) ($validated['is_valet'] ?? false),
+                CarWashType::tryFrom($validated['car_wash'] ?? '')
             );
 
             return response()->json([
                 'available' => true,
                 'total_price' => $result['price'],
                 'valet_surcharge' => $result['valet_surcharge'],
+                'car_wash_surcharge' => $result['car_wash_surcharge'],
                 'price_formatted' => number_format($result['price'], 2, ',', '.') . ' €'
             ]);
         } catch (\Exception $e) {
@@ -111,6 +117,7 @@ class PublicBookingController extends Controller
             'flight_reference' => ['nullable', 'string', 'max:20'],
             'passengers_count' => ['required', 'integer', 'min:1', 'max:9'],
             'is_valet' => ['sometimes', 'boolean'],
+            'car_wash' => ['nullable', Rule::enum(CarWashType::class)],
             'whatsapp_review_opt_in' => ['sometimes', 'boolean'],
         ], ['is_valet.boolean' => 'Seleziona Parcheggio standard oppure Car valet.']);
 
@@ -150,7 +157,8 @@ class PublicBookingController extends Controller
                 $startsAt,
                 $endsAt,
                 $validated['spots'],
-                (bool) ($validated['is_valet'] ?? false)
+                (bool) ($validated['is_valet'] ?? false),
+                CarWashType::tryFrom($validated['car_wash'] ?? '')
             );
         } catch (\Exception $e) {
             return back()->withInput()->with('error', $e->getMessage());
@@ -180,6 +188,8 @@ class PublicBookingController extends Controller
             'expires_at' => now()->addMinutes(15),
             'passengers_count' => max(1, (int) $validated['passengers_count']),
             'is_valet' => $validated['is_valet'] ?? false,
+            'car_wash' => $validated['car_wash'] ?? null,
+            'car_wash_surcharge' => $assignment['car_wash_surcharge'],
             'whatsapp_review_consent' => $reviewConsent,
             'raw_data' => ['source' => 'website', 'valet_surcharge' => $assignment['valet_surcharge']]
         ];

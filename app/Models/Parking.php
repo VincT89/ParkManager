@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CarWashType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -26,6 +27,15 @@ class Parking extends Model
     'capacity_mode',
     'notes',
     'is_active',
+    'car_wash_interior_price',
+    'car_wash_exterior_price',
+    'car_wash_both_price',
+  ];
+
+  protected $attributes = [
+      'car_wash_interior_price' => '10.00',
+      'car_wash_exterior_price' => '10.00',
+      'car_wash_both_price' => '20.00',
   ];
 
   protected $hidden = ['whatsapp_review_settings'];
@@ -35,9 +45,17 @@ class Parking extends Model
     return [
       'is_active' => 'boolean',
       'total_spots' => 'integer',
+      'car_wash_interior_price' => 'decimal:2',
+      'car_wash_exterior_price' => 'decimal:2',
+      'car_wash_both_price' => 'decimal:2',
       'whatsapp_reviews_enabled_at' => 'integer',
       'whatsapp_review_settings' => 'encrypted:array',
     ];
+  }
+
+  public function carWashPrice(CarWashType $type): float
+  {
+      return (float) $this->getAttribute($type->priceAttribute());
   }
 
   public function whatsappReviewsEnabled(): bool

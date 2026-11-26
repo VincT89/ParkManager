@@ -318,6 +318,7 @@ body {
 .pm-badge.red   { background:var(--pm-red-glow);   color:#C02040; border:1px solid rgba(232,68,90,0.2); }
 .pm-badge.blue  { background:var(--pm-accent-glow);color:#2850CC; border:1px solid rgba(79,124,255,0.2); }
 .pm-badge.gray  { background:var(--pm-bg);         color:var(--pm-text-muted); border:1px solid var(--pm-border); }
+.pm-car-wash-label { display:flex; width:fit-content; margin-top:4px; white-space:normal; }
 
 /* PLATFORM DOT & ACTIONS */
 .pm-platform { display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--pm-text-muted); }

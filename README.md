@@ -65,6 +65,16 @@ Le correzioni manuali a nominativo, email, telefono, targa, riferimento volo, nu
 
 La modifica dei dati anagrafici può essere salvata anche quando la disponibilità è insufficiente. Cambiamenti a categoria, date o posti di una prenotazione attiva e riattivazioni richiedono la verifica della disponibilità. Questa correzione richiede la migrazione `2026_11_07_000001_add_manually_edited_fields_to_reservations`. Le correzioni già sovrascritte prima dell'aggiornamento devono essere reinserite e salvate.
 
+### Lavaggio facoltativo
+
+Il modulo pubblico permette di aggiungere lavaggio interno, esterno oppure interno + esterno. Un amministratore può impostare i tre prezzi per ciascun parcheggio da **Parcheggi > Modifica > Prezzi del lavaggio**, confermando con **Salva dati del parcheggio**. I prezzi iniziali concordati sono rispettivamente 10, 10 e 20 euro; la tariffa combinata è indipendente dalla somma delle altre due. Il supplemento si applica una sola volta per prenotazione ed è cumulabile con Car valet. Il server legge i prezzi del parcheggio e ricalcola il totale al salvataggio, conservando il tipo e il supplemento applicato in `car_wash` e `car_wash_surcharge`. Le modifiche successive ai prezzi valgono per le nuove prenotazioni; quelle già registrate conservano supplemento, totale e importi da pagare originali.
+
+Il riepilogo di pagamento e la conferma mostrano il lavaggio incluso nel totale. Nel gestionale la scelta compare nel dettaglio, nella tabella Prenotazioni e nelle Uscite del calendario e della dashboard. Il filtro **Con lavaggio** conserva gli altri filtri e la paginazione e si applica anche all’esportazione Excel, che include la colonna Lavaggio.
+
+L’aggiornamento richiede la migrazione `2026_11_25_000001_add_car_wash_to_reservations`. La migrazione inizializza le prenotazioni esistenti con lavaggio assente e supplemento pari a zero.
+
+La configurazione per parcheggio richiede anche `2026_11_26_000001_add_car_wash_prices_to_parkings`, che inizializza i tre prezzi a 10, 10 e 20 euro e conserva i dati delle prenotazioni esistenti. Sono ammessi importi da 0 a 99.999.999,99 euro con al massimo due decimali.
+
 ### Filtro delle prenotazioni valet
 
 In **Prenotazioni**, selezionare **Solo valet** per vedere le prenotazioni riconosciute come valet. Il filtro si combina con canale, stato, ricerca e date; resta attivo nella paginazione e nell'esportazione Excel. Disattivandolo tornano visibili anche le prenotazioni ordinarie e quelle con servizio non identificato, sempre nel parcheggio selezionato.

@@ -11,6 +11,10 @@
         <div class="pm-flash-error" role="alert">{{ $message }}</div>
     @enderror
 
+    @error('car_wash')
+        <div class="pm-flash-error" role="alert">Seleziona un’opzione di lavaggio valida.</div>
+    @enderror
+
     @if($bookingManagement?->is_initial)
     <div style="background: #fffbeb; border-left: 4px solid #f59e0b; color: #b45309; padding: 16px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: flex-start; gap: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>
@@ -96,6 +100,23 @@
                         @error('is_valet') <span class="pm-form-error">{{ $message }}</span> @enderror
                     </div>
 
+                    <div class="pm-form-group" style="margin-bottom: 24px;">
+                        <label class="pm-label" for="car_wash">Lavaggio facoltativo</label>
+                        <select name="car_wash" id="car_wash" class="pm-select" aria-describedby="car-wash-pricing">
+                            <option value="" @selected(old('car_wash') === null || old('car_wash') === '')>Nessun lavaggio</option>
+                            @foreach ($carWashTypes as $carWash)
+                                <option value="{{ $carWash->value }}" @selected(old('car_wash') === $carWash->value)>
+                                    {{ match ($carWash) {
+                                        \App\Enums\CarWashType::Interior => 'Interno',
+                                        \App\Enums\CarWashType::Exterior => 'Esterno',
+                                        \App\Enums\CarWashType::Both => 'Entrambi',
+                                    } }} (+{{ number_format($bookingParking->carWashPrice($carWash), 2, ',', '.') }} €)
+                                </option>
+                            @endforeach
+                        </select>
+                        <p id="car-wash-pricing" class="pm-form-note">Il supplemento viene applicato una sola volta per prenotazione.</p>
+                    </div>
+
                     <div style="margin-bottom: 24px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 16px; background: #f8fafc; border: 1px solid var(--pm-border); border-radius: 8px;">
                         <div>
                             <div style="font-weight: 500; margin-bottom: 4px;">Verifica Disponibilità</div>
@@ -162,7 +183,7 @@
     </div>
 
     <script>
-        const quoteFields = ['arrival_date', 'arrival_time', 'departure_date', 'departure_time', 'product_code', 'spots', 'is_valet'];
+        const quoteFields = ['arrival_date', 'arrival_time', 'departure_date', 'departure_time', 'product_code', 'spots', 'is_valet', 'car_wash'];
         const quoteValues = () => Object.fromEntries(quoteFields.map(id => [id, document.getElementById(id).value]));
 
         document.getElementById('btn-check').addEventListener('click', async function() {

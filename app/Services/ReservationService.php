@@ -105,6 +105,8 @@ class ReservationService
                     'notes'              => $data['notes'] ?? null,
                     'raw_data'           => $data['raw_data'] ?? null,
                     'is_valet'           => $data['is_valet'] ?? null,
+                    'car_wash'           => $data['car_wash'] ?? null,
+                    'car_wash_surcharge' => $data['car_wash_surcharge'] ?? 0,
                     'whatsapp_review_consent' => $data['whatsapp_review_consent'] ?? null,
                 ]);
             });

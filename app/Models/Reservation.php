@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ReservationStatus;
+use App\Enums\CarWashType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -34,6 +35,8 @@ class Reservation extends Model
         'notes',
         'raw_data',
         'is_valet',
+        'car_wash',
+        'car_wash_surcharge',
         'expires_at',
         'has_entered',
         'has_exited',
@@ -59,6 +62,8 @@ class Reservation extends Model
             'raw_data'  => 'array',
             'manually_edited_fields' => 'array',
             'is_valet' => 'boolean',
+            'car_wash' => CarWashType::class,
+            'car_wash_surcharge' => 'decimal:2',
             'expires_at'=> 'datetime',
             'has_entered' => 'boolean',
             'has_exited' => 'boolean',
@@ -87,6 +92,11 @@ class Reservation extends Model
     {
         return $this->status->isActive()
             && ($this->status !== ReservationStatus::Pending || $this->expires_at?->isFuture());
+    }
+
+    public function scopeWithCarWash($query)
+    {
+        return $query->whereIn('car_wash', array_column(CarWashType::cases(), 'value'));
     }
 
     public function scopeActive($query)

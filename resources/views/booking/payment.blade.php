@@ -69,6 +69,13 @@
                         @endif
                     </div>
                 @endif
+                @if ($reservation->car_wash)
+                    <div style="margin-bottom: 16px;">
+                        <div class="pm-label">Lavaggio</div>
+                        <div>{{ $reservation->car_wash->label() }}</div>
+                        <div class="pm-form-note">Supplemento di {{ number_format($reservation->car_wash_surcharge, 2, ',', '.') }} € incluso nel totale.</div>
+                    </div>
+                @endif
                 <div style="font-size: 13px; color: var(--pm-text-muted); text-align: center; display: flex; align-items: center; justify-content: center;">
                     <svg style="width: 16px; height: 16px; color: #16a34a; margin-right: 6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     I pagamenti sono sicuri e criptati

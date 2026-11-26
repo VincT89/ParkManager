@@ -47,6 +47,10 @@ class ReservationController extends Controller
             $query->where('is_valet', true);
         }
 
+        if ($request->boolean('with_car_wash')) {
+            $query->withCarWash();
+        }
+
         match ($request->sort_by) {
             'starts_at_asc'   => $query->orderBy('starts_at', 'asc'),
             'starts_at_desc'  => $query->orderBy('starts_at', 'desc'),
@@ -261,6 +265,7 @@ class ReservationController extends Controller
                 dateTo:     $request->input('date_to'),
                 dateFilterType: $request->input('date_filter_type', 'starts_at'),
                 onlyValet: $request->boolean('only_valet'),
+                withCarWash: $request->boolean('with_car_wash'),
             ),
             $filename
         );

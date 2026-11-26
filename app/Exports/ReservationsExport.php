@@ -29,6 +29,7 @@ class ReservationsExport implements
         private ?string $dateFilterType = 'starts_at',
         private ?int $parkingId = null,
         private bool $onlyValet = false,
+        private bool $withCarWash = false,
     ) {}
 
     public function query()
@@ -40,6 +41,10 @@ class ReservationsExport implements
 
         if ($this->onlyValet) {
             $query->where('is_valet', true);
+        }
+
+        if ($this->withCarWash) {
+            $query->withCarWash();
         }
 
         if ($this->platformId) {
@@ -87,6 +92,7 @@ class ReservationsExport implements
             'Codice esterno',
             'Note',
             'Creata il',
+            'Lavaggio',
         ];
     }
 
@@ -110,6 +116,7 @@ class ReservationsExport implements
             $reservation->external_id ?? '',
             $reservation->notes ?? '',
             $reservation->created_at->format('d/m/Y H:i'),
+            $reservation->car_wash?->label() ?? '',
         ];
     }
 
@@ -149,6 +156,7 @@ class ReservationsExport implements
             'O' => 18,
             'P' => 30,
             'Q' => 16,
+            'R' => 30,
         ];
     }
 

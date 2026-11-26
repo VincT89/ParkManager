@@ -42,6 +42,14 @@
             </div>
 
             <div class="pm-form-grid-3">
+                @if ($reservation->car_wash)
+                    <div class="pm-form-group">
+                        <div class="pm-label">Lavaggio prenotato</div>
+                        <x-car-wash-label :type="$reservation->car_wash" />
+                        <p class="pm-form-note">Supplemento di {{ number_format($reservation->car_wash_surcharge, 2, ',', '.') }} € incluso nel prezzo.</p>
+                    </div>
+                @endif
+
                 <div class="pm-form-group">
                     <label class="pm-label pm-label-required" for="reservation-customer_name">Nome cliente</label>
                     <input type="text" id="reservation-customer_name" name="customer_name"

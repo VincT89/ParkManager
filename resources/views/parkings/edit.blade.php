@@ -59,6 +59,7 @@
                         <div style="font-size: 11px; color: var(--pm-amber); margin-top: 6px;">Un parcheggio disattivato non è disponibile per nuove prenotazioni.</div>
                     </div>
                 </div>
+                <x-car-wash-price-fields :parking="$parking" />
             </div>
         </form>
 

@@ -28,6 +28,7 @@
                 </div>
             </div>
             <x-parking-capacity-field :value="old('capacity_mode', 'shared')" />
+            <x-car-wash-price-fields />
 
             <fieldset class="pm-settings-section">
                 <legend>Chi può accedere a questo parcheggio?</legend>

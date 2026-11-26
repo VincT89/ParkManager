@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Parking;
+use App\Enums\CarWashType;
 use Carbon\Carbon;
 use Exception;
 
@@ -17,17 +18,14 @@ class ParkingAssignmentService
         $this->pricingService = $pricingService;
     }
 
-    /**
-     * Trova il primo parcheggio disponibile per i parametri richiesti.
-     * Restituisce un array con ['parking' => Parking, 'product' => ParkingProduct, 'price' => float, 'valet_surcharge' => float]
-     * o lancia un'eccezione se nessun parcheggio è disponibile.
-     */
+    /** Restituisce il parcheggio disponibile, il totale e i supplementi applicati ai servizi scelti. */
     public function findFirstAvailable(
         string $productCode,
         Carbon $startsAt,
         Carbon $endsAt,
         int $spots = 1,
-        bool $isValet = false
+        bool $isValet = false,
+        ?CarWashType $carWash = null
     ): array {
         // Recupera i parcheggi attivi ordinati (deterministico per id)
         $parkings = Parking::active()->orderBy('id', 'asc')->get();
@@ -57,12 +55,14 @@ class ParkingAssignmentService
                     $spots
                 );
                 $valetSurcharge = $isValet ? PricingService::VALET_SURCHARGE : 0.0;
+                $carWashSurcharge = $carWash ? $parking->carWashPrice($carWash) : 0.0;
 
                 return [
                     'parking' => $parking,
                     'product' => $product,
-                    'price'   => $totalPrice + $valetSurcharge,
+                    'price'   => $totalPrice + $valetSurcharge + $carWashSurcharge,
                     'valet_surcharge' => $valetSurcharge,
+                    'car_wash_surcharge' => $carWashSurcharge,
                 ];
             }
         }

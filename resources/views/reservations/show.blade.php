@@ -125,6 +125,10 @@
                 <div style="font-weight: 700; font-size: 20px; color: var(--pm-green);">
                     € {{ number_format($reservation->price, 2) }}
                 </div>
+                @if ($reservation->car_wash)
+                    <x-car-wash-label :type="$reservation->car_wash" />
+                    <p class="pm-form-note">Supplemento di {{ number_format($reservation->car_wash_surcharge, 2, ',', '.') }} € incluso nel totale.</p>
+                @endif
             </div>
         </div>
 

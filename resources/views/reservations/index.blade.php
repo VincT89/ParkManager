@@ -48,6 +48,11 @@
                         class="pm-checkbox" @checked(request()->boolean('only_valet')) onchange="this.form.submit()">
                     Solo valet
                 </label>
+                <label class="pm-checkbox-group pm-checkbox-label pm-valet-filter" for="with-car-wash">
+                    <input id="with-car-wash" type="checkbox" name="with_car_wash" value="1"
+                        class="pm-checkbox" @checked(request()->boolean('with_car_wash')) onchange="this.form.submit()">
+                    Con lavaggio
+                </label>
                 <select name="date_filter_type" class="pm-select" onchange="this.form.submit()" style="max-width: 160px; flex: unset;">
                     <option value="starts_at" {{ request('date_filter_type', 'starts_at') === 'starts_at' ? 'selected' : '' }}>
                         Filtra per: Arrivo
@@ -132,6 +137,7 @@
                                 @if ($reservation->is_valet)
                                     <strong class="pm-valet-label">Car valet</strong>
                                 @endif
+                                <x-car-wash-label :type="$reservation->car_wash" />
                             </td>
                             <td class="pm-mono">{{ $reservation->starts_at->format('d-m-Y H:i') }}</td>
                             <td class="pm-mono">{{ $reservation->ends_at->format('d-m-Y H:i') }}</td>

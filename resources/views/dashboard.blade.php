@@ -246,6 +246,7 @@
                                             <td>
                                                 <div class="pm-td-main">{{ $reservation->parkingProduct->name ?? 'N/D' }}</div>
                                                 <div class="pm-td-sub">{{ $reservation->parking->name ?? 'N/D' }}</div>
+                                                <x-car-wash-label :type="$reservation->car_wash" />
                                             </td>
                                             <td class="pm-mono">{{ $reservation->spots }}</td>
                                             <td class="pm-mono">{{ $reservation->passengers_count ?? 1 }}</td>
